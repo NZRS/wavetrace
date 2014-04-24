@@ -11,5 +11,13 @@ The model is derived from a Digital Elevation Model (DEM), the base data at pres
 
 The get_data.py scrapes the data from NASA.  Some tweaks can be made to limit the area by specifying the latitude and longitude.  At present the default is to acquire New Zealand data only.
 
+get_data.py also processes the data into what can be used in the model.  It unzips and converts to .sdf and cleans up intermediate files.
+
+Usage:
+  
+  python get_data.py
+  
+
+
 
 
