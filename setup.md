@@ -1,28 +1,16 @@
-wavetrace
-=========
 
-Radio propagation modelling
+## Installation Requirements ##
 
-== Installing Requirements ==
+Wavetrace has been tested with Ubuntu 12.04 and 14.04.  It should work adequately with other Linux based systems though it has caused issues on OSX.
 
-$ sudo apt-get install gdal-bin
+- sudo apt-get install gdal-bin
+- sudo apt-get install python-setuptools
+- sudo easy_install pip
+- sudo apt-get install splat
+- sudo apt-get install unzip
+- sudo apt-get install git
+- git clone https://github.com/NZRegistryServices/wavetrace.git
+- sudo pip install httplib2
+- sudo pip install BeautifulSoup
 
-$ sudo apt-get install python-setuptools
 
-$ sudo easy_install pip
-
-$ sudo apt-get install splat
-
-$ git clone https://github.com/NZRegistryServices/wavetrace.git
-
-$ sudo pip install httplib2
-
-$ sudo pip install BeautifulSoup
-
-$ sudo apt-get install unzip
-
-==Acquiring the  data==
-
-Get the Digital Elevation Model (DEM) data.  This can be dowloaded from a number of places.
-
-https://github.com/NZRegistryServices/wavetrace/blob/master/get_data.py
