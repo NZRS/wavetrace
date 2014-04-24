@@ -1,6 +1,6 @@
 # WaveTrace #
 
-This application allows for bacth processing of radio propagation modelling.  It takes a CSV as input and generates the following:
+This application allows for batch processing of radio propagation modelling.  It takes a CSV as input and generates the following:
 
 1. A KML file with a georeferenced image for sue in the likes of Google Earth.
 2. A raster file suitable for use in GIS packages.
