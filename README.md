@@ -11,6 +11,8 @@ $ sudo apt-get install python-setuptools
 
 $ sudo easy_install pip
 
+$ sudo apt-get install splat
+
 
 
 ==Acquiring the  data==
