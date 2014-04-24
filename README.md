@@ -19,6 +19,7 @@ $ sudo pip install httplib2
 
 $ sudo pip install BeautifulSoup
 
+$ sudo apt-get install unzip
 
 ==Acquiring the  data==
 
