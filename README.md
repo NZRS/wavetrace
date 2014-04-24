@@ -7,4 +7,9 @@ This application allows for batch processing of radio propagation modelling.  It
 
 The model is derived from a Digital Elevation Model (DEM), the base data at present is from the NASA Shuttle Radio Topography Mission (SRTM).  Thought there may be bettter localised sources available.
 
+## Acquiring and Processing DEM Data ##
+
+The get_data.py scrapes the data from NASA.  Some tweaks can be made to limit the area by specifying the latitude and longitude.  At present the default is to acquire New Zealand data only.
+
+
 
