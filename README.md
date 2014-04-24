@@ -1,7 +1,15 @@
+
 wavetrace
 =========
 
 Radio propagation modelling
+
+== Installing Requirements ==
+
+$ sudo apt-get install gdal-bin
+$ sudo apt-get install python-setuptools
+$ sudo easy_install pip
+
 
 
 ==Acquiring the  data==
