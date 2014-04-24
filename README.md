@@ -13,6 +13,8 @@ $ sudo easy_install pip
 
 $ sudo apt-get install splat
 
+$ git clone https://github.com/NZRegistryServices/wavetrace.git
+
 
 
 ==Acquiring the  data==
