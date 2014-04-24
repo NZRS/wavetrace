@@ -15,6 +15,9 @@ $ sudo apt-get install splat
 
 $ git clone https://github.com/NZRegistryServices/wavetrace.git
 
+$ sudo pip install httplib2
+
+$ sudo pip install BeautifulSoup
 
 
 ==Acquiring the  data==
