@@ -1,6 +1,7 @@
 '''Parses the DEM data, and grabs each zip file from the web page'''
 import httplib2
 import urllib
+import os
 
 from BeautifulSoup import BeautifulSoup, SoupStrainer
 
@@ -26,3 +27,21 @@ for link in BeautifulSoup(response, parseOnlyThese=SoupStrainer('a')):
             continue
 
 print str(counter) + ' files downloaded successfully'
+
+
+#unzip all dowloaded files
+print 'Unzipping downloaded files'
+
+unzip_str = 'unzip "*.zip"'
+os.system(unzip_str)
+
+print 'Files unzipped'
+
+#Convert the DEM data (.hgt) into a format SPLAT! can use (SDF).
+print 'Converting DEM data'
+
+convert_dem = 'for f in *.hgt ; do srtm2sdf "$f" ; done'
+os.system(convert_dem)
+
+print 'DEM data converted to SDF'
+
