@@ -47,6 +47,7 @@ print 'Files unzipped'
 
 print 'Removing zip files'
 zipbgone  = 'rm *.zip'
+os.system(zipbgone)
 print 'Zip files removed'
 
 #Convert the DEM data (.hgt) into a format SPLAT! can use (SDF).
