@@ -12,11 +12,11 @@ counter = 0
 try:
     # query_url = 'http://dds.cr.usgs.gov/srtm/version2_1/SRTM3/Australia/'
     query_url = 'http://dds.cr.usgs.gov/srtm/version2_1/SRTM3/Islands/'
-    
+
     http = httplib2.Http()
     status, response = http.request(query_url)
-    
-    
+
+
     for link in BeautifulSoup(response, parseOnlyThese=SoupStrainer('a')):
         try:
             if link.has_key('href'):
@@ -27,16 +27,15 @@ try:
                     print 'Success with: ' + suffix
                     counter = counter + 1
         except:
-            countinue
-except:            
+            continue
+except:
     print 'Could not acquire data'
     sys.exit()
-    
 
-    print str(counter) + ' files downloaded successfully'
-except:
-    print 'Could not download data'
-    
+
+print str(counter) + ' files downloaded successfully'
+print 'Could not download data'
+
 
 
 #unzip all dowloaded files
