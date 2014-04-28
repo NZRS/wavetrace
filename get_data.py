@@ -32,30 +32,45 @@ except:
     print 'Could not acquire data'
     sys.exit()
 
-
 print str(counter) + ' files downloaded successfully'
-print 'Could not download data'
+
 
 
 
 #unzip all dowloaded files
 print 'Unzipping downloaded files'
-unzip_str = 'unzip "*.zip"'
-os.system(unzip_str)
 
-print 'Files unzipped'
+try:
+    unzip_str = 'unzip "*.zip"'
+    os.system(unzip_str)
+    print 'Files unzipped'
+except:
+    print 'Files could not be unzipped'
+
+
 
 print 'Removing zip files'
-zipbgone  = 'rm *.zip'
-os.system(zipbgone)
-print 'Zip files removed'
+try:
+    zipbgone  = 'rm *.zip'
+    os.system(zipbgone)
+    print 'Zip files removed'
+except:
+    print 'Zip files not removed'
 
 #Convert the DEM data (.hgt) into a format SPLAT! can use (SDF).
 print 'Converting DEM data'
 
-convert_dem = 'for f in *.hgt ; do srtm2sdf "$f" ; done'
-os.system(convert_dem)
+try:
+    convert_dem = 'for f in *.hgt ; do srtm2sdf "$f" ; done'
+    os.system(convert_dem)
+    print 'DEM data converted to SDF'
+except:
+    print 'DEM data could nto be converted'
 
-print 'DEM data converted to SDF'
-
-print 'Removing zip files'
+print 'Removing DEM files'
+try:
+    remove_dem = 'rm *.hgt'
+    os.system(remove_dem)
+    print 'removed DEM files'
+except:
+    print'failed to remove DEM files'
