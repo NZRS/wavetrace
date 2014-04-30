@@ -13,7 +13,7 @@
 # Ignore root img files, remove French locale transforms.
 
 if [[ $# != 1 || ! ( -d $1 ) ]]
-then echo "Vous devez fournir 1 paramètre : le répertoire contenant les fichiers kmz à traiter" >&2
+then echo "You must provide one parameter: the directory containing the files to process kml - maybe a dot(.)" >&2
      exit 1
 fi
 
@@ -93,7 +93,7 @@ do
       echo "</PAMDataset>" >> "$auxpath"
 
     else
-      echo "Le format du fichier $path/${bn}_${bnimg}.$extimg n'est pas supporté, aucun fichier de géolocalisation n'a pu être généré"
+      echo "The file format $path/${bn}_${bnimg}.$extimg is not supported, no geolocation file could not be generated"
     fi
 
   done
