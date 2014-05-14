@@ -2,7 +2,7 @@ import os
 
 
 
-splat_list = {}
+splat_list = []
 
 
 
