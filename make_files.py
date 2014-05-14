@@ -5,7 +5,7 @@ import csv
 def usage():
     print '''
     make_files.py <csv file>
-    Lorem ipsum
+    Did you forget your csv file?
     '''
 
 
