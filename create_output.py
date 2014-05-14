@@ -1,6 +1,8 @@
 import os
 
-#filename = 'South_1'
+
+
+splat_list = {}
 
 
 
@@ -12,6 +14,7 @@ def create(file_name):
     
     print '===================='
     print cpk
+    splat_list.append(cpk)
     print '===================='
     
     #resize ppm file
@@ -83,6 +86,11 @@ def create(file_name):
         print 'KML filename:' + file_name +'.kml'
     except:
         print 'Rewriting KML failed'
+    
+    try:
+        print splat_list
+    except:
+        print 'failed to print splat list'
 
 
 
@@ -121,3 +129,6 @@ def convert_kml_to_world():
         os.system(kml2wld)
     except:
         print 'Creating world file failed'
+        
+
+    
