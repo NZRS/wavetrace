@@ -9,7 +9,11 @@ def create(file_name):
     #create ppm and KML
     #cpk = 'splat -t ' + file_name + ' -o -c 2.0 '+ file_name + '.ppm -ngs -kml -metric'
     cpk = 'splat -t ' + file_name + ' -L 8.0 -dbm -db -110 -o '+ file_name + '.ppm -kml -metric -ngs'
+    
+    print '===================='
     print cpk
+    print '===================='
+    
     #resize ppm file
     resize = 'pnmscale -xsize 1200 ' + file_name + '.ppm'
 
