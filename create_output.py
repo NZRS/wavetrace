@@ -3,14 +3,14 @@ import os
 
 
 splat_list = []
+receive_sensitivity = '90'
 
 
-
-def create(file_name):
+def create(file_name, receive_sensitivity):
 
     #create ppm and KML
     #cpk = 'splat -t ' + file_name + ' -o -c 2.0 '+ file_name + '.ppm -ngs -kml -metric'
-    cpk = 'splat -t ' + file_name + ' -L 8.0 -dbm -db -110 -o '+ file_name + '.ppm -kml -metric -ngs'
+    cpk = 'splat -t ' + file_name + ' -L 8.0 -dbm -db ' + receive_sensitivity + ' -o '+ file_name + '.ppm -kml -metric -ngs'
     
     print '===================='
     print cpk
