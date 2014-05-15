@@ -3,7 +3,7 @@ import os
 
 
 splat_list = []
-receive_sensitivity = '100'
+receive_sensitivity = '-110'
 
 
 def create(file_name):
