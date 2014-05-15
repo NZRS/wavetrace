@@ -65,6 +65,7 @@ for thing in parameter_list:
     print >> f, height
 
     f.close()
+    print 'QTH created'
 
 #lrp file
 
@@ -87,6 +88,7 @@ for thing in parameter_list:
 ''' + inner_dict['power_eirp'] + ''' ; ERP in watts'''
 
     f.close()
+    print 'LRP created'
 
     try:
     #create .az file
@@ -113,6 +115,7 @@ for thing in parameter_list:
         f = file(base_filename + '.az', 'w')
         print >> f, '0    0'
         f.close()
+    print 'Azimuth File Created'
 
     try:
         #cretae .el file
@@ -131,6 +134,9 @@ for thing in parameter_list:
         f = file(base_filename + '.el', 'w')
         print >> f, '0    0'
         f.close()
+    print 'Elevation file created'
 
 
 f.close()
+
+print 'All done'
