@@ -1,3 +1,7 @@
+Copyright 2014 .NZ Registry Services
+
+This software is licensed under the GPLv3 license.
+
 # WaveTrace #
 
 This application allows for batch processing of radio propagation modelling.  It takes a CSV as input and generates the following:
