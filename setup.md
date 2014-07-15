@@ -11,6 +11,3 @@ git clone https://github.com/NZRegistryServices/wavetrace.git
 
 pip install httplib2 BeautifulSoup
 
-sudo pip install httplib2 BeautifulSoupp
-
-
