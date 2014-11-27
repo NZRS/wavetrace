@@ -3,20 +3,20 @@ import os
 
 
 splat_list = []
-receive_sensitivity = '-120'
+# receive_sensitivity = '-120'
 
 
-def create(file_name):
+def create(file_name, receive_sensitivity):
 
     #create ppm and KML
     #cpk = 'splat -t ' + file_name + ' -o -c 2.0 '+ file_name + '.ppm -ngs -kml -metric'
     cpk = 'splat -t ' + file_name + ' -L 8.0 -dbm -db ' + receive_sensitivity + ' -o '+ file_name + '.ppm -kml -metric -ngs'
-    
+
     print '===================='
     print cpk
     splat_list.append(cpk)
     print '===================='
-    
+
     #resize ppm file
     resize = 'pnmscale -xsize 1200 ' + file_name + '.ppm'
 
@@ -86,7 +86,7 @@ def create(file_name):
         print 'KML filename:' + file_name +'.kml'
     except:
         print 'Rewriting KML failed'
-    
+
     try:
         print splat_list
     except:
@@ -94,12 +94,12 @@ def create(file_name):
 
 
 
-def convert(file_name):
+def convert(file_name, receive_sensitivity):
     #convert to worldfile to GeoTIFF
 
     #wld2gtif = 'gdalwarp ' + file_name + '.png ' + file_name + '.tif'
 
-    wld2gtif = 'gdal_translate -a_nodata 255 -expand gray -of GTiff ' + file_name + '.png ' + file_name + '.tif'
+    wld2gtif = 'gdal_translate -a_nodata 255 -expand gray -of GTiff ' + file_name + '.png ' + file_name + receive_sensitivity + 'dBm.tif'
     print wld2gtif
 
 
@@ -129,6 +129,3 @@ def convert_kml_to_world():
         os.system(kml2wld)
     except:
         print 'Creating world file failed'
-        
-
-    
