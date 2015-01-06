@@ -1,8 +1,8 @@
 '''Parses the DEM data, and grabs each zip file from the web page'''
-import httplib2
 import urllib
 import os
 import sys
+import requests
 
 from BeautifulSoup import BeautifulSoup, SoupStrainer
 
@@ -13,11 +13,12 @@ try:
     # query_url = 'http://dds.cr.usgs.gov/srtm/version2_1/SRTM3/Australia/'
     query_url = 'http://dds.cr.usgs.gov/srtm/version2_1/SRTM3/Islands/'
 
-    http = httplib2.Http()
-    status, response = http.request(query_url)
+    response = requests.get(query_url)
+
+    #if response.status_code = 200:
 
 
-    for link in BeautifulSoup(response, parseOnlyThese=SoupStrainer('a')):
+    for link in BeautifulSoup(response.text, parseOnlyThese=SoupStrainer('a')):
         try:
             if link.has_key('href'):
                 suffix = link['href']
