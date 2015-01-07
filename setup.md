@@ -9,6 +9,6 @@ sudo apt-get install gdal-bin python-setuptools splat unzip git
 
 sudo easy_install pip
 
-sudo pip install httplib2 BeautifulSoup
+sudo pip install requests BeautifulSoup
 
 git clone https://github.com/NZRegistryServices/wavetrace.git
