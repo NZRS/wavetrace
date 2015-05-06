@@ -29,11 +29,12 @@ The model is derived from a Digital Elevation Model (DEM), the base data at pres
 * horizontal beamwidth	
 * vertical beamwidth	
 * antenna downtilt
-* 
 
-## The Process of Creating Converage ##
+The [Longely Rice Prediction Model](http://en.wikipedia.org/wiki/Longley%E2%80%93Rice_model, "Link to Wikipedia") is used to model coverage.
 
-1. Get the Digital Elevation Model Files and convert of sdf 
+## The Process of Creating Converage - Short Version##
+
+1. Get the Digital Elevation Model Files and convert of .sdf 
   * Either get from NASA using get_data.py which scrapes and converts to .sdf files, or;
   * Copy already processed .sdf files from a local source
   * Or download from NZRS (once we have a site up)
@@ -51,21 +52,65 @@ The model is derived from a Digital Elevation Model (DEM), the base data at pres
   * bearing	
   * horizontal_beamwidth	
   * vertical_beamwidth
-3. Create the xx files
+3. Use make_files.py to create the model files based off of the .csv file.
+  * Azimuth file
+  * Elevation file 
+  * QTH file
+  * LRP file
+4. Map coverage using create_output_from_dir.py.  The following will be created:
+  * A KML file you can use in Google Earth
+  * A georeferenced .tif file (raster - 1 file)
+  * A shapefile (vector - 4 files)
+
+## The Process of Creating Converage - Long Version##
 
 ## Acquiring and Processing DEM Data ##
 
-The get_data.py scrapes the data from NASA.  Some tweaks can be made to limit the area by specifying the latitude and longitude.  At present the default is to acquire New Zealand data only.
+The get_data.py scrapes the data from NASA.  Some tweaks can be made to limit the area by specifying the latitude and longitude.  At present the default is to acquire New Zealand data only.  Though the query_url in 'get_data.py' can be modified easily.
 
 get_data.py also processes the data into what can be used in the model.  It unzips and converts to .sdf and cleans up intermediate files.
 
-Usage:
+### Usage: ###
   
-  `python get_data.py`
+  `python wavetrace/get_data.py`
   
-## Make Files ##
+get_data.py does the following:
 
-  `python make_files.py'
+* Scrapes the Shuttle Radar Topography Mission (SRTM) data from NASA
+* Unzips the downloaded data
+* Converts the downloaded.hgt files to .sdf files
+* Cleans stuff up
+
+  
+## Creating Files For the Model ##
+The model uses four files, two required and two optional but created empty by default.
+Required files:
+* LRP - Contains Longley Rice Parameters. Where not read from the .csv file they default to New Zealand specific parameters, they may need changed for other climates and locales.
+  * Earth Dielectric Constant (Relative permittivity)
+  * Earth Conductivity (Siemens per meter)
+  * Atmospheric Bending Constant (N-units)
+  * Frequency in MHz (20 MHz to 20 GHz)
+  * Climate type (Maritime Temperate, over land)
+  * Polarization (0 = Horizontal, 1 = Vertical)
+  * Fraction of situations (50% of locations)
+  * Fraction of time (50% of the time)
+  * Power EIRP
+ * QTH - Geographic
+  * Latitude
+  * Longitude
+  * Antenna height above ground
+ * AZ - Azimuth
+  * Bearing
+  * Horizontal beamwidth
+ * EL - Elevation
+  * Downtilt
+  * Vertical beamwidth
+
+The AZ and EL files use a simplified model where 90% of the energy is transmitted in the specified beamwidth and the other 10 10% outside of the beamwidth.  Both files can hold full antenna patterns but this has been simplified for bathc modelling.
+
+### Usage ###
+
+  `python wavetrace/python make_files.py'
   
 ## Create GIS Outputs ##
 `python create_output_from_dir.py'  
