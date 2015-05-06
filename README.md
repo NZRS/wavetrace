@@ -29,6 +29,30 @@ The model is derived from a Digital Elevation Model (DEM), the base data at pres
 * horizontal beamwidth	
 * vertical beamwidth	
 * antenna downtilt
+* 
+
+## The Process of Creating Converage ##
+
+1. Get the Digital Elevation Model Files and convert of sdf 
+  * Either get from NASA using get_data.py which scrapes and converts to .sdf files, or;
+  * Copy already processed .sdf files from a local source
+  * Or download from NZRS (once we have a site up)
+2. Ensure you have a .csv file that matches the column headings of  sample_data.csv in this repository.  The file must contain the following:
+  * network_name	
+  * site_name	latitude	
+  * longitude	
+  * antenna_height	
+  * frequency_mhz	
+  * power_eirp
+  
+  It may optionally contain
+
+  * polarisation	
+  * bearing	
+  * horizontal_beamwidth	
+  * vertical_beamwidth
+
+
 
 ## Acquiring and Processing DEM Data ##
 
