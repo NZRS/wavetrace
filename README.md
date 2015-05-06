@@ -12,6 +12,7 @@ This application allows for batch processing of radio propagation modelling.  It
 
 1. A KML file with a georeferenced image for use in the likes of Google Earth.
 2. A raster file suitable for use in GIS packages.
+3. A shapefile (currently not implemented but trivial)
 
 The model is derived from a Digital Elevation Model (DEM), the base data at present is from the NASA Shuttle Radio Topography Mission (SRTM).  Though there may be bettter localised sources available.
 
@@ -56,6 +57,7 @@ The [Longely Rice Prediction Model](http://en.wikipedia.org/wiki/Longley%E2%80%9
   * bearing	
   * horizontal_beamwidth	
   * vertical_beamwidth
+  * Antenna downtilt
 3. Use make_files.py to create the model files based off of the .csv file.
   * Azimuth file
   * Elevation file 
@@ -110,14 +112,14 @@ Required files:
   * Downtilt
   * Vertical beamwidth
 
-The AZ and EL files use a simplified model where 90% of the energy is transmitted in the specified beamwidth and the other 10% outside of the beamwidth.  Both files can hold full antenna patterns but this has been simplified for bathc modelling.
+The AZ and EL files use a simplified model where 90% of the energy is transmitted in the specified beamwidth and the other 10% outside of the beamwidth.  Both files can hold full antenna patterns but this has been simplified for batch modelling.
 
 ### Usage ###
 
-  `python wavetrace/python make_files.py'
+  ``python python make_files.py'`
   
 ## Create GIS Outputs ##
-`python create_output_from_dir.py'  
+``python create_output_from_dir.py'`  
 
 ## Mapping coverage ##
 This requires all the following files to be in the same directory:
