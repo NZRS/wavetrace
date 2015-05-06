@@ -140,6 +140,22 @@ or for say -105dBm receive
 
 `python create_output_from_dir.py -105`
 
+## Converting GeoTiffs to Shapefile ##
+
+Currently this is not implemented but at the command line:
+
+For all GeoTiffs:
+
+``for f in *.tif;  do gdal_polygonize.py $f -f "ESRI Shapefile" $f.shp;  done```
+
+For a single GeoTiff:
+
+``gdal_polygonize.py <geotiff name> -f "ESRI Shapefile" <output_file_name.shp>```
+
+
+
+
+
 
 
 
