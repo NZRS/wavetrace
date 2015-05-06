@@ -82,7 +82,7 @@ get_data.py does the following:
 
 * Scrapes the Shuttle Radar Topography Mission (SRTM) data from NASA
 * Unzips the downloaded data
-* Converts the downloaded.hgt files to .sdf files
+* Converts the downloaded .hgt files to .sdf files
 * Cleans stuff up
 
   
