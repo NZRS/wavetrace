@@ -76,7 +76,7 @@ get_data.py also processes the data into what can be used in the model.  It unzi
 
 ### Usage: ###
   
-  `python wavetrace/get_data.py`
+  `python get_data.py`
   
 get_data.py does the following:
 
@@ -132,11 +132,11 @@ The above files will be processed when create_ouput_from_dir.py is run.  The def
 You may need to change received values to get something that feels right.
 
 ### Usage ###
-`python wavetrace/create_output_from_dir.py`
+`python create_output_from_dir.py`
 
 or for say -105dBm receive
 
-`python wavetrace/create_output_from_dir.py -105`
+`python create_output_from_dir.py -105`
 
 
 
