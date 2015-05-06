@@ -36,7 +36,7 @@ Install the following packages [setup.md](https://github.com/NZRegistryServices/
 
 The [Longely Rice Prediction Model](http://en.wikipedia.org/wiki/Longley%E2%80%93Rice_model, "Link to Wikipedia") is used to model coverage.
 
-## The Process of Creating Converage - Short Version##
+## The Process of Creating Coverage - Short Version##
 
 1. Get the Digital Elevation Model Files and convert of .sdf 
   * Either get from NASA using get_data.py which scrapes and converts to .sdf files, or;
