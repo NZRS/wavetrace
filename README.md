@@ -34,7 +34,7 @@ Install the following packages [setup.md](https://github.com/NZRegistryServices/
 * vertical beamwidth	
 * antenna downtilt
 
-The [Longely Rice Prediction Model](http://en.wikipedia.org/wiki/Longley%E2%80%93Rice_model, "Link to Wikipedia") is used to model coverage.
+The [Longely Rice Prediction Model](http://en.wikipedia.org/wiki/Longley%E2%80%93Rice_model "Link to Wikipedia") is used to model coverage.
 
 ## The Process of Creating Coverage - Short Version##
 
@@ -129,7 +129,7 @@ This requires all the following files to be in the same directory:
 
 The above files will be processed when create_ouput_from_dir.py is run.  The default system receive is modelled by default at -110 dBm receive.  Other receives can be passed in as a parameter.   Note this is at the chip, so includes receive antenna gain.
 
-You may need to change received values to get somethign that feels right.
+You may need to change received values to get something that feels right.
 
 ### Usage ###
 `python wavetrace/create_output_from_dir.py`
