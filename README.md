@@ -13,7 +13,11 @@ This application allows for batch processing of radio propagation modelling.  It
 1. A KML file with a georeferenced image for sue in the likes of Google Earth.
 2. A raster file suitable for use in GIS packages.
 
-The model is derived from a Digital Elevation Model (DEM), the base data at present is from the NASA Shuttle Radio Topography Mission (SRTM).  Thought there may be bettter localised sources available.
+The model is derived from a Digital Elevation Model (DEM), the base data at present is from the NASA Shuttle Radio Topography Mission (SRTM).  Though there may be bettter localised sources available.
+
+## Set Up ##
+
+Install the following packages [setup.md](https://github.com/NZRegistryServices/wavetrace/blob/master/setup.md)
 
 ## Parameters Used in Modelling Coverage ##
 
