@@ -51,8 +51,7 @@ The model is derived from a Digital Elevation Model (DEM), the base data at pres
   * bearing	
   * horizontal_beamwidth	
   * vertical_beamwidth
-
-
+3. Create the xx files
 
 ## Acquiring and Processing DEM Data ##
 
