@@ -95,18 +95,18 @@ Required files:
   * Fraction of situations (50% of locations)
   * Fraction of time (50% of the time)
   * Power EIRP
- * QTH - Geographic
+* QTH - Geographic
   * Latitude
   * Longitude
   * Antenna height above ground
- * AZ - Azimuth
+* AZ - Azimuth
   * Bearing
   * Horizontal beamwidth
- * EL - Elevation
+* EL - Elevation
   * Downtilt
   * Vertical beamwidth
 
-The AZ and EL files use a simplified model where 90% of the energy is transmitted in the specified beamwidth and the other 10 10% outside of the beamwidth.  Both files can hold full antenna patterns but this has been simplified for bathc modelling.
+The AZ and EL files use a simplified model where 90% of the energy is transmitted in the specified beamwidth and the other 10% outside of the beamwidth.  Both files can hold full antenna patterns but this has been simplified for bathc modelling.
 
 ### Usage ###
 
@@ -114,6 +114,26 @@ The AZ and EL files use a simplified model where 90% of the energy is transmitte
   
 ## Create GIS Outputs ##
 `python create_output_from_dir.py'  
+
+## Mapping coverage ##
+This requires all the following files to be in the same directory:
+ * The .sdf files
+ * LRP files
+ * QTH files
+ * EZ files
+ * EL files
+
+The above files will be processed when create_ouput_from_dir.py is run.  The default system receive is modelled by default at -110 dBm receive.  Other receives can be passed in as a parameter.   Note this is at the chip, so includes receive antenna gain.
+
+You may need to change received values to get somethign that feels right.
+
+### Usage ###
+`python wavetrace/create_output_from_dir.py`
+
+or for say -105dBm receive
+
+`python wavetrace/create_output_from_dir.py -105`
+
 
 
 
