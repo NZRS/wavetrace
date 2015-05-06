@@ -144,7 +144,7 @@ or for say -105dBm receive
 
 Currently this is not implemented but at the command line:
 
-For all GeoTiffs:
+For all GeoTiffs in the folder:
 
 ``for f in *.tif;  do gdal_polygonize.py $f -f "ESRI Shapefile" $f.shp;  done```
 
