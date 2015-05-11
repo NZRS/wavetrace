@@ -10,7 +10,9 @@ def create(file_name, receive_sensitivity, definition):
 
     #create ppm and KML
     #cpk = 'splat -t ' + file_name + ' -o -c 2.0 '+ file_name + '.ppm -ngs -kml -metric'
-    cpk = 'splat -t ' + file_name + ' -L 8.0 -dbm -db ' + receive_sensitivity + ' -o '+ file_name + '.ppm -kml -metric -ngs'
+    splat = 'splat' if definition!='hd' else 'splat-hd'
+
+    cpk = splat+' -t ' + file_name + ' -L 8.0 -dbm -db ' + str(receive_sensitivity) + ' -o '+ file_name + '.ppm -kml -metric -ngs'
 
     print '===================='
     print cpk

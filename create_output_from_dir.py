@@ -10,18 +10,23 @@ receive_sensitivity = '-110'
 definition='sd'
 
 try:
-    opts, args = getopt.getopt(argv,"h")
+    opts, args = getopt.getopt(sys.argv[1:],"s:h",["sensitivity="])
+    print opts
 except getopt.GetoptError:
+    print sys.argv
+
     sys.exit(2)
 for opt, arg in opts:
     if opt in ("-h"):
         definition="hd"
+    elif opt in("-s","--sensitivity"):
+        receive_sensitivity = int(arg)
 
-if len(sys.argv) == 2:
-    if int(sys.argv[1]) < 0:
-        receive_sensitivity = str(sys.argv[1])
+#force sensititive to a negitive, so cli can pass positive numbers
+if receive_sensitivity >= 0:
+    receive_sensitivity = (0 - (receive_sensitivity))
 
-print 'modelling with a receive sensitivity of: ' + receive_sensitivity + ' dBm'
+print 'modelling with a receive sensitivity of: ' + str(receive_sensitivity) + ' dBm'
 
 
 myglob = '*.qth'
