@@ -3,28 +3,51 @@ import urllib
 import os
 import sys
 import requests
+import re, getopt
 
 from BeautifulSoup import BeautifulSoup, SoupStrainer
 
 counter = 0
 
+definition = 'sd'
+
+argv = sys.argv[1:]
+
+query_endpoints={
+    'sd' : 'http://dds.cr.usgs.gov/srtm/version2_1/SRTM3/Islands/'
+    ,'hd' : 'http://e4ftl01.cr.usgs.gov/SRTM/SRTMGL1.003/2000.02.11/'
+}
+
+
+# sys.exit();
 
 try:
-    # query_url = 'http://dds.cr.usgs.gov/srtm/version2_1/SRTM3/Australia/'
-    query_url = 'http://dds.cr.usgs.gov/srtm/version2_1/SRTM3/Islands/'
+    opts, args = getopt.getopt(argv,"h")
+except getopt.GetoptError:
+    print 'NO HELP HERE..'
+    sys.exit(2)
+for opt, arg in opts:
+    if opt in ("-h"):
+        definition="hd"
 
-    response = requests.get(query_url)
+
+print 'Fetching',definition,'elevation data'
+
+
+try:
+
+    response = requests.get(query_endpoints[definition])
 
     #if response.status_code = 200:
 
-
     for link in BeautifulSoup(response.text, parseOnlyThese=SoupStrainer('a')):
         try:
-            if link.has_key('href'):
+            if link.has_key('href') and re.compile('^[\w]+\.(|[\w0-9]+\.)hgt\.zip$').match(link['href']):
                 suffix = link['href']
+                degrees=re.split("N|E|S|W", suffix[0:suffix.find('.')])
                 # The following allows you to limit to a region by setting lat/long
-                if (int(suffix[1:3]) > 34) and (int(suffix[-11:-8]) > 160) == True:
-                    urllib.urlretrieve(query_url + "/" + suffix, filename =  suffix )
+                if (int(degrees[1]) > 34) and (int(degrees[2]) > 160):
+                    urllib.urlretrieve(query_endpoints[definition] + "/" + suffix, filename =  suffix )
                     print 'Success with: ' + suffix
                     counter = counter + 1
         except:
@@ -62,8 +85,15 @@ except:
 print 'Converting DEM data'
 
 try:
-    convert_dem = 'for f in *.hgt ; do srtm2sdf "$f" ; done'
+
+    #Use srtm2sdf-hd if HD is passed in
+    #srtm2sdf will automatically append the .sdf files -hd, which splat-hd knows to look for
+    prog = 'srtm2sdf' if definition!='hd' else 'srtm2sdf-hd';
+    convert_dem = 'for f in *.hgt ; do '+prog+' "$f" ; done'
     os.system(convert_dem)
+
+
+
     print 'DEM data converted to SDF'
 except:
     print 'DEM data could nto be converted'
