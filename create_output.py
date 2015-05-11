@@ -101,7 +101,7 @@ def convert(file_name, receive_sensitivity):
 
     #wld2gtif = 'gdalwarp ' + file_name + '.png ' + file_name + '.tif'
 
-    wld2gtif = 'gdal_translate -a_nodata 255 -expand gray -of GTiff ' + file_name + '.png ' + file_name + receive_sensitivity + 'dBm.tif'
+    wld2gtif = 'gdal_translate -a_nodata 255 -expand gray -of GTiff ' + file_name + '.png ' + file_name + str(receive_sensitivity) + 'dBm.tif'
     print wld2gtif
 
 
