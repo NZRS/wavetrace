@@ -2,3 +2,14 @@ testing/*
 #.gitignore
 *.sdf
 *.csv
+*.ppm
+*.el
+*.az
+*.png
+*.pyc
+*.qth
+*.lrp
+*.kml
+img/*
+*.dcf
+*site_report.txt
