@@ -4,16 +4,29 @@
 import sys
 import create_output
 import os
-import glob
+import glob, getopt
 
 receive_sensitivity = '-110'
+definition='sd'
 
+try:
+    opts, args = getopt.getopt(sys.argv[1:],"s:h",["sensitivity="])
+    print opts
+except getopt.GetoptError:
+    print sys.argv
 
-if len(sys.argv) == 2:
-    if int(sys.argv[1]) < 0:
-        receive_sensitivity = str(sys.argv[1])
+    sys.exit(2)
+for opt, arg in opts:
+    if opt in ("-h"):
+        definition="hd"
+    elif opt in("-s","--sensitivity"):
+        receive_sensitivity = int(arg)
 
-print 'modelling with a receive sensitivity of: ' + receive_sensitivity + ' dBm'
+#force sensititive to a negitive, so cli can pass positive numbers
+if receive_sensitivity >= 0:
+    receive_sensitivity = (0 - (receive_sensitivity))
+
+print 'modelling with a receive sensitivity of: ' + str(receive_sensitivity) + ' dBm'
 
 
 myglob = '*.qth'
@@ -23,7 +36,7 @@ myglob = '*.qth'
 i=0
 for filename in glob.glob('*.qth'):
     stub = filename[:-4]
-    create_output.create(stub, receive_sensitivity)
+    create_output.create(stub, receive_sensitivity, definition)
     i+=1
     if i>300:
         break

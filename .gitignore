@@ -1,0 +1,4 @@
+testing/*
+#.gitignore
+*.sdf
+*.csv
