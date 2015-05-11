@@ -79,6 +79,10 @@ get_data.py also processes the data into what can be used in the model.  It unzi
 ### Usage: ###
   
   `python get_data.py`
+
+If using splat-hd, to get srtm1 data (1 Arc Second), add the HD flag to scrape the srtm1 data:
+  
+  `python get_data.py -h`
   
 get_data.py does the following:
 
@@ -116,10 +120,14 @@ The AZ and EL files use a simplified model where 90% of the energy is transmitte
 
 ### Usage ###
 
-  ``python python make_files.py'`
+ ``python make_files.py``
   
 ## Create GIS Outputs ##
-``python create_output_from_dir.py'`  
+``python create_output_from_dir.py``  
+
+Pass -h to run splat-hd (note: this requires srtm1 data - use `python get_data.py -h`)
+
+``python create_output_from_dir.py -h``
 
 ## Mapping coverage ##
 This requires all the following files to be in the same directory:
@@ -138,7 +146,7 @@ You may need to change received values to get something that feels right.
 
 or for say -105dBm receive
 
-`python create_output_from_dir.py -105`
+`python create_output_from_dir.py -s 105`
 
 ## Converting GeoTiffs to Shapefile ##
 
