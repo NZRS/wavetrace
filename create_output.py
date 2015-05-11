@@ -6,7 +6,7 @@ splat_list = []
 # receive_sensitivity = '-120'
 
 
-def create(file_name, receive_sensitivity):
+def create(file_name, receive_sensitivity, definition):
 
     #create ppm and KML
     #cpk = 'splat -t ' + file_name + ' -o -c 2.0 '+ file_name + '.ppm -ngs -kml -metric'

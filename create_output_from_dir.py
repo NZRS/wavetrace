@@ -4,10 +4,18 @@
 import sys
 import create_output
 import os
-import glob
+import glob, getopt
 
 receive_sensitivity = '-110'
+definition='sd'
 
+try:
+    opts, args = getopt.getopt(argv,"h")
+except getopt.GetoptError:
+    sys.exit(2)
+for opt, arg in opts:
+    if opt in ("-h"):
+        definition="hd"
 
 if len(sys.argv) == 2:
     if int(sys.argv[1]) < 0:
@@ -23,7 +31,7 @@ myglob = '*.qth'
 i=0
 for filename in glob.glob('*.qth'):
     stub = filename[:-4]
-    create_output.create(stub, receive_sensitivity)
+    create_output.create(stub, receive_sensitivity, definition)
     i+=1
     if i>300:
         break
