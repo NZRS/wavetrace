@@ -11,10 +11,7 @@ definition='sd'
 
 try:
     opts, args = getopt.getopt(sys.argv[1:],"s:h",["sensitivity="])
-    print opts
 except getopt.GetoptError:
-    print sys.argv
-
     sys.exit(2)
 for opt, arg in opts:
     if opt in ("-h"):
