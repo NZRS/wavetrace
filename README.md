@@ -43,6 +43,7 @@ The [Longely Rice Prediction Model](http://en.wikipedia.org/wiki/Longley%E2%80%9
   * Either get from NASA using get_data.py which scrapes and converts to .sdf files, or;
   * Copy already processed .sdf files from a local source
   * Or download from NZRS (once we have a site up)
+  * Pass -h to enable splat-hd when using get_data.py
 2. Ensure you have a .csv file that matches the column headings of  sample_data.csv in this repository.  The file must contain the following:
   * network_name	
   * site_name	latitude	
@@ -138,7 +139,14 @@ You may need to change received values to get something that feels right.
 
 or for say -105dBm receive
 
-`python create_output_from_dir.py -105`
+Receive_sensitivity can be controlled with -s, or --sensitivity
+Positive receive_sensitivity numbers are forced to negative
+
+``./create_output_from_folder.py -h -s -105``
+``./create_output_from_folder.py -h --sensitivity=105``
+``./create_output_from_folder.py -hs -105``
+``./create_output_from_folder.py -s 105```
+
 
 ## Converting GeoTiffs to Shapefile ##
 
