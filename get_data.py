@@ -46,7 +46,7 @@ try:
                 suffix = link['href']
                 degrees=re.split("N|E|S|W", suffix[0:suffix.find('.')])
                 # The following allows you to limit to a region by setting lat/long
-                if (int(degrees[1]) > 34) and (int(degrees[2]) > 160):
+                if (int(degrees[1]) >= 34) and (int(degrees[2]) > 160):
                     urllib.urlretrieve(query_endpoints[definition] + "/" + suffix, filename =  suffix )
                     print 'Success with: ' + suffix
                     counter = counter + 1

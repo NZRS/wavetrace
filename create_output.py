@@ -36,7 +36,7 @@ def create(file_name, receive_sensitivity, definition):
     t2main = 'mv ' + file_name + '-0.png ' + file_name + '.png'
 
     #remove trans file
-    #rm_trans = 'rm ' + file_name +'.png'
+    rm_trans = 'rm ' + file_name +'.png'
 
     #rewrite KML
     rw_kml = "sed -i 's/.ppm/.png/g' " + file_name + ".kml"
@@ -63,19 +63,19 @@ def create(file_name, receive_sensitivity, definition):
         print 'Failed converting ppm to png'
     try:
         print 'Converting white to transparency'
-        #os.system(w2t)
+        os.system(w2t)
         print 'Converted white to transparency'
     except:
         print 'Did not convert white to transparency'
     try:
         print 'Replacing main file'
-    #    os.system(t2main)
+        os.system(t2main)
         print 'File replaced with transparency'
     except:
         print 'File not replaced'
     try:
         print 'Cleaning file'
-        #os.system(rm_trans)
+        os.system(rm_trans)
         print 'File cleaned'
     except:
         print 'Cleaning file failed'
