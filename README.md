@@ -69,7 +69,7 @@ The [Longely Rice Prediction Model](http://en.wikipedia.org/wiki/Longley%E2%80%9
   * A georeferenced .tif file (raster - 1 file)
   * A shapefile (vector - 4 files)
 
-## The Process of Creating Converage - Long Version##
+## The Process of Creating Coverage - Long Version##
 
 ## Acquiring and Processing DEM Data ##
 
