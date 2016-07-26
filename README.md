@@ -12,7 +12,7 @@ This application allows for batch processing of radio propagation modelling.  It
 
 1. A KML file with a georeferenced image for use in the likes of Google Earth.
 2. A raster file suitable for use in GIS packages.
-3. A shapefile (currently not implemented but trivial)
+3. A shapefile (currently not implemented but trivial).
 
 The model is derived from a Digital Elevation Model (DEM), the base data at present is from the NASA Shuttle Radio Topography Mission (SRTM).  Though there may be bettter localised sources available.
 
@@ -39,7 +39,7 @@ The [Longely Rice Prediction Model](http://en.wikipedia.org/wiki/Longley%E2%80%9
 
 ## The Process of Creating Coverage - Short Version##
 
-1. Get the Digital Elevation Model Files and convert of .sdf 
+1. Get the Digital Elevation Model Files and convert to .sdf 
   * Either get from NASA using get_data.py which scrapes and converts to .sdf files, or;
   * Copy already processed .sdf files from a local source
   * Or download from NZRS (once we have a site up)
