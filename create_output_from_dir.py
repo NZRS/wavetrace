@@ -6,7 +6,7 @@ import create_output
 import os
 import glob, getopt
 
-receive_sensitivity = '-110'
+receive_sensitivity = -110
 definition='sd'
 
 try:
