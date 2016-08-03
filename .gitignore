@@ -1,15 +1,3 @@
-testing/*
-#.gitignore
-*.sdf
-*.csv
-*.ppm
-*.el
-*.az
-*.png
+data/*
 *.pyc
-*.qth
-*.lrp
-*.kml
-img/*
-*.dcf
-*site_report.txt
+*__pycache__
