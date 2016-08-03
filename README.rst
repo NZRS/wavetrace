@@ -25,6 +25,8 @@ Authors
 - Alex Raichev (2016-08)
 
 
-Useful links
+References
 =============
 - `SPLAT! documentation <http://www.qsl.net/kd2bd/splat.pdf>`_
+- `Shuttle Radio Topography Mission (SRTM) <https://en.wikipedia.org/wiki/SRTM>`_
+- `SRTM HGT format <http://www.gdal.org/frmt_various.html#SRTMHGT>`_
