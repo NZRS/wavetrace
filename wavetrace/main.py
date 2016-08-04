@@ -1,10 +1,42 @@
 from pathlib import Path 
 from math import ceil, floor
 import re
+import csv
+import textwrap
 
 import requests
 from bs4 import BeautifulSoup, SoupStrainer
 
+
+NZ_BOUNDS = [165.7, -47.5, 178.7, -33.9]
+NZ_NORTH_ISLAND_BOUNDS = [172.5, -41.7, 178.5, -34.3]
+NZ_SOUTH_ISLAND_BOUNDS = [166.5, -47.5, 174.6, -40.3]
+TRANSMITTER_REQUIRED_FIELDS = [
+  'network_name',    
+  'site_name',
+  'latitude', # WGS84 float
+  'longitude', # WGS84 float 
+  'antenna_height', # meters
+  'polarization', # 0 (horizontal) or 1 (vertical)
+  'frequency', # mega Herz
+  'power_eirp', # Watts
+  ]
+TRANSMITTER_OPTIONAL_FIELDS = [
+  'bearing', 
+  'horizontal_beamwidth',    
+  'vertical_beamwidth',
+  'antenna_downtilt',
+  ]
+# Defaults:
+DIALECTRIC_CONSTANT = 15
+CONDUCTIVITY = 0.005
+RADIO_CLIMATE = 6
+FRACTION_OF_TIME = 0.5
+
+
+def build_transmitter_name(network_name, site_name):
+    return network_name.replace(' ', '') + '_' +\
+      site_name.replace(' ', '')
 
 def check_lonlat(lon, lat):
     """
@@ -89,7 +121,7 @@ def get_srtm_tile_names(bounds):
     lats = range(min_lat, max_lat, step_size)
     return [get_srtm_tile_name(lon, lat) for lon in lons for lat in lats]
 
-def download_elevations_nasa(bounds, out_dir, high_definition=False):
+def download_elevation_data_nasa(bounds, out_dir, high_definition=False):
     """
     INPUTS:
 
@@ -112,8 +144,9 @@ def download_elevations_nasa(bounds, out_dir, high_definition=False):
 
     NOTES:
 
-    SRTM data is only available between 60 degrees north latitude and 
-    56 degrees south latitude.
+    - SRTM data is only available between 60 degrees north latitude and 
+      56 degrees south latitude
+    - Uses BeautifulSoup to scrape the appropriate NASA webpages
     """
     if high_definition:
         ext = '.SRTMGL1.hgt.zip'
@@ -137,7 +170,7 @@ def download_elevations_nasa(bounds, out_dir, high_definition=False):
     if not out_dir.exists():
         out_dir.mkdir(parents=True)
 
-    # Speed up Beautiful Soup parsing
+    # Use Beautiful Soup to scrape the page
     strainer = SoupStrainer('a', href=pattern)
     for url in urls:
         # Download data for tiles
@@ -161,12 +194,13 @@ def download_elevations_nasa(bounds, out_dir, high_definition=False):
                 for chunk in r:
                     tgt.write(chunk) 
 
-def download_elevations_linz(bounds, out_dir, high_definition=False):
+def download_elevation_data_linz(bounds, out_dir, high_definition=False):
     """
+    Relevant only to New Zealand.
     """ 
     pass
 
-def create_splat_elevations(in_dir, out_dir, high_definition=False):
+def create_splat_elevation_data(in_dir, out_dir, high_definition=False):
     """
     INPUTS:
 
@@ -176,22 +210,98 @@ def create_splat_elevations(in_dir, out_dir, high_definition=False):
 
     OUTPUTS:
 
-    Convert the SRTM HGT elevation data in the directory ``in_dir`` to 
-    SPLAT! Data File (SDF) format and place the output in the directory
+    Convert the SRTM HGT elevation data files in the directory ``in_dir`` to 
+    SPLAT! Data File (SDF) files and place the result in the directory
     ``out_dir``, creating the directory if it does not exist.
     If ``high_definition``, then assume the input data is high definition.
+
+    NOTES:
 
     Uses SPLAT!'s ``srtm2sdf`` or ``srtm2sdf-hd`` (if ``high_definition``) 
     command to do the conversion.
     """
     pass
 
-def create_splat_transmitters(transmitters_path, out_dir):
+def read_transmitters(path):
+    """
+    Return a list of dictionaries, one for each transmitter.
+    ...
+    """
+    path = Path(path)
+    transmitters = []
+    with path.open() as src:
+        reader = csv.DictReader(src)
+        header = next(reader) # Skip header
+        if not set(TRANSMITTER_REQUIRED_FIELDS) <= set(header.keys()):
+            raise ValueError('Transmitter CSV header must contain '\
+              'the fields {!s}'.format(TRANSMITTER_REQUIRED_FIELDS))
+        for row in reader:
+            row['name'] = build_transmitter_name(row['network_name'], 
+              row['site_name'])
+            transmitters.append(row)
+    return transmitters
+   
+def create_splat_qth_data(transmitters, out_dir):
     """
     """
+    out_dir = Path(out_dir)
+    if not out_dir.exists():
+        out_dir.mkdir(parents=True)
+        
+    for t in transmitters:
+        # Convert to degrees east in range (-360, 0] for SPLAT!
+        lon = -float(t['longitude'])
+        s = "{!s}\n{!s}\n{!s}\n{!s}m".format(
+          t['name'], 
+          t['latitude'],
+          lon, 
+          t['antenna_height'])
+
+        path = Path(out_dir)/'{!s}.qth'.format(t['name'])
+        with path.open('w') as tgt:
+            tgt.write(s)
+
+def create_splat_lrp_data(transmitters, out_dir, 
+  dialectric_constant=DIALECTRIC_CONSTANT, conductivity=CONDUCTIVITY,
+  radio_climate=RADIO_CLIMATE, fraction_of_time=FRACTION_OF_TIME):
+    """
+    """
+    out_dir = Path(out_dir)
+    if not out_dir.exists():
+        out_dir.mkdir(parents=True)
+
+    for t in transmitters:
+        s = """\
+        {!s} ; Earth Dielectric Constant (Relative permittivity)
+        {!s} ; Earth Conductivity (Siemens per meter)
+        301.000 ; Atmospheric Bending Constant (N-units)
+        {!s} ; Frequency in MHz (20 MHz to 20 GHz)
+        {!s} ; Radio Climate
+        {!s} ; Polarization (0 = Horizontal, 1 = Vertical)
+        0.5 ; Fraction of situations
+        {!s} ; Fraction of time 
+        {!s} ; ERP in watts""".format(
+          dialectric_constant, 
+          conductivity, 
+          t['frequency'],
+          radio_climate, 
+          t['polarization'], 
+          fraction_of_time,
+          t['power_eirp'])
+        s = textwrap.dedent(s)
+
+        path = Path(out_dir)/'{!s}.lrp'.format(t['name'])
+        with path.open('w') as tgt:
+            tgt.write(s)
+
+def create_splat_az_data(transmitters, out_dir):
     pass
 
-def create_coverage_map(in_dir, format='kml'):
+def create_splat_el_data(transmitters, out_dir):
+    pass
+
+
+def create_coverage_maps(in_dir, out_dir):
     """
     """
     pass

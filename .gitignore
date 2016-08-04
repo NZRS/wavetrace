@@ -1,4 +1,6 @@
-data/*
 *.pyc
 *__pycache__
 ipynb/.ipynb_checkpoints
+data/elevations-hd/*
+data/elevations-sd/*
+outputs/
