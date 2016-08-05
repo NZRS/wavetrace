@@ -28,6 +28,16 @@ NZ_BOUNDS = [165.7, -47.5, 178.7, -33.9]
 NZ_NORTH_ISLAND_BOUNDS = [172.5, -41.7, 178.5, -34.3]
 NZ_SOUTH_ISLAND_BOUNDS = [166.5, -47.5, 174.6, -40.3]
 
+
+def create_splat_transmitter_data(in_path, out_path):
+    """
+    """
+    ts = read_transmitters(in_path)
+    create_splat_qth_data(ts, out_path)
+    create_splat_lrp_data(ts, out_path)
+    create_splat_az_data(ts, out_path)
+    create_splat_el_data(ts, out_path)
+
 def read_transmitters(path):
     """
     INPUTS:
@@ -90,12 +100,12 @@ def build_transmitter_name(network_name, site_name):
     return network_name.replace(' ', '') + '_' +\
       site_name.replace(' ', '')
 
-def create_splat_qth_data(transmitters, out_dir):
+def create_splat_qth_data(transmitters, out_path):
     """
     INPUTS:
 
     - ``transmitters``: list; same form as output of :func:`read_transmitters`
-    - ``out_dir``: string or Path object specifying a directory
+    - ``out_path``: string or Path object specifying a directory
 
     OUTPUTS:
 
@@ -103,9 +113,9 @@ def create_splat_qth_data(transmitters, out_dir):
     site location file for the transmitter and save it to the given output 
     directory with the file name ``<transmitter name>.qth``.
     """
-    out_dir = Path(out_dir)
-    if not out_dir.exists():
-        out_dir.mkdir(parents=True)
+    out_path = Path(out_path)
+    if not out_path.exists():
+        out_path.mkdir(parents=True)
         
     for t in transmitters:
         # Convert to degrees east in range (-360, 0] for SPLAT!
@@ -116,18 +126,18 @@ def create_splat_qth_data(transmitters, out_dir):
           lon, 
           t['antenna_height'])
 
-        path = Path(out_dir)/'{!s}.qth'.format(t['name'])
+        path = Path(out_path)/'{!s}.qth'.format(t['name'])
         with path.open('w') as tgt:
             tgt.write(s)
 
-def create_splat_lrp_data(transmitters, out_dir, 
+def create_splat_lrp_data(transmitters, out_path, 
   dialectric_constant=DIALECTRIC_CONSTANT, conductivity=CONDUCTIVITY,
   radio_climate=RADIO_CLIMATE, fraction_of_time=FRACTION_OF_TIME):
     """
     INPUTS:
 
     - ``transmitters``: list; same form as output of :func:`read_transmitters`
-    - ``out_dir``: string or Path object specifying a directory
+    - ``out_path``: string or Path object specifying a directory
     - ``dialectric_constant``: float
     - ``conductivity``: float
     - ``radio_climate``: integer
@@ -140,9 +150,9 @@ def create_splat_lrp_data(transmitters, out_dir,
     and save it to the given output directory with the file name 
     ``<transmitter name>.lrp``.
     """
-    out_dir = Path(out_dir)
-    if not out_dir.exists():
-        out_dir.mkdir(parents=True)
+    out_path = Path(out_path)
+    if not out_path.exists():
+        out_path.mkdir(parents=True)
 
     for t in transmitters:
         s = """\
@@ -165,16 +175,16 @@ def create_splat_lrp_data(transmitters, out_dir,
           t['power_eirp'])
         s = textwrap.dedent(s)
 
-        path = Path(out_dir)/'{!s}.lrp'.format(t['name'])
+        path = Path(out_path)/'{!s}.lrp'.format(t['name'])
         with path.open('w') as tgt:
             tgt.write(s)
 
-def create_splat_az_data(transmitters, out_dir):
+def create_splat_az_data(transmitters, out_path):
     """
     INPUTS:
 
     - ``transmitters``: list; same form as output of :func:`read_transmitters`
-    - ``out_dir``: string or Path object specifying a directory
+    - ``out_path``: string or Path object specifying a directory
 
     OUTPUTS:
 
@@ -187,9 +197,9 @@ def create_splat_az_data(transmitters, out_dir):
     A transmitter with no ``'bearing'`` or ``'horizontal_beamwidth'`` data will
     produce a file containing the single line ``0  0``.
     """
-    out_dir = Path(out_dir)
-    if not out_dir.exists():
-        out_dir.mkdir(parents=True)
+    out_path = Path(out_path)
+    if not out_path.exists():
+        out_path.mkdir(parents=True)
 
     for t in transmitters:
         try:
@@ -207,16 +217,16 @@ def create_splat_az_data(transmitters, out_dir):
         except:
             s = '0  0\n'
 
-        path = Path(out_dir)/'{!s}.az'.format(t['name'])
+        path = Path(out_path)/'{!s}.az'.format(t['name'])
         with path.open('w') as tgt:
             tgt.write(s)
 
-def create_splat_el_data(transmitters, out_dir):
+def create_splat_el_data(transmitters, out_path):
     """
     INPUTS:
 
     - ``transmitters``: list; same form as output of :func:`read_transmitters`
-    - ``out_dir``: string or Path object specifying a directory
+    - ``out_path``: string or Path object specifying a directory
 
     OUTPUTS:
 
@@ -230,9 +240,9 @@ def create_splat_el_data(transmitters, out_dir):
     ``'vertical_beamwidth'`` data will produce a file containing the 
     single line ``0  0``.
     """
-    out_dir = Path(out_dir)
-    if not out_dir.exists():
-        out_dir.mkdir(parents=True)
+    out_path = Path(out_path)
+    if not out_path.exists():
+        out_path.mkdir(parents=True)
         
     for t in transmitters:
         try:
@@ -250,7 +260,7 @@ def create_splat_el_data(transmitters, out_dir):
         except:
             s = '0  0\n'
 
-        path = Path(out_dir)/'{!s}.el'.format(t['name'])
+        path = Path(out_path)/'{!s}.el'.format(t['name'])
         with path.open('w') as tgt:
             tgt.write(s)
 
@@ -337,15 +347,18 @@ def get_srtm_tile_names(bounds):
     lats = range(min_lat, max_lat, step_size)
     return [get_srtm_tile_name(lon, lat) for lon in lons for lat in lats]
 
-def download_elevation_data_nasa(bounds, out_dir, high_definition=False):
+def download_elevation_data_nasa(bounds, path, high_definition=False, 
+  username=None, password=None):
     """
     INPUTS:
 
     - ``bounds``: list of the form [min_lon, min_lat, max_lon, max_lat],
       where ``min_lon <= max_lon`` are WGS84 longitudes and 
       ``min_lat <= max_lat`` are WGS84 latitudes
-    - ``out_dir``: string or Path object specifying a directory
+    - ``path``: string or Path object specifying a directory
     - ``high_definition``: boolean
+    - ``username``: string; NASA Earthdata username for high definition files
+    - ``password``: string; NASA Earthdata password for high definition files
 
     OUTPUTS:
 
@@ -353,7 +366,7 @@ def download_elevation_data_nasa(bounds, out_dir, high_definition=False):
     Space Administration (NASA) raster elevation data for the 
     longitude-latitude box specified by ``bounds`` in 
     `SRTM HGT format <http://www.gdal.org/frmt_various.html#SRTMHGT>`_ and 
-    save it to the directory specified by ``out_dir``, creating the directory
+    save it to the path specified by ``path``, creating the path
     if it does not exist.
     If ``high_definition``, then the data is formatted as SRTM-1 V2; 
     otherwise it is formatted as SRTM-3.
@@ -363,11 +376,14 @@ def download_elevation_data_nasa(bounds, out_dir, high_definition=False):
     - SRTM data is only available between 60 degrees north latitude and 
       56 degrees south latitude
     - Uses BeautifulSoup to scrape the appropriate NASA webpages
+    - Downloading high definition files is not implemented yet, because it requires a `NASA Earthdata account <https://urs.earthdata.nasa.gov/users/new>`_
     """
     if high_definition:
+        raise NotImplementedError('Downloading high definition data has not been implemented yet')
         ext = '.SRTMGL1.hgt.zip'
         pattern = re.compile(r'^\w+\.SRTMGL1\.hgt\.zip$')
         urls = ['http://e4ftl01.cr.usgs.gov/SRTM/SRTMGL1.003/2000.02.11/']
+
     else:
         ext = '.hgt.zip'
         pattern = re.compile(r'^\w+.hgt\.zip$')
@@ -382,9 +398,9 @@ def download_elevation_data_nasa(bounds, out_dir, high_definition=False):
 
     file_names = set(t + ext for t in get_srtm_tile_names(bounds))
 
-    out_dir = Path(out_dir)
-    if not out_dir.exists():
-        out_dir.mkdir(parents=True)
+    path = Path(path)
+    if not path.exists():
+        path.mkdir(parents=True)
 
     # Use Beautiful Soup to scrape the page
     strainer = SoupStrainer('a', href=pattern)
@@ -401,75 +417,103 @@ def download_elevation_data_nasa(bounds, out_dir, high_definition=False):
 
             # Download file    
             href = url + '/' + file_name
-            r = requests.get(href, stream=True)
+            r = requests.get(href, stream=True, auth=(username, password))
             if response.status_code != requests.codes.ok:
                 raise ValueError('Failed to download file', href)    
-            path = out_dir/file_name
+            p = path/file_name
             print('Downloading {!s}...'.format(file_name))
-            with path.open('wb') as tgt:
+            with p.open('wb') as tgt:
                 for chunk in r:
                     tgt.write(chunk) 
 
-def download_elevation_data_linz(bounds, out_dir, high_definition=False):
+def download_elevation_data_linz(bounds, path, high_definition=False):
     """
-    Relevant only to New Zealand.
+    For New Zealand only.
     """ 
     pass
 
-def create_splat_elevation_data(in_dir, out_dir, high_definition=False):
+def create_splat_elevation_data(in_path, out_path, high_definition=False):
     """
     INPUTS:
 
-    - ``in_dir``: string or Path object specifying a directory
-    - ``out_dir``: string or Path object specifying a directory
+    - ``in_path``: string or Path object specifying a directory
+    - ``out_path``: string or Path object specifying a directory
     - ``high_definition``: boolean
 
     OUTPUTS:
 
-    Convert the SRTM HGT elevation data files in the directory ``in_dir`` to 
-    SPLAT! Data File (SDF) files and place the result in the directory
-    ``out_dir``, creating the directory if it does not exist.
+    Converts each SRTM HGT elevation data file in the directory ``in_path`` to
+    a SPLAT! Data File (SDF) file in the directory ``out_path``, 
+    creating the directory if it does not exist.
     If ``high_definition``, then assume the input data is high definition.
 
     NOTES:
 
-    Uses SPLAT!'s ``srtm2sdf`` or ``srtm2sdf-hd`` (if ``high_definition``) 
-    command to do the conversion.
+    - Requires and uses SPLAT!'s ``srtm2sdf`` or ``srtm2sdf-hd`` 
+      (if ``high_definition``) command to do the conversion
+    - Raises a ``subprocess.CalledProcessError`` if SPLAT! fails to 
+      convert a file
     """
-    command = 'srtm2sdf'
+    in_path = Path(in_path)
+    out_path = Path(out_path)
+    if not out_path.exists():
+        out_path.mkdir(parents=True)
+
+    splat = 'srtm2sdf'
     if high_definition:
-        command += '-sdf'
+        splat += '-hd'
 
-    in_dir = Path(in_dir)
-    out_dir = Path(out_dir)
-    if not out_dir.exists():
-        out_dir.mkdir(parents=True)
+    sdf_pattern = re.compile(r"[\d\w\-\:]+\.sdf")
 
-    for f in in_dir.iterdir():
+    for f in in_path.iterdir():
         if not (f.name.endswith('.hgt') or f.name.endswith('.hgt.zip')):
             continue
 
         # Unzip if necessary
         is_zip = False
-        if f.name.endswith('.hgt.zip'):
+        if f.name.endswith('.zip'):
             is_zip = True
             shutil.unpack_archive(str(f), str(f.parent))
-            f = f.parent/f.name.replace('.zip', '')
+            tile_name = f.name.split('.')[0]
+            f = f.parent/'{!s}.hgt'.format(tile_name)
 
         # Convert to SDF
-        g = in_dir/'{!s}.sdf'.format(f.stem)
-        # Replace this with the real SPLAT command:
-        subprocess.run(['touch', str(g)])
+        cp = subprocess.run([splat, f.name], cwd=str(f.parent),
+          stdout=subprocess.PIPE, universal_newlines=True, check=True)
 
-        # Move to out_dir
-        h = out_dir/g.name
-        shutil.move(str(g), str(h))
+        # Get name of output file, which SPLAT! created and which differs
+        # from the original name, and move the output to the out path
+        m = sdf_pattern.search(cp.stdout)
+        name = m.group(0)        
+        src = in_path/name
+        tgt = out_path/name
+        shutil.move(str(src), str(tgt))
 
         # Clean up
         if is_zip:
             f.unlink()
 
-def create_coverage_maps(in_dir, out_dir):
+# TODO: finish this to handle out_path
+def create_splat_coverage_map(in_path, out_path,
+  receiver_sensitivity=-110, high_definition=False):
     """
     """
-    pass
+    in_path = Path(in_path)
+    out_path = Path(out_path)
+    if not out_path.exists():
+        out_path.mkdir(parents=True)
+
+    splat = 'splat'
+    if high_definition:
+        splat += '-hd'
+
+    # Splatify
+    file_stem = in_path.stem
+    args = [splat, '-t', file_stem + '.qth', '-L', '8.0', '-dbm', '-db', 
+      str(receiver_sensitivity), '-o', file_stem + '.ppm', '-kml', '-metric', 
+      '-ngs']
+
+    print(' '.join(args))
+
+    cp = subprocess.run(args, cwd=str(in_path.parent),
+      stdout=subprocess.PIPE, universal_newlines=True, check=True)
