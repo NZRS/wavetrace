@@ -2,3 +2,4 @@
 *__pycache__
 ipynb/.ipynb_checkpoints
 examples/outputs/*
+secrets.json

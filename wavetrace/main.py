@@ -4,8 +4,8 @@ import csv
 import textwrap
 import shutil
 import subprocess
-from functools import wraps
-import datetime as dt
+
+import wavetrace.utilities as ut
 
 
 REQUIRED_TRANSMITTER_FIELDS = [
@@ -22,22 +22,6 @@ DIALECTRIC_CONSTANT = 15
 CONDUCTIVITY = 0.005
 RADIO_CLIMATE = 6
 FRACTION_OF_TIME = 0.5
-
-def time_it(f):
-    """
-    Decorate function ``f`` to measure and print elapsed time when executed.
-    """
-    @wraps(f)
-    def wrap(*args, **kwargs):
-        t1 = dt.datetime.now()
-        print('Timing {!s}...'.format(f.__name__))
-        print(t1, '  Began process')
-        result = f(*args, **kwargs)
-        t2 = dt.datetime.now()
-        minutes = (t2 - t1).seconds/60
-        print(t2, '  Finished in %.2f min' % minutes)    
-        return result
-    return wrap
 
 def create_splat_transmitter_data(in_path, out_path):
     """
@@ -58,6 +42,18 @@ def create_splat_transmitter_data(in_path, out_path):
     - azimuth data as a ``.az`` file
     - elevation data as a ``.el`` file
 
+    NOTES:
+
+    The CSV file of transmitter data should include at least the columns
+
+    - ``'network_name'``: name of transmitter network
+    - ``'site_name'``: name of transmitter site
+    - ``'longitude'``: WGS84 decimal longitude of transmitter  
+    - ``'latitude``: WGS84 decimal latitude of transmitter
+    - ``'antenna_height'``: height of transmitter antenna in meters above sea level
+    - ``'polarization'``: 0 for horizontal or 1 for vertical
+    - ``'frequency'``: frequency of transmitter in MegaHerz
+    - ``'power_eirp'``: effective radiated power of transmitter in Watts
     """
     ts = read_transmitters(in_path)
     create_splat_qth_data(ts, out_path)
@@ -138,8 +134,13 @@ def build_transmitter_name(network_name, site_name):
     """
     INPUTS:
 
+    - ``network_name``: string
+    - ``site_name``: string
+
     OUTPUTS:
 
+    Return a string that is the network name with spaces removed followed 
+    by an underscore followed by the site name with spaces removed.
     """
     return network_name.replace(' ', '') + '_' +\
       site_name.replace(' ', '')
@@ -369,7 +370,7 @@ def create_splat_elevation_data(in_path, out_path, high_definition=False):
         if is_zip:
             f.unlink()
 
-@time_it
+@ut.time_it
 def create_coverage_maps(in_path, out_path,
   transmitter_names=None, receiver_sensitivity=-110, high_definition=False):
     """
