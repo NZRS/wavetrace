@@ -369,9 +369,11 @@ def create_splat_elevation_data(in_path, out_path, high_definition=False):
         if is_zip:
             f.unlink()
 
+# TODO: Replace PPM with PNG in KML, too
 @time_it
 def create_coverage_maps(in_path, out_path,
-  transmitter_names=None, receiver_sensitivity=-110, high_definition=False):
+  transmitter_names=None, receiver_sensitivity=-110, high_definition=False,
+  use_png=True):
     """
     INPUTS:
 
@@ -380,6 +382,7 @@ def create_coverage_maps(in_path, out_path,
     - ``transmitter_names``
     - ``receiver_sensitivity``
     - ``high_definition``: boolean
+    - ``use_png``: boolean; use PNG instead of PPM; uses ImageMagick
     """
     in_path = Path(in_path)
     out_path = Path(out_path)
@@ -400,11 +403,39 @@ def create_coverage_maps(in_path, out_path,
         args = [splat, '-t', t + '.qth', '-L', '8.0', '-dbm', '-db', 
           str(receiver_sensitivity), '-o', t + '.ppm', '-kml', '-metric', 
           '-ngs']     
-        cp = subprocess.run(args, cwd=str(in_path),
+        subprocess.run(args, cwd=str(in_path),
           stdout=subprocess.PIPE, universal_newlines=True, check=True)
 
+    # Convert white background to transparent background
+    for t in transmitter_names:
+        for f in [t + '.ppm', t + '-ck.ppm']:
+            args = ['convert', '-transparent', '"#FFFFFF"', f, f]     
+            subprocess.run(args, cwd=str(in_path),
+              stdout=subprocess.PIPE, universal_newlines=True, check=True)
+
+    # Resize to width 1200 pixels
+    for t in transmitter_names:
+        f = t + '.ppm'
+        args = ['convert', '-geometry', '1200', f, f]     
+        subprocess.run(args, cwd=str(in_path),
+          stdout=subprocess.PIPE, universal_newlines=True, check=True)
+
+    # Convert to PNG if desired
+    if use_png:
+        exts = ['.png', '-ck.png', '.kml', '-site_report.txt']
+        for t in transmitter_names:
+            for f, g in [(t + '.ppm', t + '.png'), 
+              (t + '-ck.ppm', t + '-ck.png')]:
+                args = ['convert', f, g]     
+                subprocess.run(args, cwd=str(in_path),
+                  stdout=subprocess.PIPE, universal_newlines=True, check=True)
+                (in_path/f).unlink()
+
+                # Replace PPM with PNG in KML, too
+    else:
+        exts = ['.ppm', '-ck.ppm', '.kml', '-site_report.txt']
+
     # Move outputs to out_path
-    exts = ['.kml', '.ppm', '-ck.ppm', '-site_report.txt']
     OUT_PATH = out_path
     for t in transmitter_names:
         out_path = OUT_PATH/t
@@ -414,3 +445,5 @@ def create_coverage_maps(in_path, out_path,
             src = in_path/(t + ext)
             tgt = out_path/(t + ext) 
             shutil.move(str(src), str(tgt))
+
+
