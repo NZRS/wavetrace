@@ -372,7 +372,7 @@ def create_splat_elevation_data(in_path, out_path, high_definition=False):
 
 @ut.time_it
 def create_coverage_reports(in_path, out_path, transmitter_names=None,
-  receiver_sensitivity=110, high_definition=False):
+  receiver_sensitivity=-110, high_definition=False):
     """
     INPUTS:
 
@@ -413,6 +413,10 @@ def create_coverage_reports(in_path, out_path, transmitter_names=None,
     if high_definition:
         splat += '-hd'
 
+    if receiver_sensitivity > 0:
+        # SPLAT! prefers negatives
+        receiver_sensitivity *= -1
+
     for t in transmitter_names:
         args = [splat, '-t', t + '.qth', '-L', '8.0', '-dbm', '-db', 
           str(receiver_sensitivity), '-metric', '-ngs', '-kml',
@@ -433,43 +437,74 @@ def postprocess_coverage_reports(path, delete_ppm=True):
     INPUTS:
 
     - ``path``: string or Path object; directory where coverage reports (outputs of :func:`create_coverage_reports`) lie
-    - ``delete_ppm``: boolean; delete the original PPM files in the coverage reports if and only if this flag is ``True``
+    - ``delete_ppm``: boolean; delete the original, large PPM files in the coverage reports if and only if this flag is ``True``
 
     OUTPUTS:
 
     None.
-    Convert the PPM files in the directory ``path`` into PNG files,
-    and change the PPM reference in each KML file to the corresponding
-    PNG file.
+    Using the PPM files in the directory ``path`` do the following:
+
+    - Convert each PPM files into a PNG file, replacing white with transparency using ImageMagick
+    - Change the PPM reference in each KML file to the corresponding
+    PNG file
+    - Convert the PNG coverage file (not the legend file) into GeoTIFF using GDAL
     """
     for f in path.iterdir():    
-        if f.name.endswith('.ppm'):
-            # Convert white background to transparent background
-            args = ['convert', '-transparent', '"#FFFFFF"', 
-              f.name, f.name]     
+        if f.suffix == '.ppm':
+            # Convert to PNG, turning white background into 
+            # transparent background
+            png = f.stem + '.png'
+            args = ['convert', '-transparent', '"#FFFFFF"', f.name, png]
             subprocess.run(args, cwd=str(path),
               stdout=subprocess.PIPE, universal_newlines=True, check=True)
 
-            # Resize to width 1200 pixels
-            args = ['convert', '-geometry', '1200', f.name, f.name]     
-            subprocess.run(args, cwd=str(path),
-              stdout=subprocess.PIPE, universal_newlines=True, check=True)
-
-            # Convert to PNG
-            args = ['convert', f.name, f.stem + '.png']     
-            subprocess.run(args, cwd=str(path),
-              stdout=subprocess.PIPE, universal_newlines=True, check=True)
+            # # Resize to width 1200 pixels
+            # args = ['convert', '-geometry', '1200', png, png]     
+            # subprocess.run(args, cwd=str(path),
+            #   stdout=subprocess.PIPE, universal_newlines=True, check=True)
 
             if delete_ppm:
                 # Delete PPM
                 f.unlink()
 
-        if f.name.endswith('.kml'):
+        elif f.suffix == '.kml':
             # Replace PPM with PNG in KML
             with f.open() as src:
                 kml = src.read()
-
-            kml.replace('.ppm', '.png')
-
+            kml = kml.replace('.ppm', '.png')
             with f.open('w') as tgt:
                 tgt.write(kml)        
+
+            # Convert main PNG to GeoTiff using the lon-lat bounds from the KML
+            bounds = get_bounds(kml)
+            epsg = 'EPSG:4326'  # WGS84
+            png = f.stem + '.png'
+            tif = f.stem + '.tif'
+            args = ['gdal_translate', '-of', 'Gtiff', '-a_ullr', 
+              str(bounds[0]), str(bounds[3]), str(bounds[2]), str(bounds[1]),
+              '-a_srs', epsg, png, tif]
+            print(" ".join(args))
+            subprocess.run(args, cwd=str(path),
+              stdout=subprocess.PIPE, universal_newlines=True, check=True)
+
+def get_bounds(kml_string):
+    """
+    INPUTS:
+
+    - ``kml_string``: string form of a KML file produced by SPLAT!
+
+    OUTPUTS:
+
+    Return a list of floats of the form 
+    ``[min_lon, min_lat, max_lon, max_lat]``, describing the WGS84 
+    bounding box in the SPLAT! KML coverage file.
+    Raise an ``AttributeError`` if the KML does not contain a ``<LatLonBox>``
+    entry and hence is not a well-formed SPLAT! KML coverage file.
+    """
+    kml = kml_string
+    west = re.search(r"<west>([0-9-][0-9\.]*)<\/west>", kml).group(1)
+    south = re.search(r"<south>([0-9-][0-9\.]*)<\/south>", kml).group(1)
+    east = re.search(r"<east>([0-9-][0-9\.]*)<\/east>", kml).group(1)
+    north = re.search(r"<north>([0-9-][0-9\.]*)<\/north>", kml).group(1)
+    result = [west, south, east, north]
+    return list(map(float, result))
