@@ -1,12 +1,12 @@
 Wavetrace
 **********
-A Python 3.5 module to produce radio signal strength maps given radio transmitter data and elevation data for the study region.
+A Python 3.5 module to produce radio signal strength reports given radio transmitter data and elevation data for the study region.
 Uses `SPLAT! <http://www.qsl.net/kd2bd/splat.html>`_ to do the math.
 
 
 Installation
 ============
-1. Install GDAL, SPLAT!, ImageMagick. For example, to install these on a Linux system do ``sudo apt-get update; sudo apt-get install gdal-bin splat; imagemagick``
+1. Install SPLAT!, ImageMagick, and GDAL. For example, to install these on a Linux system do ``sudo apt-get update; sudo apt-get install splat imagemagick gdal-bin ``
 2. Create a Python 3.5 virtual environment
 3. In your virtual environment, install Wavetrace via Pip via ``pip install wavetrace``
 
@@ -22,7 +22,7 @@ In ``docs``.
 
 Authors
 =======
-- Chris Guest (?)
+- Chris Guest (2013-06)
 - Alex Raichev (2016-08)
 
 

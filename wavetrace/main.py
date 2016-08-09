@@ -370,20 +370,33 @@ def create_splat_elevation_data(in_path, out_path, high_definition=False):
         if is_zip:
             f.unlink()
 
-# TODO: Replace PPM with PNG in KML, too
 @ut.time_it
-def create_coverage_maps(in_path, out_path,
-  transmitter_names=None, receiver_sensitivity=-110, high_definition=False,
-  use_png=True):
+def create_coverage_reports(in_path, out_path, transmitter_names=None,
+  receiver_sensitivity=110, high_definition=False):
     """
     INPUTS:
 
     - ``in_path``: string or Path object specifying a directory; all the SPLAT! transmitter and elevation data should lie here
     - ``out_path``: string or Path object specifying a directory
-    - ``transmitter_names``
-    - ``receiver_sensitivity``
+    - ``transmitter_names``: list of transmitter names (outputs of :func:`build_transmitter_name`) to restrict to; if ``None``, then all transmitters in ``in_path`` will be used
+    - ``receiver_sensitivity``: float; measured in decibels; path loss threshold beyond which signal strength contours will not be plotted
     - ``high_definition``: boolean
-    - ``use_png``: boolean; use PNG instead of PPM; uses ImageMagick
+
+    OUTPUTS:
+
+    None. 
+    Create a SPLAT! coverage report for every transmitter with data located
+    at ``in_path``, or, if ``transmitter_names`` is given, every transmitter 
+    in that list with data data located at ``in_path``.
+    Write each report to the directory ``out_path``, creating the directory 
+    if necessary.
+    A report comprises the files
+
+    - ``'<transmitter name>-site_report.txt'``
+    - ``'<transmitter name>.kml'``: KML file containing transmitter feature and ``'<transmitter name>.ppm'``
+    - ``'<transmitter name>.ppm'``: PPM file depicting a contour plot of the transmitter signal strength
+    - ``'<transmitter name>-ck.ppm'``: PPM file depicting a legend for the signal strengths in ``'<transmitter name>.ppm'``
+
     """
     in_path = Path(in_path)
     out_path = Path(out_path)
@@ -395,56 +408,68 @@ def create_coverage_maps(in_path, out_path,
         transmitter_names = [p.stem for p in in_path.iterdir()
           if p.name.endswith('.qth')]
 
+    # Splatify
     splat = 'splat'
     if high_definition:
         splat += '-hd'
 
-    # Splatify
     for t in transmitter_names:
         args = [splat, '-t', t + '.qth', '-L', '8.0', '-dbm', '-db', 
-          str(receiver_sensitivity), '-o', t + '.ppm', '-kml', '-metric', 
-          '-ngs']     
+          str(receiver_sensitivity), '-metric', '-ngs', '-kml',
+          '-o', t + '.ppm']     
         subprocess.run(args, cwd=str(in_path),
           stdout=subprocess.PIPE, universal_newlines=True, check=True)
-
-    # Convert white background to transparent background
-    for t in transmitter_names:
-        for f in [t + '.ppm', t + '-ck.ppm']:
-            args = ['convert', '-transparent', '"#FFFFFF"', f, f]     
-            subprocess.run(args, cwd=str(in_path),
-              stdout=subprocess.PIPE, universal_newlines=True, check=True)
-
-    # Resize to width 1200 pixels
-    for t in transmitter_names:
-        f = t + '.ppm'
-        args = ['convert', '-geometry', '1200', f, f]     
-        subprocess.run(args, cwd=str(in_path),
-          stdout=subprocess.PIPE, universal_newlines=True, check=True)
-
-    # Convert to PNG if desired
-    if use_png:
-        exts = ['.png', '-ck.png', '.kml', '-site_report.txt']
-        for t in transmitter_names:
-            for f, g in [(t + '.ppm', t + '.png'), 
-              (t + '-ck.ppm', t + '-ck.png')]:
-                args = ['convert', f, g]     
-                subprocess.run(args, cwd=str(in_path),
-                  stdout=subprocess.PIPE, universal_newlines=True, check=True)
-                (in_path/f).unlink()
-
-                # Replace PPM with PNG in KML, too
-    else:
-        exts = ['.ppm', '-ck.ppm', '.kml', '-site_report.txt']
 
     # Move outputs to out_path
-    OUT_PATH = out_path
+    exts = ['.ppm', '-ck.ppm', '-site_report.txt', '.kml']
     for t in transmitter_names:
-        out_path = OUT_PATH/t
-        if not out_path.exists():
-            out_path.mkdir(parents=True)
         for ext in exts:
             src = in_path/(t + ext)
             tgt = out_path/(t + ext) 
             shutil.move(str(src), str(tgt))
 
+def postprocess_coverage_reports(path, delete_ppm=True):
+    """
+    INPUTS:
 
+    - ``path``: string or Path object; directory where coverage reports (outputs of :func:`create_coverage_reports`) lie
+    - ``delete_ppm``: boolean; delete the original PPM files in the coverage reports if and only if this flag is ``True``
+
+    OUTPUTS:
+
+    None.
+    Convert the PPM files in the directory ``path`` into PNG files,
+    and change the PPM reference in each KML file to the corresponding
+    PNG file.
+    """
+    for f in path.iterdir():    
+        if f.name.endswith('.ppm'):
+            # Convert white background to transparent background
+            args = ['convert', '-transparent', '"#FFFFFF"', 
+              f.name, f.name]     
+            subprocess.run(args, cwd=str(path),
+              stdout=subprocess.PIPE, universal_newlines=True, check=True)
+
+            # Resize to width 1200 pixels
+            args = ['convert', '-geometry', '1200', f.name, f.name]     
+            subprocess.run(args, cwd=str(path),
+              stdout=subprocess.PIPE, universal_newlines=True, check=True)
+
+            # Convert to PNG
+            args = ['convert', f.name, f.stem + '.png']     
+            subprocess.run(args, cwd=str(path),
+              stdout=subprocess.PIPE, universal_newlines=True, check=True)
+
+            if delete_ppm:
+                # Delete PPM
+                f.unlink()
+
+        if f.name.endswith('.kml'):
+            # Replace PPM with PNG in KML
+            with f.open() as src:
+                kml = src.read()
+
+            kml.replace('.ppm', '.png')
+
+            with f.open('w') as tgt:
+                tgt.write(kml)        
