@@ -183,20 +183,6 @@ def build_transmitter_name(network_name, site_name):
     return network_name.replace(' ', '') + '_' +\
       site_name.replace(' ', '')
 
-def get_lon_lats(transmitters):
-    """
-    INPUTS:
-
-    - ``transmitters``: a list of transmitters in the form output by :func:`read_transmitters`
-
-    OUTPUTS:
-
-    Return a list of longitude-latitude pairs (float pairs)
-    representing the locations of the given transmitters.
-    If ``transmitters`` is empty, then return the empty list. 
-    """
-    return [(t['longitude'], t['latitude']) for t in transmitters]
-
 def build_splat_qth(transmitter):
     """
     INPUTS:
@@ -322,6 +308,20 @@ def build_splat_el(transmitter):
 
     return s[:-1]  # Drop the final newline 
 
+def get_lon_lats(transmitters):
+    """
+    INPUTS:
+
+    - ``transmitters``: a list of transmitters of the form output by :func:`read_transmitters`
+
+    OUTPUTS:
+
+    Return a list of longitude-latitude pairs (float pairs)
+    representing the locations of the given transmitters.
+    If ``transmitters`` is empty, then return the empty list. 
+    """
+    return [(t['longitude'], t['latitude']) for t in transmitters]
+
 def create_splat_topography_files(in_path, out_path, high_definition=False):
     """
     INPUTS:
@@ -411,6 +411,10 @@ def create_coverage_reports(in_path, out_path, transmitter_names=None,
     - ``'<transmitter name>.ppm'``: PPM file depicting a contour plot of the transmitter signal strength
     - ``'<transmitter name>-ck.ppm'``: PPM file depicting a legend for the signal strengths in ``'<transmitter name>.ppm'``
 
+    NOTES:
+
+    On a 2.8 GHz Intel Core i7 processor, this take about 1.15 minutes for 
+    one transmitter.
     """
     in_path = Path(in_path)
     out_path = Path(out_path)

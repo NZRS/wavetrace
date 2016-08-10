@@ -58,18 +58,6 @@ class TestMain(unittest.TestCase):
         expect = 'Wakawaka_'
         self.assertTrue(get, expect)
 
-    def test_get_bounds_from_transmitters(self):
-        ts = [
-          {'longitude': 5.6, 'latitude': -20.4},
-          {'longitude': 7.6, 'latitude': 18},
-          {'longitude': -2, 'latitude': 9},
-          ]
-        bounds = get_bounds_from_transmitters(ts)
-        expect = [-2, -20.4, 7.6, 18]
-        self.assertSequenceEqual(bounds, expect)
-
-        self.assertRaises(ValueError, get_bounds_from_transmitters, [])
-
     def test_build_splat_qth(self):
         get = build_splat_qth(TRANSMITTER_1)
         # Should have the correct number of lines
@@ -111,12 +99,53 @@ class TestMain(unittest.TestCase):
 
         # Should contain the correct files
         names_get = [f.name for f in out_path.iterdir()]
-        names_expect = [t['name'] + ext 
+        names_expect = [t['name'] + suffix
           for t in read_transmitters(in_path)
-          for ext in ['.qth', '.lrp', '.az', '.el']]
+          for suffix in ['.qth', '.lrp', '.az', '.el']]
         self.assertCountEqual(names_get, names_expect)
 
         shutil.rmtree(str(out_path))
+
+    def test_get_lon_lats(self):
+        ts = [
+          {'longitude': 5.6, 'latitude': -20.4},
+          {'longitude': 7.6, 'latitude': 18},
+          ]
+        get = get_lon_lats(ts)
+        expect = [(5.6, -20.4), (7.6, 18)]
+        self.assertSequenceEqual(get, expect)
+
+        self.assertEqual(get_lon_lats([]), [])
+
+    def test_create_splat_topography_files(self):
+        in_path = DATA_DIR
+        out_path = DATA_DIR/'tmp'
+        create_splat_topography_files(in_path, out_path)
+
+        # Should contain the correct files
+        names_get = [f.name for f in out_path.iterdir()]
+        names_expect = ['-36:-35:185:186.sdf', '-37:-36:184:185.sdf']
+        self.assertCountEqual(names_get, names_expect)
+
+        shutil.rmtree(str(out_path))
+
+    def test_create_coverage_reports(self):
+        p1 = DATA_DIR
+        p2 = DATA_DIR/'tmp_inputs'
+        p3 = DATA_DIR/'tmp_outputs'
+        create_splat_transmitter_files(p1/'transmitters_single.csv', p2)
+        create_splat_topography_files(p1, p2)
+        create_coverage_reports(p2, p3)
+
+        # Should contain the correct files
+        names_get = [f.name for f in p3.iterdir()]
+        names_expect = [t['name'] + suffix
+          for t in read_transmitters(p1/'transmitters_single.csv')
+          for suffix in ['.ppm', '-ck.ppm', '.kml', '-site_report.txt']]
+        self.assertCountEqual(names_get, names_expect)
+
+        shutil.rmtree(str(p2))
+        shutil.rmtree(str(p3))
 
     def test_get_bounds_from_kml(self):
         path = DATA_DIR/'test.kml'

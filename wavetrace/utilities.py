@@ -116,10 +116,7 @@ def get_srtm_tile_names(lon_lats, cover_bounds=False):
     INPUTS:
 
     - ``lon_lats``: list of WGS84 longitude-latitude pairs (float pairs)
-    - ``cover_bounds``: boolean;
-    list of the form [min_lon, min_lat, max_lon, max_lat],
-      where ``min_lon <= max_lon`` are WGS84 longitudes and 
-      ``min_lat <= max_lat`` are WGS84 latitudes
+    - ``cover_bounds``: boolean
 
     OUTPUTS:
 
