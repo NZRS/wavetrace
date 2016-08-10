@@ -23,12 +23,25 @@ TRANSMITTER_1 = {
  'vertical_beamwidth': '30',
  }
 
+def rm_paths(*paths):
+    for p in paths:
+        p = Path(p)
+        if p.exists():
+            if p.is_file():
+                p.unlink()
+            else:
+                shutil.rmtree(str(p))
+
 class TestMain(unittest.TestCase):
 
     def test_read_transmitters(self):
         # Good inputs should yield good outputs
         path = DATA_DIR/'transmitters.csv'
         ts = read_transmitters(path)
+
+        # Should contain the correct number of transmitters
+        self.assertEqual(len(ts), 3)
+
         float_fields = ['latitude', 'longitude', 'antenna_height', 
           'polarization', 'frequency', 'power_eirp']
         for t in ts:
@@ -95,6 +108,8 @@ class TestMain(unittest.TestCase):
     def test_create_splat_transmitter_files(self):
         in_path = DATA_DIR/'transmitters.csv'
         out_path = DATA_DIR/'tmp'
+        rm_paths(out_path)
+
         create_splat_transmitter_files(in_path, out_path)
 
         # Should contain the correct files
@@ -104,7 +119,7 @@ class TestMain(unittest.TestCase):
           for suffix in ['.qth', '.lrp', '.az', '.el']]
         self.assertCountEqual(names_get, names_expect)
 
-        shutil.rmtree(str(out_path))
+        rm_paths(out_path)
 
     def test_get_lon_lats(self):
         ts = [
@@ -118,23 +133,39 @@ class TestMain(unittest.TestCase):
         self.assertEqual(get_lon_lats([]), [])
 
     def test_create_splat_topography_files(self):
-        in_path = DATA_DIR
         out_path = DATA_DIR/'tmp'
-        create_splat_topography_files(in_path, out_path)
+        if out_path.exists():
+            shutil.rmtree(str(out_path))
 
-        # Should contain the correct files
-        names_get = [f.name for f in out_path.iterdir()]
-        names_expect = ['-36:-35:185:186.sdf', '-37:-36:184:185.sdf']
-        self.assertCountEqual(names_get, names_expect)
+        for hd in [False, True]:
+            if hd:
+                in_path = DATA_DIR/'topography-hd'
+                names_expect = ['-36:-35:185:186-hd.sdf']
+                suffix = '-hd.sdf'
+            else:
+                in_path = DATA_DIR/'topography-sd'
+                names_expect = ['-36:-35:185:186.sdf', 
+                  '-37:-36:184:185.sdf']
 
-        shutil.rmtree(str(out_path))
+            create_splat_topography_files(in_path, out_path, 
+              high_definition=hd)
+
+            # Should contain the correct files
+            names_get = [f.name for f in out_path.iterdir()]
+            self.assertCountEqual(names_get, names_expect)
+
+            shutil.rmtree(str(out_path))
 
     def test_create_coverage_reports(self):
         p1 = DATA_DIR
         p2 = DATA_DIR/'tmp_inputs'
         p3 = DATA_DIR/'tmp_outputs'
+
+        rm_paths(p2, p3)
+ 
+        # High definition tests take too long, so skip them
         create_splat_transmitter_files(p1/'transmitters_single.csv', p2)
-        create_splat_topography_files(p1, p2)
+        create_splat_topography_files( p1/'topography-sd', p2)
         create_coverage_reports(p2, p3)
 
         # Should contain the correct files
@@ -144,8 +175,37 @@ class TestMain(unittest.TestCase):
           for suffix in ['.ppm', '-ck.ppm', '.kml', '-site_report.txt']]
         self.assertCountEqual(names_get, names_expect)
 
-        shutil.rmtree(str(p2))
-        shutil.rmtree(str(p3))
+        rm_paths(p2, p3)
+
+    def test_postprocess_coverage_reports(self):
+        p1 = DATA_DIR
+        p2 = DATA_DIR/'tmp_inputs'
+        p3 = DATA_DIR/'tmp_outputs'
+        rm_paths(p2, p3)
+
+        transmitters = read_transmitters(p1/'transmitters_single.csv')
+        create_splat_transmitter_files(p1/'transmitters_single.csv', p2)
+        create_splat_topography_files(p1, p2)
+        create_coverage_reports(p2, p3)
+        postprocess_coverage_reports(p3)
+
+        # Should contain the correct files
+        names_get = [f.name for f in p3.iterdir()]
+        names_expect = [t['name'] + suffix
+          for t in transmitters
+          for suffix in ['.ppm', '-ck.ppm', '.kml', '-site_report.txt', 
+            '.png', '-ck.png', '.tif']]
+        self.assertCountEqual(names_get, names_expect)
+
+        # KML should have PNG references
+        for f in p3.iterdir():
+            if f.suffix == '.kml':
+                with f.open() as src:
+                    kml = src.read()
+                self.assertTrue('.png' in kml)
+                self.assertTrue('.ppm' not in kml)
+
+        rm_paths(p2, p3)
 
     def test_get_bounds_from_kml(self):
         path = DATA_DIR/'test.kml'

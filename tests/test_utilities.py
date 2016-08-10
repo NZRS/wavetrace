@@ -30,17 +30,17 @@ class TestUtilities(unittest.TestCase):
         self.assertEqual(get, expect)
 
     def test_get_srtm_tile_names(self):
-        lon_lats = [(-1.1, 0.9), (1.1, 1.1), (0.5, -0.9)]
+        lon_lats = [(-1.1, 0.9), (-1.1, 0.9), (1.1, 1.1), (0.5, -0.9)]
         get = get_srtm_tile_names(lon_lats, cover_bounds=False)
         expect = ['N00W002', 'N01E001', 'S01E000']
-        self.assertSequenceEqual(get, expect)
+        self.assertCountEqual(get, expect)
 
         get = get_srtm_tile_names(lon_lats, cover_bounds=True)
         expect = ['S01W002', 'N00W002', 'N01W002', 
           'S01W001', 'N00W001', 'N01W001', 
           'S01E000', 'N00E000', 'N01E000', 
           'S01E001', 'N00E001', 'N01E001']
-        self.assertSequenceEqual(get, expect)
+        self.assertCountEqual(get, expect)
 
 
 if __name__ == '__main__':

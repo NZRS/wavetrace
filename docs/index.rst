@@ -6,8 +6,6 @@
 Wavetrace |version| documentation
 =====================================
 
-Contents:
-
 .. toctree::
    :maxdepth: 2
 

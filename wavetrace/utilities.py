@@ -120,7 +120,7 @@ def get_srtm_tile_names(lon_lats, cover_bounds=False):
 
     OUTPUTS:
 
-    Return the list of names of SRTM tiles that form a minimal cover of 
+    Return the set of names of SRTM tiles that form a minimal cover of 
     the given longitude-latitude points.
     If ``cover_bounds``, then return instead the names of the SRTM tiles 
     that form a minimal cover of the WGS84 bounding box of the points.
@@ -138,5 +138,5 @@ def get_srtm_tile_names(lon_lats, cover_bounds=False):
         lats = range(min_lat, max_lat, step_size)
         lon_lats = product(lons, lats)
 
-    return [get_srtm_tile_name(lon, lat) for lon, lat in lon_lats]
+    return set(get_srtm_tile_name(lon, lat) for lon, lat in lon_lats)
 

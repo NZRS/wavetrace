@@ -113,7 +113,6 @@ def read_transmitters(path):
     transmitters = []
     with path.open() as src:
         reader = csv.DictReader(src)
-        header = next(reader) # Skip header
         for row in reader:
             transmitters.append(row)
     transmitters = check_and_format_transmitters(transmitters)
@@ -463,8 +462,7 @@ def postprocess_coverage_reports(path, delete_ppm=False):
     Using the PPM files in the directory ``path`` do the following:
 
     - Convert each PPM files into a PNG file, replacing white with transparency using ImageMagick
-    - Change the PPM reference in each KML file to the corresponding
-    PNG file
+    - Change the PPM reference in each KML file to the corresponding PNG file
     - Convert the PNG coverage file (not the legend file) into GeoTIFF using GDAL
     """
     for f in path.iterdir():    
@@ -472,7 +470,7 @@ def postprocess_coverage_reports(path, delete_ppm=False):
             # Convert to PNG, turning white background into 
             # transparent background
             png = f.stem + '.png'
-            args = ['convert', '-transparent', '"#FFFFFF"', f.name, png]
+            args = ['convert', '-transparent', '#FFFFFF', f.name, png]
             subprocess.run(args, cwd=str(path),
               stdout=subprocess.PIPE, universal_newlines=True, check=True)
 

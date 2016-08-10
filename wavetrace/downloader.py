@@ -11,10 +11,6 @@ from bs4 import BeautifulSoup, SoupStrainer
 import wavetrace.utilities as ut
 
 
-NZ_BOUNDS = [165.7, -47.5, 178.7, -33.9]
-NZ_NORTH_ISLAND_BOUNDS = [172.5, -41.7, 178.5, -34.3]
-NZ_SOUTH_ISLAND_BOUNDS = [166.5, -47.5, 174.6, -40.3]
-
 def download_topography_nasa(srtm_tile_names, path, high_definition=False, 
   username=None, password=None):
     """
@@ -41,7 +37,7 @@ def download_topography_nasa(srtm_tile_names, path, high_definition=False,
 
     - SRTM data is only available between 60 degrees north latitude and 56 degrees south latitude, so tiles given outside of that range will not be downloaded.
     - Uses BeautifulSoup to scrape the appropriate NASA webpages
-    - Downloading high definition files is not implemented yet, because it requires a `NASA Earthdata account <https://urs.earthdata.nasa.gov/users/new>`_
+    - Downloading high definition files is not implemented yet, because it requires handling OAuth2 authentication for NASA Earthdata accounts; more info `here <https://urs.earthdata.nasa.gov/documentation>`
     """
     if high_definition:
         raise NotImplementedError('Downloading high definition data has not been implemented yet')
@@ -81,17 +77,16 @@ def download_topography_nasa(srtm_tile_names, path, high_definition=False,
                 continue
 
             # Download file    
-            href = url + '/' + file_name
-            r = requests.get(href, stream=True, auth=(username, password))
-            if response.status_code != requests.codes.ok:
+            href = url + file_name
+            r = requests.get(href, stream=True)
+            if r.status_code != requests.codes.ok:
                 raise ValueError('Failed to download file', href)    
             p = path/file_name
-            print('Downloading {!s}...'.format(file_name))
             with p.open('wb') as tgt:
                 for chunk in r:
                     tgt.write(chunk) 
 
-def download_topography_linz(bounds, path, high_definition=False):
+def download_topography_linz():
     """
     For New Zealand only.
     """ 

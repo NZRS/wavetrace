@@ -13,11 +13,13 @@ Installation
 
 Usage
 ======
+Examples in the Jupyter notebook ``ipynb/examples.ipynb``.
+Command-line interface coming soon.
 
 
 Documentation
 ==============
-In ``docs``.
+In ``docs`` and on Rawgit `here <https://rawgit.com/araichev/wavetrace/develop/docs/_build/singlehtml/index.html>`_
 
 
 Authors
