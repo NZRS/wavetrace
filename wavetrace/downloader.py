@@ -15,14 +15,12 @@ NZ_BOUNDS = [165.7, -47.5, 178.7, -33.9]
 NZ_NORTH_ISLAND_BOUNDS = [172.5, -41.7, 178.5, -34.3]
 NZ_SOUTH_ISLAND_BOUNDS = [166.5, -47.5, 174.6, -40.3]
 
-def download_elevation_data_nasa(bounds, path, high_definition=False, 
+def download_topography_nasa(srtm_tile_names, path, high_definition=False, 
   username=None, password=None):
     """
     INPUTS:
 
-    - ``bounds``: list of the form [min_lon, min_lat, max_lon, max_lat],
-      where ``min_lon <= max_lon`` are WGS84 longitudes and 
-      ``min_lat <= max_lat`` are WGS84 latitudes
+    - ``srtm_tile_names``: list of SRTM tile names (strings)
     - ``path``: string or Path object specifying a directory
     - ``high_definition``: boolean
     - ``username``: string; NASA Earthdata username for high definition files
@@ -31,18 +29,17 @@ def download_elevation_data_nasa(bounds, path, high_definition=False,
     OUTPUTS:
 
     Download from the United States National Aeronautics and
-    Space Administration (NASA) raster elevation data for the 
-    longitude-latitude box specified by ``bounds`` in 
+    Space Administration (NASA) the raster digital surface model data for the 
+    given SRTM tile names in 
     `SRTM HGT format <http://www.gdal.org/frmt_various.html#SRTMHGT>`_ and 
-    save it to the path specified by ``path``, creating the path
+    save the files to the directory specified by ``path``, creating the path
     if it does not exist.
     If ``high_definition``, then the data is formatted as SRTM-1 V2; 
     otherwise it is formatted as SRTM-3.
 
     NOTES:
 
-    - SRTM data is only available between 60 degrees north latitude and 
-      56 degrees south latitude
+    - SRTM data is only available between 60 degrees north latitude and 56 degrees south latitude, so tiles given outside of that range will not be downloaded.
     - Uses BeautifulSoup to scrape the appropriate NASA webpages
     - Downloading high definition files is not implemented yet, because it requires a `NASA Earthdata account <https://urs.earthdata.nasa.gov/users/new>`_
     """
@@ -64,7 +61,7 @@ def download_elevation_data_nasa(bounds, path, high_definition=False,
           'http://dds.cr.usgs.gov/srtm/version2_1/SRTM3/South_America/',
           ]
 
-    file_names = set(t + ext for t in ut.get_srtm_tile_names(bounds))
+    file_names = set(t + ext for t in srtm_tile_names)
 
     path = Path(path)
     if not path.exists():
@@ -94,7 +91,7 @@ def download_elevation_data_nasa(bounds, path, high_definition=False,
                 for chunk in r:
                     tgt.write(chunk) 
 
-def download_elevation_data_linz(bounds, path, high_definition=False):
+def download_topography_linz(bounds, path, high_definition=False):
     """
     For New Zealand only.
     """ 

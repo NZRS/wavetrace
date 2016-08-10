@@ -23,43 +23,60 @@ CONDUCTIVITY = 0.005
 RADIO_CLIMATE = 6
 FRACTION_OF_TIME = 0.5
 
-def create_splat_transmitter_data(in_path, out_path):
+def create_splat_transmitter_files(in_path, out_path,
+  dialectric_constant=DIALECTRIC_CONSTANT, 
+  conductivity=CONDUCTIVITY, radio_climate=RADIO_CLIMATE, 
+  fraction_of_time=FRACTION_OF_TIME):
     """
     INPUTS:
 
     - ``in_path``: string or Path object; location of a CSV file of transmitter data
     - ``out_path``: string or Path object; directory to which to write outputs
+    - ``dialectric_constant``: float; used to make SPLAT! ``.lrp`` file
+    - ``conductivity``: float; used to make SPLAT! ``.lrp`` file
+    - ``radio_climate``: integer; used to make SPLAT! ``.lrp`` file
+    - ``fraction_of_time``: float in [0, 1]; used to make SPLAT! ``.lrp`` file
 
     OUTPUTS:
 
     None.
-    Read the transmitter data given at ``in_path`` and for each transmitter, 
+    Read the CSV transmitter data at ``in_path``, and for each transmitter, 
     create the following SPLAT! data for it and save it to the directory
     ``out_path``:
 
     - location data as a ``.qth`` file
-    - irregular terrain model parameter as a ``.lrp`` file
+    - irregular topography model parameter as a ``.lrp`` file
     - azimuth data as a ``.az`` file
     - elevation data as a ``.el`` file
 
     NOTES:
 
-    The CSV file of transmitter data should include at least the columns
-
-    - ``'network_name'``: name of transmitter network
-    - ``'site_name'``: name of transmitter site
-    - ``'longitude'``: WGS84 decimal longitude of transmitter  
-    - ``'latitude``: WGS84 decimal latitude of transmitter
-    - ``'antenna_height'``: height of transmitter antenna in meters above sea level
-    - ``'polarization'``: 0 for horizontal or 1 for vertical
-    - ``'frequency'``: frequency of transmitter in MegaHerz
-    - ``'power_eirp'``: effective radiated power of transmitter in Watts
+    See the notes section of :func:`read_transmitters`.
     """
+    # Read transmitter data
     ts = read_transmitters(in_path)
-    create_splat_qth_data(ts, out_path)
-    create_splat_lrp_data(ts, out_path)
-    create_splat_az_data(ts, out_path)
-    create_splat_el_data(ts, out_path)
+
+    # Write SPLAT files
+    out_path = Path(out_path)
+    if not out_path.exists():
+        out_path.mkdir(parents=True)
+
+    for t in ts:
+        for f, kwargs, ext in [
+          (build_splat_qth, {}, '.qth'),
+          (build_splat_lrp, {
+          'dialectric_constant': dialectric_constant,
+          'conductivity': conductivity, 
+          'radio_climate': radio_climate,
+          'fraction_of_time':fraction_of_time
+          }, '.lrp'),
+          (build_splat_az, {}, '.az'),
+          (build_splat_el, {}, '.el'),
+          ]:
+            s = f(t, **kwargs)
+            path = out_path/(t['name'] + ext)
+            with path.open('w') as tgt:
+                tgt.write(s)
 
 def read_transmitters(path):
     """
@@ -76,6 +93,21 @@ def read_transmitters(path):
     raise a ``ValueError``
     Additionally, a 'name' field is added to each transmitter dictionary for
     later use and is the result of :func:`build_transmitter_name`.
+
+    NOTES:
+
+    The CSV file of transmitter data should include at least the columns,
+    otherwise a ``ValueError`` will be raised.
+
+    - ``'network_name'``: name of transmitter network
+    - ``'site_name'``: name of transmitter site
+    - ``'longitude'``: WGS84 decimal longitude of transmitter  
+    - ``'latitude``: WGS84 decimal latitude of transmitter
+    - ``'antenna_height'``: height of transmitter antenna in meters above sea level
+    - ``'polarization'``: 0 for horizontal or 1 for vertical
+    - ``'frequency'``: frequency of transmitter in MegaHerz
+    - ``'power_eirp'``: effective radiated power of transmitter in Watts
+
     """
     path = Path(path)
     transmitters = []
@@ -141,48 +173,57 @@ def build_transmitter_name(network_name, site_name):
 
     Return a string that is the network name with spaces removed followed 
     by an underscore followed by the site name with spaces removed.
+
+    EXAMPLES:
+
+    >>> build_transmitter_name('Slap hAppy', 'Go go go ')
+    'SlaphAppy_Gogogo'
+
     """
     return network_name.replace(' ', '') + '_' +\
       site_name.replace(' ', '')
 
-def create_splat_qth_data(transmitters, out_path):
+def get_lon_lats(transmitters):
     """
     INPUTS:
 
-    - ``transmitters``: list; same form as output of :func:`read_transmitters`
-    - ``out_path``: string or Path object specifying a directory
+    - ``transmitters``: a list of transmitters in the form output by :func:`read_transmitters`
 
     OUTPUTS:
 
-    For each transmitter in the list of transmitters, create a SPLAT! 
-    site location file for the transmitter and save it to the given output 
-    directory with the file name ``<transmitter name>.qth``.
+    Return a list of longitude-latitude pairs (float pairs)
+    representing the locations of the given transmitters.
+    If ``transmitters`` is empty, then return the empty list. 
     """
-    out_path = Path(out_path)
-    if not out_path.exists():
-        out_path.mkdir(parents=True)
-        
-    for t in transmitters:
-        # Convert to degrees east in range (-360, 0] for SPLAT!
-        lon = -t['longitude']
-        s = "{!s}\n{!s}\n{!s}\n{!s}m\n".format(
-          t['name'], 
-          t['latitude'],
-          lon, 
-          t['antenna_height'])
+    return [(t['longitude'], t['latitude']) for t in transmitters]
 
-        path = Path(out_path)/'{!s}.qth'.format(t['name'])
-        with path.open('w') as tgt:
-            tgt.write(s)
-
-def create_splat_lrp_data(transmitters, out_path, 
-  dialectric_constant=DIALECTRIC_CONSTANT, conductivity=CONDUCTIVITY,
-  radio_climate=RADIO_CLIMATE, fraction_of_time=FRACTION_OF_TIME):
+def build_splat_qth(transmitter):
     """
     INPUTS:
 
-    - ``transmitters``: list; same form as output of :func:`read_transmitters`
-    - ``out_path``: string or Path object specifying a directory
+    - ``transmitter``: dictionary of the same form as any one of the elements in the list output by :func:`read_transmitters`
+
+    OUTPUTS:
+
+    Return the text (string) content of a SPLAT! site location file 
+    (``.qth`` file) corresponding to the given transmitter.
+    """
+    t = transmitter
+    # Convert to degrees east in range (-360, 0] for SPLAT!
+    lon = -t['longitude']
+    return "{!s}\n{!s}\n{!s}\n{!s}m".format(
+      t['name'], 
+      t['latitude'],
+      lon, 
+      t['antenna_height'])
+
+def build_splat_lrp(transmitter, dialectric_constant=DIALECTRIC_CONSTANT, 
+  conductivity=CONDUCTIVITY, radio_climate=RADIO_CLIMATE, 
+  fraction_of_time=FRACTION_OF_TIME):
+    """
+    INPUTS:
+
+    - ``transmitter``: dictionary of the same form as any one of the elements in the list output by :func:`read_transmitters`
     - ``dialectric_constant``: float
     - ``conductivity``: float
     - ``radio_climate``: integer
@@ -190,126 +231,98 @@ def create_splat_lrp_data(transmitters, out_path,
 
     OUTPUTS:
 
-    For each transmitter in the list of transmitters, create a SPLAT! 
-    irregular terrain model parameter file for the transmitter 
-    and save it to the given output directory with the file name 
-    ``<transmitter name>.lrp``.
+    Return the text (string) content of a SPLAT! irregular topography model
+    parameter file (``.lrp`` file) corresponding to the given transmitter.
     """
-    out_path = Path(out_path)
-    if not out_path.exists():
-        out_path.mkdir(parents=True)
+    t = transmitter
+    s = """\
+    {!s} ; Earth Dielectric Constant (Relative permittivity)
+    {!s} ; Earth Conductivity (Siemens per meter)
+    301.000 ; Atmospheric Bending Constant (N-units)
+    {!s} ; Frequency in MHz (20 MHz to 20 GHz)
+    {!s} ; Radio Climate
+    {!s} ; Polarization (0 = Horizontal, 1 = Vertical)
+    0.5 ; Fraction of situations
+    {!s} ; Fraction of time 
+    {!s} ; ERP in watts""".format(
+      dialectric_constant, 
+      conductivity, 
+      t['frequency'],
+      radio_climate, 
+      t['polarization'], 
+      fraction_of_time,
+      t['power_eirp'])
+    return textwrap.dedent(s)
 
-    for t in transmitters:
-        s = """\
-        {!s} ; Earth Dielectric Constant (Relative permittivity)
-        {!s} ; Earth Conductivity (Siemens per meter)
-        301.000 ; Atmospheric Bending Constant (N-units)
-        {!s} ; Frequency in MHz (20 MHz to 20 GHz)
-        {!s} ; Radio Climate
-        {!s} ; Polarization (0 = Horizontal, 1 = Vertical)
-        0.5 ; Fraction of situations
-        {!s} ; Fraction of time 
-        {!s} ; ERP in watts
-        """.format(
-          dialectric_constant, 
-          conductivity, 
-          t['frequency'],
-          radio_climate, 
-          t['polarization'], 
-          fraction_of_time,
-          t['power_eirp'])
-        s = textwrap.dedent(s)
-
-        path = Path(out_path)/'{!s}.lrp'.format(t['name'])
-        with path.open('w') as tgt:
-            tgt.write(s)
-
-def create_splat_az_data(transmitters, out_path):
+def build_splat_az(transmitter):
     """
     INPUTS:
 
-    - ``transmitters``: list; same form as output of :func:`read_transmitters`
-    - ``out_path``: string or Path object specifying a directory
+    - ``transmitter``: dictionary of the same form as any one of the elements in the list output by :func:`read_transmitters`
 
     OUTPUTS:
 
-    For each transmitter in the list of transmitters, create a SPLAT! 
-    azimuth file for the transmitter and save it to the given output 
-    directory with the file name ``<transmitter name>.az``.
+    Return the text (string) content of a SPLAT! azimuth file (``.az`` file)
+    corresponding to the given transmitter.
 
     NOTES:
 
     A transmitter with no ``'bearing'`` or ``'horizontal_beamwidth'`` data will
-    produce a file containing the single line ``0  0``.
+    produce the string ``'0  0'``.
     """
-    out_path = Path(out_path)
-    if not out_path.exists():
-        out_path.mkdir(parents=True)
+    t = transmitter
+    try:
+        bearing = float(t['bearing'])
+        hb = float(t['horizontal_beamwidth'])
+        left = int(round(360 - (hb/2)))
+        right = int(round(hb/2))
+        s = '{!s}\n'.format(bearing)
+        for x in range(360):
+            if left <= x or x <= right:
+                normal = 0.9
+            else:
+                normal = 0.1
+            s += '{!s}  {!s}\n'.format(x, normal)
+    except:
+        s = '0  0\n'
 
-    for t in transmitters:
-        try:
-            bearing = float(t['bearing'])
-            hb = float(t['horizontal_beamwidth'])
-            left = int(round(360 - (hb/2)))
-            right = int(round(hb/2))
-            s = '{!s}\n'.format(bearing)
-            for x in range(360):
-                if left <= x or x <= right:
-                    normal = 0.9
-                else:
-                    normal = 0.1
-                s += '{!s}  {!s}\n'.format(x, normal)
-        except:
-            s = '0  0\n'
+    return s[:-1] # Drop the final new line 
 
-        path = Path(out_path)/'{!s}.az'.format(t['name'])
-        with path.open('w') as tgt:
-            tgt.write(s)
-
-def create_splat_el_data(transmitters, out_path):
+def build_splat_el(transmitter):
     """
     INPUTS:
 
-    - ``transmitters``: list; same form as output of :func:`read_transmitters`
-    - ``out_path``: string or Path object specifying a directory
+    - ``transmitter``: dictionary of the same form as any one of the elements in the list output by :func:`read_transmitters`
 
     OUTPUTS:
 
-    For each transmitter in the list of transmitters, create a SPLAT! 
-    elevation file for the transmitter and save it to the given output 
-    directory with the file name ``<transmitter name>.el``.
+    Return the text (string) content of a SPLAT! elevation file (``.el`` file)
+    corresponding to the given transmitter.
 
     NOTES:
 
     A transmitter with no ``'bearing'`` or ``'antenna_downtilt'`` or 
-    ``'vertical_beamwidth'`` data will produce a file containing the 
-    single line ``0  0``.
+    ``'vertical_beamwidth'`` data will produce the string ``'0  0'``.
     """
-    out_path = Path(out_path)
-    if not out_path.exists():
-        out_path.mkdir(parents=True)
-        
-    for t in transmitters:
-        try:
-            bearing = float(t['bearing'])
-            ad = float(t['antenna_downtilt'])
-            vb = float(t['vertical_beamwidth'])
-            s = '{!s}  {!s}\n'.format(ad, bearing)
-            counter = 0
-            for x in range(-10, 91):
-                if counter < vb:
-                    s += '{!s}  0.9\n'.format(x) 
-                else:
-                    s += '{!s}  0.1\n'.format(x) 
-                counter += 1
-        except:
-            s = '0  0\n'
+    t = transmitter
+    try:
+        bearing = float(t['bearing'])
+        ad = float(t['antenna_downtilt'])
+        vb = float(t['vertical_beamwidth'])
+        s = '{!s}  {!s}\n'.format(ad, bearing)
+        counter = 0
+        for x in range(-10, 91):
+            if counter < vb:
+                s += '{!s}  0.9\n'.format(x) 
+            else:
+                s += '{!s}  0.1\n'.format(x) 
+            counter += 1
+    except:
+        s = '0  0\n'
 
-        path = Path(out_path)/'{!s}.el'.format(t['name'])
-        with path.open('w') as tgt:
-            tgt.write(s)
+    return s[:-1]  # Drop the final newline 
 
-def create_splat_elevation_data(in_path, out_path, high_definition=False):
+def create_splat_topography_files(in_path, out_path, high_definition=False):
     """
     INPUTS:
 
@@ -319,7 +332,8 @@ def create_splat_elevation_data(in_path, out_path, high_definition=False):
 
     OUTPUTS:
 
-    Converts each SRTM HGT elevation data file in the directory ``in_path`` to
+    None.
+    Convert each SRTM HGT topography file in the directory ``in_path`` to
     a SPLAT! Data File (SDF) file in the directory ``out_path``, 
     creating the directory if it does not exist.
     If ``high_definition``, then assume the input data is high definition.
@@ -432,7 +446,7 @@ def create_coverage_reports(in_path, out_path, transmitter_names=None,
             tgt = out_path/(t + ext) 
             shutil.move(str(src), str(tgt))
 
-def postprocess_coverage_reports(path, delete_ppm=True):
+def postprocess_coverage_reports(path, delete_ppm=False):
     """
     INPUTS:
 
@@ -476,7 +490,7 @@ def postprocess_coverage_reports(path, delete_ppm=True):
                 tgt.write(kml)        
 
             # Convert main PNG to GeoTiff using the lon-lat bounds from the KML
-            bounds = get_bounds(kml)
+            bounds = get_bounds_from_kml(kml)
             epsg = 'EPSG:4326'  # WGS84
             png = f.stem + '.png'
             tif = f.stem + '.tif'
@@ -487,7 +501,7 @@ def postprocess_coverage_reports(path, delete_ppm=True):
             subprocess.run(args, cwd=str(path),
               stdout=subprocess.PIPE, universal_newlines=True, check=True)
 
-def get_bounds(kml_string):
+def get_bounds_from_kml(kml_string):
     """
     INPUTS:
 

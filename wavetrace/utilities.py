@@ -3,7 +3,7 @@ from functools import wraps
 import datetime as dt
 import json
 from math import ceil, floor
-
+from itertools import product
 
 PROJECT_ROOT = os.path.abspath(os.path.join(
   os.path.dirname(__file__), '../'))
@@ -55,6 +55,21 @@ def check_lonlat(lon, lat):
     if not (-90 <= lat <= 90):
         raise ValueError('Latitude {!s} is out of bounds'.format(lat))
 
+def get_bounds(lon_lats):
+    """
+    INPUTS:
+
+    - ``lon_lats``: list of WGS84 longitude-latitude pairs (float pairs)
+
+    OUTPUTS:
+
+    Return a list of floats of the form 
+    ``[min_lon, min_lat, max_lon, max_lat]``, describing the 
+    WGS84 bounding box of the given longitude-latitude points.
+    """
+    lons, lats = zip(*lon_lats)
+    return [min(lons), min(lats), max(lons), max(lats)]
+
 def get_srtm_tile_name(lon, lat):
     """
     INPUTS:
@@ -70,7 +85,7 @@ def get_srtm_tile_name(lon, lat):
     EXAMPLES:
 
     >>> get_srtm_tile_name(27.5, 3.64)
-    >>> 'N04E028'
+    'N04E028'
 
     NOTES:
 
@@ -80,42 +95,51 @@ def get_srtm_tile_name(lon, lat):
     """
     check_lonlat(lon, lat)
 
-    abs_lon = int(ceil(abs(lon)))
-    abs_lat = int(ceil(abs(lat)))
+    floor_lon = abs(floor(lon))
+    floor_lat = abs(floor(lat))
     if lon >= 0:
         prefix = 'E'
     else:
         prefix = 'W'
-    lon = prefix + '{:03d}'.format(abs_lon)
+    lon = prefix + '{:03d}'.format(floor_lon)
 
     if lat >= 0:
         prefix = 'N'
     else:
         prefix = 'S'
-    lat = prefix + '{:02d}'.format(abs_lat)
+    lat = prefix + '{:02d}'.format(floor_lat)
 
     return lat + lon 
 
-def get_srtm_tile_names(bounds):
+def get_srtm_tile_names(lon_lats, cover_bounds=False):
     """
     INPUTS:
 
-    - ``bounds``: list of the form [min_lon, min_lat, max_lon, max_lat],
+    - ``lon_lats``: list of WGS84 longitude-latitude pairs (float pairs)
+    - ``cover_bounds``: boolean;
+    list of the form [min_lon, min_lat, max_lon, max_lat],
       where ``min_lon <= max_lon`` are WGS84 longitudes and 
       ``min_lat <= max_lat`` are WGS84 latitudes
 
     OUTPUTS:
 
-    A list of names of SRTM tiles that cover the longitude-latitude bounding
-    box specified by bounds.
+    Return the list of names of SRTM tiles that form a minimal cover of 
+    the given longitude-latitude points.
+    If ``cover_bounds``, then return instead the names of the SRTM tiles 
+    that form a minimal cover of the WGS84 bounding box of the points.
 
     NOTES:
 
     Calls :func:`get_srtm_tile_name`.
     """
-    min_lon, min_lat = int(floor(bounds[0])), int(floor(bounds[1]))    
-    max_lon, max_lat = int(ceil(bounds[2])), int(ceil(bounds[3]))
-    step_size = 1  # degrees 
-    lons = range(min_lon, max_lon, step_size)
-    lats = range(min_lat, max_lat, step_size)
-    return [get_srtm_tile_name(lon, lat) for lon in lons for lat in lats]
+    if cover_bounds:
+        bounds = get_bounds(lon_lats)
+        min_lon, min_lat = int(floor(bounds[0])), int(floor(bounds[1]))    
+        max_lon, max_lat = int(ceil(bounds[2])), int(ceil(bounds[3]))
+        step_size = 1  # degrees 
+        lons = range(min_lon, max_lon, step_size)
+        lats = range(min_lat, max_lat, step_size)
+        lon_lats = product(lons, lats)
+
+    return [get_srtm_tile_name(lon, lat) for lon, lat in lon_lats]
+
