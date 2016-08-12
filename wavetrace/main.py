@@ -465,6 +465,7 @@ def postprocess_coverage_reports(path, delete_ppm=False):
     - Change the PPM reference in each KML file to the corresponding PNG file
     - Convert the PNG coverage file (not the legend file) into GeoTIFF using GDAL
     """
+    # First pass: create PNG from PPM 
     for f in path.iterdir():    
         if f.suffix == '.ppm':
             # Convert to PNG, turning white background into 
@@ -483,7 +484,9 @@ def postprocess_coverage_reports(path, delete_ppm=False):
                 # Delete PPM
                 f.unlink()
 
-        elif f.suffix == '.kml':
+    # Second pass: create KML and convert PNG to GeoTIFF
+    for f in path.iterdir():
+        if f.suffix == '.kml':
             # Replace PPM with PNG in KML
             with f.open() as src:
                 kml = src.read()
@@ -491,7 +494,7 @@ def postprocess_coverage_reports(path, delete_ppm=False):
             with f.open('w') as tgt:
                 tgt.write(kml)        
 
-            # Convert main PNG to GeoTiff using the lon-lat bounds from the KML
+            # Convert main PNG to GeoTIFF using the lon-lat bounds from the KML
             bounds = get_bounds_from_kml(kml)
             epsg = 'EPSG:4326'  # WGS84
             png = f.stem + '.png'

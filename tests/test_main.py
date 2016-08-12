@@ -139,11 +139,11 @@ class TestMain(unittest.TestCase):
 
         for hd in [False, True]:
             if hd:
-                in_path = DATA_DIR/'topography-hd'
+                in_path = DATA_DIR/'srtm-hd'
                 names_expect = ['-36:-35:185:186-hd.sdf']
                 suffix = '-hd.sdf'
             else:
-                in_path = DATA_DIR/'topography-sd'
+                in_path = DATA_DIR/'srtm-sd'
                 names_expect = ['-36:-35:185:186.sdf', 
                   '-37:-36:184:185.sdf']
 
@@ -165,7 +165,7 @@ class TestMain(unittest.TestCase):
  
         # High definition tests take too long, so skip them
         create_splat_transmitter_files(p1/'transmitters_single.csv', p2)
-        create_splat_topography_files( p1/'topography-sd', p2)
+        create_splat_topography_files( p1/'srtm-sd', p2)
         create_coverage_reports(p2, p3)
 
         # Should contain the correct files
