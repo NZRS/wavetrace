@@ -1,0 +1,18 @@
+<PAMDataset>
+  <Metadata>
+    <MDI key="AREA_OR_POINT">Area</MDI>
+    <MDI key="TIFFTAG_RESOLUTIONUNIT">1 (unitless)</MDI>
+    <MDI key="TIFFTAG_SOFTWARE">IMAGINE TIFF Support
+Copyright 1991 - 1999 by ERDAS, Inc. All Rights Reserved
+@(#)$RCSfile: etif.c $ $Revision: 1.10.1.9.1.9.2.11 $ $Date: 2004/09/15 18:42:01EDT $</MDI>
+    <MDI key="TIFFTAG_XRESOLUTION">1</MDI>
+    <MDI key="TIFFTAG_YRESOLUTION">1</MDI>
+  </Metadata>
+  <PAMRasterBand band="1">
+    <Description>Layer_1</Description>
+    <ColorInterp>Gray</ColorInterp>
+    <Metadata>
+      <MDI key="LAYER_TYPE">athematic</MDI>
+    </Metadata>
+  </PAMRasterBand>
+</PAMDataset>

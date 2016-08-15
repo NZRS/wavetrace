@@ -1,6 +1,6 @@
 *.pyc
 *__pycache__
 ipynb/.ipynb_checkpoints
-example_data/outputs/*
+data/sample_outputs/*
 tests/data/tmp*
 secrets.json

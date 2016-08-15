@@ -10,19 +10,18 @@ from bs4 import BeautifulSoup, SoupStrainer
 
 import wavetrace.utilities as ut
 
-
-def download_topography_nasa(srtm_tile_names, path, high_definition=False, 
+def download_topography_nasa(srtm_tile_ids, path, high_definition=False, 
   username=None, password=None):
     """
-    INPUTS:
+    INPUT:
 
-    - ``srtm_tile_names``: list of SRTM tile names (strings)
+    - ``srtm_tile_ids``: list of SRTM tile names (strings)
     - ``path``: string or Path object specifying a directory
     - ``high_definition``: boolean
     - ``username``: string; NASA Earthdata username for high definition files
     - ``password``: string; NASA Earthdata password for high definition files
 
-    OUTPUTS:
+    OUTPUT:
 
     Download from the United States National Aeronautics and
     Space Administration (NASA) the raster digital surface model data for the 
@@ -57,7 +56,7 @@ def download_topography_nasa(srtm_tile_names, path, high_definition=False,
           'http://dds.cr.usgs.gov/srtm/version2_1/SRTM3/South_America/',
           ]
 
-    file_names = set(t + ext for t in srtm_tile_names)
+    file_names = set(t + ext for t in srtm_tile_ids)
 
     path = Path(path)
     if not path.exists():

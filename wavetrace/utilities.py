@@ -4,11 +4,14 @@ import datetime as dt
 import json
 from math import ceil, floor
 from itertools import product
+from shapely.geometry import shape, Point
+from pathlib import Path 
 
-PROJECT_ROOT = os.path.abspath(os.path.join(
-  os.path.dirname(__file__), '../'))
-SECRETS_PATH = os.path.join(PROJECT_ROOT, 'secrets.json')
 
+PROJECT_ROOT = Path(os.path.abspath(os.path.join(
+  os.path.dirname(__file__), '../')))
+SECRETS_PATH = PROJECT_ROOT/'secrets.json'
+NZSOSDEM_POLYGONS_PATH = PROJECT_ROOT/'data'/'nzsosdem_polygons.geojson'
 
 def time_it(f):
     """
@@ -30,7 +33,7 @@ def get_secret(secret, secrets_path=SECRETS_PATH):
     """
     Get the given setting variable or return explicit exception.
     """
-    with open(secrets_path) as src:
+    with secrets_path.open() as src:
         d = json.loads(src.read())
     try:
         return d[secret]
@@ -39,16 +42,15 @@ def get_secret(secret, secrets_path=SECRETS_PATH):
 
 def check_lonlat(lon, lat):
     """
-    INPUTS:
-
-    - ``lon``: float
-    - ``lat``: float
-
-    OUTPUTS:
-
-    None.
     Raise a ``ValueError if ``lon`` and ``lat`` do not represent a valid 
     WGS84 longitude-latitude pair.
+
+    INPUT:
+        - ``lon``: float
+        - ``lat``: float
+
+    OUTPUT:
+        None.
     """
     if not (-180 <= lon <= 180):
         raise ValueError('Longitude {!s} is out of bounds'.format(lon))
@@ -57,41 +59,37 @@ def check_lonlat(lon, lat):
 
 def get_bounds(lon_lats):
     """
-    INPUTS:
+    Return a bounding box for the list of WGS84 longitude-latitude pairs
 
-    - ``lon_lats``: list of WGS84 longitude-latitude pairs (float pairs)
+    INPUT:
+        - ``lon_lats``: list of WGS84 longitude-latitude pairs (float pairs)
 
-    OUTPUTS:
-
-    Return a list of floats of the form 
-    ``[min_lon, min_lat, max_lon, max_lat]``, describing the 
-    WGS84 bounding box of the given longitude-latitude points.
+    OUTPUT:
+        List of floats of the form  ``[min_lon, min_lat, max_lon, max_lat]``
     """
     lons, lats = zip(*lon_lats)
     return [min(lons), min(lats), max(lons), max(lats)]
 
-def get_srtm_tile_name(lon, lat):
+def get_srtm_tile_id(lon, lat):
     """
-    INPUTS:
+    Return the ID of the SRTM tile that covers the given 
+    longitude and latitude. 
 
-    - ``lon``: float; WGS84 longitude
-    - ``lat``: float; WGS84 latitude 
+    INPUT:
+        - ``lon``: float; WGS84 longitude
+        - ``lat``: float; WGS84 latitude 
 
     OUTPUT:
-
-    Return the name (string) of the SRTM tile that covers the given 
-    longitude and latitude. 
+        SRTM tile ID (string)
+    
 
     EXAMPLES:
 
-    >>> get_srtm_tile_name(27.5, 3.64)
+    >>> get_srtm_tile_id(27.5, 3.64)
     'N04E028'
 
     NOTES:
-
-    SRTM data for an output tile might not actually exist, e.g. data for the 
-    tile N90E000 does not exist in NASA's database. 
-
+        SRTM data for an output tile might not actually exist, e.g. data for the tile N90E000 does not exist in NASA's database. 
     """
     check_lonlat(lon, lat)
 
@@ -111,32 +109,68 @@ def get_srtm_tile_name(lon, lat):
 
     return lat + lon 
 
-def get_srtm_tile_names(lon_lats, cover_bounds=False):
+def get_srtm_tile_ids(lon_lats):
     """
-    INPUTS:
-
-    - ``lon_lats``: list of WGS84 longitude-latitude pairs (float pairs)
-    - ``cover_bounds``: boolean
-
-    OUTPUTS:
-
     Return the set of names of SRTM tiles that form a minimal cover of 
     the given longitude-latitude points.
-    If ``cover_bounds``, then return instead the names of the SRTM tiles 
-    that form a minimal cover of the WGS84 bounding box of the points.
+
+    INPUT:
+        - ``lon_lats``: list of WGS84 longitude-latitude pairs (float pairs)
+
+    OUTPUT:
+        Set of SRTM tile IDs
 
     NOTES:
-
-    Calls :func:`get_srtm_tile_name`.
+        Calls :func:`get_srtm_tile_id`.
     """
-    if cover_bounds:
-        bounds = get_bounds(lon_lats)
-        min_lon, min_lat = int(floor(bounds[0])), int(floor(bounds[1]))    
-        max_lon, max_lat = int(ceil(bounds[2])), int(ceil(bounds[3]))
-        step_size = 1  # degrees 
-        lons = range(min_lon, max_lon, step_size)
-        lats = range(min_lat, max_lat, step_size)
-        lon_lats = product(lons, lats)
+    return set(get_srtm_tile_id(lon, lat) for lon, lat in lon_lats)
 
-    return set(get_srtm_tile_name(lon, lat) for lon, lat in lon_lats)
+def get_nzsosdem_tile_id(lon, lat):
+    """
+    Return the ID of the NZSoSDEM tile that covers the given 
+    longitude and latitude. 
+    Return ``None`` if no such tile exists.
 
+    INPUT:
+        - ``lon``: float; WGS84 longitude
+        - ``lat``: float; WGS84 latitude 
+
+    OUTPUT:
+        An NZSoS tile ID (string)
+
+    EXAMPLES:
+    
+    >>> get_nzsosdem_tile_id(27.5, 3.64)
+    
+    >>> get_nzsosdem_tile_id(174.6964, -36.9245)
+    '05'
+
+    NOTES:
+        NZSoSDEM tiles only cover New Zealand
+    """
+    result = None
+    point = Point(lon, lat)
+    with NZSOSDEM_POLYGONS_PATH.open() as src:
+        polys = json.load(src)
+        for f in polys['features']:
+            polygon = shape(f['geometry'])
+            if polygon.contains(point):
+                result = f['properties']['tile_id']
+                break
+    return result
+
+def get_nzsosdem_tile_ids(lon_lats):
+    """
+    Return the set of names of NZSoSDEM tiles that form a minimal cover of 
+    the given longitude-latitude points.
+
+    INPUT:
+        - ``lon_lats``: list of float pairs; WGS84 longitude-latitude pairs 
+
+    OUTPUT:
+        A set of NZSoSDEM tile names (strings)
+
+    NOTES:
+        Calls :func:`get_nzsosdem_tile_id`.
+    """
+    return set(get_nzsosdem_tile_id(lon, lat) for lon, lat in lon_lats)

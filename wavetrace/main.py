@@ -28,7 +28,7 @@ def create_splat_transmitter_files(in_path, out_path,
   conductivity=CONDUCTIVITY, radio_climate=RADIO_CLIMATE, 
   fraction_of_time=FRACTION_OF_TIME):
     """
-    INPUTS:
+    INPUT:
 
     - ``in_path``: string or Path object; location of a CSV file of transmitter data
     - ``out_path``: string or Path object; directory to which to write outputs
@@ -37,7 +37,7 @@ def create_splat_transmitter_files(in_path, out_path,
     - ``radio_climate``: integer; used to make SPLAT! ``.lrp`` file
     - ``fraction_of_time``: float in [0, 1]; used to make SPLAT! ``.lrp`` file
 
-    OUTPUTS:
+    OUTPUT:
 
     None.
     Read the CSV transmitter data at ``in_path``, and for each transmitter, 
@@ -80,11 +80,11 @@ def create_splat_transmitter_files(in_path, out_path,
 
 def read_transmitters(path):
     """
-    INPUTS:
+    INPUT:
 
     - ``path``: string or Path object; location of a CSV file of transmitter data
 
-    OUTPUTS:
+    OUTPUT:
 
     Return a list of dictionaries, one for each transmitter in the transmitters
     CSV file.
@@ -120,11 +120,11 @@ def read_transmitters(path):
 
 def check_and_format_transmitters(transmitters):
     """
-    INPUTS:
+    INPUT:
 
     - ``transmitters``: list; same format as output of :func:`read_transmitters`
 
-    OUTPUTS:
+    OUTPUT:
 
     Return the given list of transmitters dictionaries altered as follows.
     For each dictionary, 
@@ -163,12 +163,12 @@ def check_and_format_transmitters(transmitters):
 
 def build_transmitter_name(network_name, site_name):
     """
-    INPUTS:
+    INPUT:
 
     - ``network_name``: string
     - ``site_name``: string
 
-    OUTPUTS:
+    OUTPUT:
 
     Return a string that is the network name with spaces removed followed 
     by an underscore followed by the site name with spaces removed.
@@ -184,11 +184,11 @@ def build_transmitter_name(network_name, site_name):
 
 def build_splat_qth(transmitter):
     """
-    INPUTS:
+    INPUT:
 
     - ``transmitter``: dictionary of the same form as any one of the elements in the list output by :func:`read_transmitters`
 
-    OUTPUTS:
+    OUTPUT:
 
     Return the text (string) content of a SPLAT! site location file 
     (``.qth`` file) corresponding to the given transmitter.
@@ -206,7 +206,7 @@ def build_splat_lrp(transmitter, dialectric_constant=DIALECTRIC_CONSTANT,
   conductivity=CONDUCTIVITY, radio_climate=RADIO_CLIMATE, 
   fraction_of_time=FRACTION_OF_TIME):
     """
-    INPUTS:
+    INPUT:
 
     - ``transmitter``: dictionary of the same form as any one of the elements in the list output by :func:`read_transmitters`
     - ``dialectric_constant``: float
@@ -214,7 +214,7 @@ def build_splat_lrp(transmitter, dialectric_constant=DIALECTRIC_CONSTANT,
     - ``radio_climate``: integer
     - ``fraction_of_time``: float in [0, 1]
 
-    OUTPUTS:
+    OUTPUT:
 
     Return the text (string) content of a SPLAT! irregular topography model
     parameter file (``.lrp`` file) corresponding to the given transmitter.
@@ -241,11 +241,11 @@ def build_splat_lrp(transmitter, dialectric_constant=DIALECTRIC_CONSTANT,
 
 def build_splat_az(transmitter):
     """
-    INPUTS:
+    INPUT:
 
     - ``transmitter``: dictionary of the same form as any one of the elements in the list output by :func:`read_transmitters`
 
-    OUTPUTS:
+    OUTPUT:
 
     Return the text (string) content of a SPLAT! azimuth file (``.az`` file)
     corresponding to the given transmitter.
@@ -275,11 +275,11 @@ def build_splat_az(transmitter):
 
 def build_splat_el(transmitter):
     """
-    INPUTS:
+    INPUT:
 
     - ``transmitter``: dictionary of the same form as any one of the elements in the list output by :func:`read_transmitters`
 
-    OUTPUTS:
+    OUTPUT:
 
     Return the text (string) content of a SPLAT! elevation file (``.el`` file)
     corresponding to the given transmitter.
@@ -309,11 +309,11 @@ def build_splat_el(transmitter):
 
 def get_lon_lats(transmitters):
     """
-    INPUTS:
+    INPUT:
 
     - ``transmitters``: a list of transmitters of the form output by :func:`read_transmitters`
 
-    OUTPUTS:
+    OUTPUT:
 
     Return a list of longitude-latitude pairs (float pairs)
     representing the locations of the given transmitters.
@@ -323,13 +323,13 @@ def get_lon_lats(transmitters):
 
 def create_splat_topography_files(in_path, out_path, high_definition=False):
     """
-    INPUTS:
+    INPUT:
 
     - ``in_path``: string or Path object specifying a directory
     - ``out_path``: string or Path object specifying a directory
     - ``high_definition``: boolean
 
-    OUTPUTS:
+    OUTPUT:
 
     None.
     Convert each SRTM HGT topography file in the directory ``in_path`` to
@@ -364,8 +364,8 @@ def create_splat_topography_files(in_path, out_path, high_definition=False):
         if f.name.endswith('.zip'):
             is_zip = True
             shutil.unpack_archive(str(f), str(f.parent))
-            tile_name = f.name.split('.')[0]
-            f = f.parent/'{!s}.hgt'.format(tile_name)
+            tile_id = f.name.split('.')[0]
+            f = f.parent/'{!s}.hgt'.format(tile_id)
 
         # Convert to SDF
         cp = subprocess.run([splat, f.name], cwd=str(f.parent),
@@ -387,7 +387,7 @@ def create_splat_topography_files(in_path, out_path, high_definition=False):
 def create_coverage_reports(in_path, out_path, transmitter_names=None,
   receiver_sensitivity=-110, high_definition=False):
     """
-    INPUTS:
+    INPUT:
 
     - ``in_path``: string or Path object specifying a directory; all the SPLAT! transmitter and elevation data should lie here
     - ``out_path``: string or Path object specifying a directory
@@ -395,7 +395,7 @@ def create_coverage_reports(in_path, out_path, transmitter_names=None,
     - ``receiver_sensitivity``: float; measured in decibels; path loss threshold beyond which signal strength contours will not be plotted
     - ``high_definition``: boolean
 
-    OUTPUTS:
+    OUTPUT:
 
     None. 
     Create a SPLAT! coverage report for every transmitter with data located
@@ -451,12 +451,12 @@ def create_coverage_reports(in_path, out_path, transmitter_names=None,
 
 def postprocess_coverage_reports(path, delete_ppm=False):
     """
-    INPUTS:
+    INPUT:
 
     - ``path``: string or Path object; directory where coverage reports (outputs of :func:`create_coverage_reports`) lie
     - ``delete_ppm``: boolean; delete the original, large PPM files in the coverage reports if and only if this flag is ``True``
 
-    OUTPUTS:
+    OUTPUT:
 
     None.
     Using the PPM files in the directory ``path`` do the following:
@@ -502,17 +502,16 @@ def postprocess_coverage_reports(path, delete_ppm=False):
             args = ['gdal_translate', '-of', 'Gtiff', '-a_ullr', 
               str(bounds[0]), str(bounds[3]), str(bounds[2]), str(bounds[1]),
               '-a_srs', epsg, png, tif]
-            print(" ".join(args))
             subprocess.run(args, cwd=str(path),
               stdout=subprocess.PIPE, universal_newlines=True, check=True)
 
 def get_bounds_from_kml(kml_string):
     """
-    INPUTS:
+    INPUT:
 
     - ``kml_string``: string form of a KML file produced by SPLAT!
 
-    OUTPUTS:
+    OUTPUT:
 
     Return a list of floats of the form 
     ``[min_lon, min_lat, max_lon, max_lat]``, describing the WGS84 
