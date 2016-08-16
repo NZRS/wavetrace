@@ -307,7 +307,7 @@ def build_splat_el(transmitter):
 
     return s[:-1]  # Drop the final newline 
 
-def get_lon_lats(transmitters):
+def get_lonlats(transmitters):
     """
     INPUT:
 

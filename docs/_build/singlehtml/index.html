@@ -243,8 +243,8 @@ entry and hence is not a well-formed SPLAT! KML coverage file.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="wavetrace.main.get_lon_lats">
-<code class="descclassname">wavetrace.main.</code><code class="descname">get_lon_lats</code><span class="sig-paren">(</span><em>transmitters</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.main.get_lon_lats" title="Permalink to this definition">¶</a></dt>
+<dt id="wavetrace.main.get_lonlats">
+<code class="descclassname">wavetrace.main.</code><code class="descname">get_lonlats</code><span class="sig-paren">(</span><em>transmitters</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.main.get_lonlats" title="Permalink to this definition">¶</a></dt>
 <dd><p>INPUT:</p>
 <ul class="simple">
 <li><code class="docutils literal"><span class="pre">transmitters</span></code>: a list of transmitters of the form output by <a class="reference internal" href="#wavetrace.main.read_transmitters" title="wavetrace.main.read_transmitters"><code class="xref py py-func docutils literal"><span class="pre">read_transmitters()</span></code></a></li>
@@ -359,10 +359,10 @@ WGS84 longitude-latitude pair.</p>
 
 <dl class="function">
 <dt id="wavetrace.utilities.get_bounds">
-<code class="descclassname">wavetrace.utilities.</code><code class="descname">get_bounds</code><span class="sig-paren">(</span><em>lon_lats</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.utilities.get_bounds" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">wavetrace.utilities.</code><code class="descname">get_bounds</code><span class="sig-paren">(</span><em>lonlats</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.utilities.get_bounds" title="Permalink to this definition">¶</a></dt>
 <dd><p>INPUT:</p>
 <ul class="simple">
-<li><code class="docutils literal"><span class="pre">lon_lats</span></code>: list of WGS84 longitude-latitude pairs (float pairs)</li>
+<li><code class="docutils literal"><span class="pre">lonlats</span></code>: list of WGS84 longitude-latitude pairs (float pairs)</li>
 </ul>
 <p>OUTPUT:</p>
 <p>Return a list of floats of the form 
@@ -405,13 +405,13 @@ Return <code class="docutils literal"><span class="pre">None</span></code> if no
 
 <dl class="function">
 <dt id="wavetrace.utilities.get_nzsos_tile_ids">
-<code class="descclassname">wavetrace.utilities.</code><code class="descname">get_nzsos_tile_ids</code><span class="sig-paren">(</span><em>lon_lats</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.utilities.get_nzsos_tile_ids" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">wavetrace.utilities.</code><code class="descname">get_nzsos_tile_ids</code><span class="sig-paren">(</span><em>lonlats</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.utilities.get_nzsos_tile_ids" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the set of names of NZSoSDEM tiles that form a minimal cover of 
 the given longitude-latitude points.</p>
 <p>INPUT:</p>
 <blockquote>
 <div><ul class="simple">
-<li><code class="docutils literal"><span class="pre">lon_lats</span></code>: list of float pairs; WGS84 longitude-latitude pairs</li>
+<li><code class="docutils literal"><span class="pre">lonlats</span></code>: list of float pairs; WGS84 longitude-latitude pairs</li>
 </ul>
 </div></blockquote>
 <p>OUTPUT:</p>
@@ -450,10 +450,10 @@ tile N90E000 does not exist in NASA&#8217;s database.</p>
 
 <dl class="function">
 <dt id="wavetrace.utilities.get_srtm_tile_ids">
-<code class="descclassname">wavetrace.utilities.</code><code class="descname">get_srtm_tile_ids</code><span class="sig-paren">(</span><em>lon_lats</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.utilities.get_srtm_tile_ids" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">wavetrace.utilities.</code><code class="descname">get_srtm_tile_ids</code><span class="sig-paren">(</span><em>lonlats</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.utilities.get_srtm_tile_ids" title="Permalink to this definition">¶</a></dt>
 <dd><p>INPUT:</p>
 <ul class="simple">
-<li><code class="docutils literal"><span class="pre">lon_lats</span></code>: list of WGS84 longitude-latitude pairs (float pairs)</li>
+<li><code class="docutils literal"><span class="pre">lonlats</span></code>: list of WGS84 longitude-latitude pairs (float pairs)</li>
 </ul>
 <p>OUTPUT:</p>
 <p>Return the set of names of SRTM tiles that form a minimal cover of 

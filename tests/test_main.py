@@ -121,16 +121,16 @@ class TestMain(unittest.TestCase):
 
         rm_paths(out_path)
 
-    def test_get_lon_lats(self):
+    def test_get_lonlats(self):
         ts = [
           {'longitude': 5.6, 'latitude': -20.4},
           {'longitude': 7.6, 'latitude': 18},
           ]
-        get = get_lon_lats(ts)
+        get = get_lonlats(ts)
         expect = [(5.6, -20.4), (7.6, 18)]
         self.assertSequenceEqual(get, expect)
 
-        self.assertEqual(get_lon_lats([]), [])
+        self.assertEqual(get_lonlats([]), [])
 
     def test_create_splat_topography_files(self):
         out_path = DATA_DIR/'tmp'

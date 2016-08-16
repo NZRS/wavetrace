@@ -5,17 +5,6 @@ from wavetrace import *
 
 
 class TestUtilities(unittest.TestCase):
-    def setUp(self):
-        try:
-            koordinates_key = get_secret('KOORDINATES_API_KEY')
-        except KeyError:
-            koordinates_key = None
-
-    def test_get_bounds(self):
-        lon_lats = [(-11, 9), (0, 11), (5, -8)]
-        get = get_bounds(lon_lats)
-        expect = [-11, -8, 5, 11]
-        self.assertSequenceEqual(get, expect)
 
     def test_get_srtm_tile_id(self):
         get = get_srtm_tile_id(27.5, 3.64)
@@ -35,24 +24,38 @@ class TestUtilities(unittest.TestCase):
         self.assertEqual(get, expect)
 
     def test_get_srtm_tile_ids(self):
-        lon_lats = [(-1.1, 0.9), (-1.1, 0.9), (1.1, 1.1), (0.5, -0.9)]
-        get = get_srtm_tile_ids(lon_lats)
+        lonlats = [(-1.1, 0.9), (-1.1, 0.9), (1.1, 1.1), (0.5, -0.9)]
+        get = get_srtm_tile_ids(lonlats)
         expect = ['N00W002', 'N01E001', 'S01E000']
         self.assertCountEqual(get, expect)
 
-    def test_get_nzsos_tile_id(self):
-        get = get_nzsos_tile_id(1, 3.64)
-        self.assertIsNone(get)
+    def test_get_bounds(self):
+        get = get_bounds('N03E027')
+        expect = [27, 3, 28, 4]
+        self.assertSequenceEqual(get, expect)
 
-        get = get_nzsos_tile_id(174.6964, -36.9245)
-        expect = '05'
-        self.assertEqual(get, expect)
+        get = get_bounds('S03E027')
+        expect = [27, -3, 28, -2]
+        self.assertSequenceEqual(get, expect)
 
-    def test_get_nzsos_tile_ids(self):
-        lon_lats = [(-1.1, 0.9), (174.6964, -36.9245), (172.309, -42.407)]
-        get = get_nzsos_tile_ids(lon_lats)
-        expect = [None, '05', '18']
-        self.assertCountEqual(get, expect)
+        get = get_bounds('N03W027')
+        expect = [-27, 3, -26, 4]
+        self.assertSequenceEqual(get, expect)
+
+        get = get_bounds('S03W027')
+        expect = [-27, -3, -26, -2]
+        self.assertSequenceEqual(get, expect)
+
+    def test_get_polygons(self):
+        tids = ['N03E027', 'S04E027']
+        polygons = get_polygons(tids)
+        # Should be correct length
+        self.assertEqual(len(polygons), 2)
+        # Should have coordinates of a quadrangle
+        for p in polygons:
+            coords = p['geometry']['coordinates'][0]
+            self.assertEqual(len(coords), 5)
+            self.assertSequenceEqual(coords[0], coords[-1])
 
 
 if __name__ == '__main__':

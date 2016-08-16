@@ -4,7 +4,6 @@ import datetime as dt
 import json
 from math import ceil, floor
 from itertools import product
-from shapely.geometry import shape, Point
 from pathlib import Path 
 
 
@@ -57,19 +56,6 @@ def check_lonlat(lon, lat):
     if not (-90 <= lat <= 90):
         raise ValueError('Latitude {!s} is out of bounds'.format(lat))
 
-def get_bounds(lon_lats):
-    """
-    Return a bounding box for the list of WGS84 longitude-latitude pairs
-
-    INPUT:
-        - ``lon_lats``: list of WGS84 longitude-latitude pairs (float pairs)
-
-    OUTPUT:
-        List of floats of the form  ``[min_lon, min_lat, max_lon, max_lat]``
-    """
-    lons, lats = zip(*lon_lats)
-    return [min(lons), min(lats), max(lons), max(lats)]
-
 def get_srtm_tile_id(lon, lat):
     """
     Return the ID of the SRTM tile that covers the given 
@@ -109,13 +95,13 @@ def get_srtm_tile_id(lon, lat):
 
     return lat + lon 
 
-def get_srtm_tile_ids(lon_lats):
+def get_srtm_tile_ids(lonlats):
     """
-    Return the set of names of SRTM tiles that form a minimal cover of 
+    Return the set of IDs of SRTM tiles that form a minimal cover of 
     the given longitude-latitude points.
 
     INPUT:
-        - ``lon_lats``: list of WGS84 longitude-latitude pairs (float pairs)
+        - ``lonlats``: list of WGS84 longitude-latitude pairs (float pairs)
 
     OUTPUT:
         Set of SRTM tile IDs
@@ -123,54 +109,55 @@ def get_srtm_tile_ids(lon_lats):
     NOTES:
         Calls :func:`get_srtm_tile_id`.
     """
-    return set(get_srtm_tile_id(lon, lat) for lon, lat in lon_lats)
+    return set(get_srtm_tile_id(lon, lat) for lon, lat in lonlats)
 
-def get_nzsos_tile_id(lon, lat):
+def get_bounds(srtm_tile_id):
     """
-    Return the ID of the NZSoSDEM tile that covers the given 
-    longitude and latitude. 
-    Return ``None`` if no such tile exists.
+    Return the bounding box for the given SRTM tile ID.
 
     INPUT:
-        - ``lon``: float; WGS84 longitude
-        - ``lat``: float; WGS84 latitude 
+        - ``srtm_tile_id``: string; ID of an SRTM tile
 
     OUTPUT:
-        An NZSoS tile ID (string)
+        List of floats of the form  ``[min_lon, min_lat, max_lon, max_lat]``
+        representing the WGS84 bounding box of the tile 
 
     EXAMPLES:
-    
-    >>> get_nzsos_tile_id(27.5, 3.64)
-    
-    >>> get_nzsos_tile_id(174.6964, -36.9245)
-    '05'
 
-    NOTES:
-        NZSoSDEM tiles only cover New Zealand
+    >>> get_bounds('N04W027')
+    [-27, 4, -26, 5]
     """
-    result = None
-    point = Point(lon, lat)
-    with NZSOSDEM_POLYGONS_PATH.open() as src:
-        polys = json.load(src)
-        for f in polys['features']:
-            polygon = shape(f['geometry'])
-            if polygon.contains(point):
-                result = f['properties']['tile_id']
-                break
-    return result
+    t = srtm_tile_id
+    min_lat, min_lon = t[:3], t[3:]
+    if min_lat[0] == 'N':
+        min_lat = float(min_lat[1:])
+    else:
+        min_lat = -float(min_lat[1:])
+    if min_lon[0] == 'E':
+        min_lon = float(min_lon[1:])
+    else:
+        min_lon = -float(min_lon[1:])
 
-def get_nzsos_tile_ids(lon_lats):
+    return [min_lon, min_lat, min_lon + 1, min_lat + 1]
+
+def get_polygons(srtm_tile_ids):
     """
-    Return the set of names of NZSoSDEM tiles that form a minimal cover of 
-    the given longitude-latitude points.
-
-    INPUT:
-        - ``lon_lats``: list of float pairs; WGS84 longitude-latitude pairs 
-
-    OUTPUT:
-        A set of NZSoSDEM tile names (strings)
-
-    NOTES:
-        Calls :func:`get_nzsos_tile_id`.
+    Return a list of (decoded) GeoJSON features, one for each SRTM tile ID 
+    in the given list.
+    Each feature represents the boundary polygon (rectangle, actually) of 
+    the SRTM tile.  
     """
-    return set(get_nzsos_tile_id(lon, lat) for lon, lat in lon_lats)
+    features = []
+    for t in srtm_tile_ids:
+        min_lon, min_lat, max_lon, max_lat = get_bounds(t)
+        coords = [[min_lon, min_lat], [min_lon, max_lat], 
+          [max_lon, max_lat], [max_lon, min_lat], [min_lon, min_lat]]
+        features.append({
+            'type': 'Feature',
+            'properties': {'srtm_tile_id': t},
+            'geometry': {
+                'type': 'Polygon',
+                'coordinates': [coords],
+                }
+            })
+    return features
