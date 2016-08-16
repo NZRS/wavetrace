@@ -11,7 +11,7 @@ from pathlib import Path
 PROJECT_ROOT = Path(os.path.abspath(os.path.join(
   os.path.dirname(__file__), '../')))
 SECRETS_PATH = PROJECT_ROOT/'secrets.json'
-NZSOSDEM_POLYGONS_PATH = PROJECT_ROOT/'data'/'nzsosdem_polygons.geojson'
+NZSOSDEM_POLYGONS_PATH = PROJECT_ROOT/'data'/'nzsos_polygons.geojson'
 
 def time_it(f):
     """
@@ -125,7 +125,7 @@ def get_srtm_tile_ids(lon_lats):
     """
     return set(get_srtm_tile_id(lon, lat) for lon, lat in lon_lats)
 
-def get_nzsosdem_tile_id(lon, lat):
+def get_nzsos_tile_id(lon, lat):
     """
     Return the ID of the NZSoSDEM tile that covers the given 
     longitude and latitude. 
@@ -140,9 +140,9 @@ def get_nzsosdem_tile_id(lon, lat):
 
     EXAMPLES:
     
-    >>> get_nzsosdem_tile_id(27.5, 3.64)
+    >>> get_nzsos_tile_id(27.5, 3.64)
     
-    >>> get_nzsosdem_tile_id(174.6964, -36.9245)
+    >>> get_nzsos_tile_id(174.6964, -36.9245)
     '05'
 
     NOTES:
@@ -159,7 +159,7 @@ def get_nzsosdem_tile_id(lon, lat):
                 break
     return result
 
-def get_nzsosdem_tile_ids(lon_lats):
+def get_nzsos_tile_ids(lon_lats):
     """
     Return the set of names of NZSoSDEM tiles that form a minimal cover of 
     the given longitude-latitude points.
@@ -171,6 +171,6 @@ def get_nzsosdem_tile_ids(lon_lats):
         A set of NZSoSDEM tile names (strings)
 
     NOTES:
-        Calls :func:`get_nzsosdem_tile_id`.
+        Calls :func:`get_nzsos_tile_id`.
     """
-    return set(get_nzsosdem_tile_id(lon, lat) for lon, lat in lon_lats)
+    return set(get_nzsos_tile_id(lon, lat) for lon, lat in lon_lats)

@@ -3,4 +3,5 @@
 ipynb/.ipynb_checkpoints
 data/sample_outputs/*
 tests/data/tmp*
+data/sample_inputs/nzsos/*
 secrets.json

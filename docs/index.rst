@@ -9,6 +9,7 @@ Wavetrace |version| documentation
 .. toctree::
    :maxdepth: 2
 
+   workflows
    wavetrace
 
 

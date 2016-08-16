@@ -10,51 +10,43 @@ from bs4 import BeautifulSoup, SoupStrainer
 
 import wavetrace.utilities as ut
 
-def download_topography_nasa(srtm_tile_ids, path, high_definition=False, 
-  username=None, password=None):
+def download_topography_srtm3(srtm_tile_ids, path):
     """
-    INPUT:
+    Download the specified SRTM3 topography tiles from United States 
+    National Aeronautics and Space Administration (NASA) and save them
+    to the given directory ``path``, creating the directory if it does 
+    not exist.
 
-    - ``srtm_tile_ids``: list of SRTM tile names (strings)
-    - ``path``: string or Path object specifying a directory
-    - ``high_definition``: boolean
-    - ``username``: string; NASA Earthdata username for high definition files
-    - ``password``: string; NASA Earthdata password for high definition files
+    INPUT:
+        - ``srtm_tile_ids``: list of strings; SRTM3 tile names
+        - ``path``: string or Path object specifying a directory
 
     OUTPUT:
+
+        None.
 
     Download from the United States National Aeronautics and
     Space Administration (NASA) the raster digital surface model data for the 
     given SRTM tile names in 
-    `SRTM HGT format <http://www.gdal.org/frmt_various.html#SRTMHGT>`_ and 
+     and 
     save the files to the directory specified by ``path``, creating the path
     if it does not exist.
-    If ``high_definition``, then the data is formatted as SRTM-1 V2; 
-    otherwise it is formatted as SRTM-3.
 
     NOTES:
-
-    - SRTM data is only available between 60 degrees north latitude and 56 degrees south latitude, so tiles given outside of that range will not be downloaded.
-    - Uses BeautifulSoup to scrape the appropriate NASA webpages
-    - Downloading high definition files is not implemented yet, because it requires handling OAuth2 authentication for NASA Earthdata accounts; more info `here <https://urs.earthdata.nasa.gov/documentation>`
+        - The SRTM3 tiles are formatted as `SRTM HGT format <http://www.gdal.org/frmt_various.html#SRTMHGT>`_
+        - SRTM3 data is only available between 60 degrees north latitude and 56 degrees south latitude, so tiles given outside of that range will not be downloaded
+        - Uses BeautifulSoup to scrape the appropriate NASA webpages
     """
-    if high_definition:
-        raise NotImplementedError('Downloading high definition data has not been implemented yet')
-        ext = '.SRTMGL1.hgt.zip'
-        pattern = re.compile(r'^\w+\.SRTMGL1\.hgt\.zip$')
-        urls = ['http://e4ftl01.cr.usgs.gov/SRTM/SRTMGL1.003/2000.02.11/']
-
-    else:
-        ext = '.hgt.zip'
-        pattern = re.compile(r'^\w+.hgt\.zip$')
-        urls = [
-          'http://dds.cr.usgs.gov/srtm/version2_1/SRTM3/Africa/',
-          'http://dds.cr.usgs.gov/srtm/version2_1/SRTM3/Australia/',
-          'http://dds.cr.usgs.gov/srtm/version2_1/SRTM3/Eurasia/',
-          'http://dds.cr.usgs.gov/srtm/version2_1/SRTM3/Islands/',
-          'http://dds.cr.usgs.gov/srtm/version2_1/SRTM3/North_America/',
-          'http://dds.cr.usgs.gov/srtm/version2_1/SRTM3/South_America/',
-          ]
+    ext = '.hgt.zip'
+    pattern = re.compile(r'^\w+.hgt\.zip$')
+    urls = [
+      'http://dds.cr.usgs.gov/srtm/version2_1/SRTM3/Africa/',
+      'http://dds.cr.usgs.gov/srtm/version2_1/SRTM3/Australia/',
+      'http://dds.cr.usgs.gov/srtm/version2_1/SRTM3/Eurasia/',
+      'http://dds.cr.usgs.gov/srtm/version2_1/SRTM3/Islands/',
+      'http://dds.cr.usgs.gov/srtm/version2_1/SRTM3/North_America/',
+      'http://dds.cr.usgs.gov/srtm/version2_1/SRTM3/South_America/',
+      ]
 
     file_names = set(t + ext for t in srtm_tile_ids)
 
@@ -84,9 +76,3 @@ def download_topography_nasa(srtm_tile_ids, path, high_definition=False,
             with p.open('wb') as tgt:
                 for chunk in r:
                     tgt.write(chunk) 
-
-def download_topography_linz():
-    """
-    For New Zealand only.
-    """ 
-    pass

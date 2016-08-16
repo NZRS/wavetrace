@@ -40,17 +40,17 @@ class TestUtilities(unittest.TestCase):
         expect = ['N00W002', 'N01E001', 'S01E000']
         self.assertCountEqual(get, expect)
 
-    def test_get_nzsosdem_tile_id(self):
-        get = get_nzsosdem_tile_id(1, 3.64)
+    def test_get_nzsos_tile_id(self):
+        get = get_nzsos_tile_id(1, 3.64)
         self.assertIsNone(get)
 
-        get = get_nzsosdem_tile_id(174.6964, -36.9245)
+        get = get_nzsos_tile_id(174.6964, -36.9245)
         expect = '05'
         self.assertEqual(get, expect)
 
-    def test_get_nzsosdem_tile_ids(self):
+    def test_get_nzsos_tile_ids(self):
         lon_lats = [(-1.1, 0.9), (174.6964, -36.9245), (172.309, -42.407)]
-        get = get_nzsosdem_tile_ids(lon_lats)
+        get = get_nzsos_tile_ids(lon_lats)
         expect = [None, '05', '18']
         self.assertCountEqual(get, expect)
 

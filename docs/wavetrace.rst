@@ -6,7 +6,7 @@ The ``wavetrace`` package contains three modules that depend on each other like 
     main -> utilities
     downloader -> utilities
 
-
+    
 main Module
 -------------------------------------
 

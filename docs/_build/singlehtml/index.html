@@ -313,8 +313,8 @@ otherwise a <code class="docutils literal"><span class="pre">ValueError</span></
 </dd></dl>
 
 <dl class="function">
-<dt id="wavetrace.downloader.download_topography_nasa">
-<code class="descclassname">wavetrace.downloader.</code><code class="descname">download_topography_nasa</code><span class="sig-paren">(</span><em>srtm_tile_ids</em>, <em>path</em>, <em>high_definition=False</em>, <em>username=None</em>, <em>password=None</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.downloader.download_topography_nasa" title="Permalink to this definition">¶</a></dt>
+<dt id="wavetrace.downloader.download_topography_srtm3">
+<code class="descclassname">wavetrace.downloader.</code><code class="descname">download_topography_srtm3</code><span class="sig-paren">(</span><em>srtm_tile_ids</em>, <em>path</em>, <em>high_definition=False</em>, <em>username=None</em>, <em>password=None</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.downloader.download_topography_srtm3" title="Permalink to this definition">¶</a></dt>
 <dd><p>INPUT:</p>
 <ul class="simple">
 <li><code class="docutils literal"><span class="pre">srtm_tile_ids</span></code>: list of SRTM tile names (strings)</li>
@@ -371,8 +371,8 @@ WGS84 bounding box of the given longitude-latitude points.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="wavetrace.utilities.get_nzsosdem_tile_id">
-<code class="descclassname">wavetrace.utilities.</code><code class="descname">get_nzsosdem_tile_id</code><span class="sig-paren">(</span><em>lon</em>, <em>lat</em>, <em>api_key</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.utilities.get_nzsosdem_tile_id" title="Permalink to this definition">¶</a></dt>
+<dt id="wavetrace.utilities.get_nzsos_tile_id">
+<code class="descclassname">wavetrace.utilities.</code><code class="descname">get_nzsos_tile_id</code><span class="sig-paren">(</span><em>lon</em>, <em>lat</em>, <em>api_key</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.utilities.get_nzsos_tile_id" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the ID of the NZSoSDEM tile that covers the given 
 longitude and latitude. 
 Return <code class="docutils literal"><span class="pre">None</span></code> if no such tile exists.</p>
@@ -388,8 +388,8 @@ Return <code class="docutils literal"><span class="pre">None</span></code> if no
 <dd>An NZSoS tile ID (string)</dd>
 </dl>
 <p>EXAMPLES:
-&gt;&gt;&gt; get_nzsosdem_tile_id(27.5, 3.64)</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">get_nzsosdem_tile_id</span><span class="p">(</span><span class="mf">174.6964</span><span class="p">,</span> <span class="o">-</span><span class="mf">36.9245</span><span class="p">)</span>
+&gt;&gt;&gt; get_nzsos_tile_id(27.5, 3.64)</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">get_nzsos_tile_id</span><span class="p">(</span><span class="mf">174.6964</span><span class="p">,</span> <span class="o">-</span><span class="mf">36.9245</span><span class="p">)</span>
 <span class="go">&#39;05&#39;</span>
 </pre></div>
 </div>
@@ -404,8 +404,8 @@ Return <code class="docutils literal"><span class="pre">None</span></code> if no
 </dd></dl>
 
 <dl class="function">
-<dt id="wavetrace.utilities.get_nzsosdem_tile_ids">
-<code class="descclassname">wavetrace.utilities.</code><code class="descname">get_nzsosdem_tile_ids</code><span class="sig-paren">(</span><em>lon_lats</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.utilities.get_nzsosdem_tile_ids" title="Permalink to this definition">¶</a></dt>
+<dt id="wavetrace.utilities.get_nzsos_tile_ids">
+<code class="descclassname">wavetrace.utilities.</code><code class="descname">get_nzsos_tile_ids</code><span class="sig-paren">(</span><em>lon_lats</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.utilities.get_nzsos_tile_ids" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the set of names of NZSoSDEM tiles that form a minimal cover of 
 the given longitude-latitude points.</p>
 <p>INPUT:</p>
@@ -418,7 +418,7 @@ the given longitude-latitude points.</p>
 <blockquote>
 <div>A set of NZSoSDEM tile names (strings)</div></blockquote>
 <p>NOTES:</p>
-<p>Calls <a class="reference internal" href="#wavetrace.utilities.get_nzsosdem_tile_id" title="wavetrace.utilities.get_nzsosdem_tile_id"><code class="xref py py-func docutils literal"><span class="pre">get_nzsosdem_tile_id()</span></code></a>.</p>
+<p>Calls <a class="reference internal" href="#wavetrace.utilities.get_nzsos_tile_id" title="wavetrace.utilities.get_nzsos_tile_id"><code class="xref py py-func docutils literal"><span class="pre">get_nzsos_tile_id()</span></code></a>.</p>
 </dd></dl>
 
 <dl class="function">
