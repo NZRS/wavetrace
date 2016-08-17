@@ -1,25 +1,15 @@
 wavetrace Package
 ======================
 
-The ``wavetrace`` package contains three modules that depend on each other like so::
+The ``wavetrace`` package contains two modules that depend on each other like so::
 
     main -> utilities
-    downloader -> utilities
 
     
 main Module
 -------------------------------------
 
 .. automodule:: wavetrace.main
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
-downloader Module
-------------------------------------
-
-.. automodule:: wavetrace.downloader
     :members:
     :undoc-members:
     :show-inheritance:

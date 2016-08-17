@@ -515,7 +515,7 @@ def create_coverage_reports(in_path, out_path, transmitter_names=None,
         None. 
 
     NOTES:
-        On a 3.6 GHz Intel Core i7 processor with 16 GB of RAM, this takes about 1 minute for one transmitter with standard definition data and takes about ? minutes for one transmitter with high definition data.
+        On a 3.6 GHz Intel Core i7 processor with 16 GB of RAM, this takes about 1 minute for one transmitter with standard definition data and takes about 10 minutes for one transmitter with high definition data.
     """
     in_path = Path(in_path)
     out_path = Path(out_path)

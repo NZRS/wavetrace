@@ -60,7 +60,7 @@ class TestMain(unittest.TestCase):
         ts = read_transmitters(path)
 
         # Should contain the correct number of transmitters
-        self.assertEqual(len(ts), 3)
+        self.assertEqual(len(ts), 20)
 
         float_fields = ['latitude', 'longitude', 'antenna_height', 
           'polarization', 'frequency', 'power_eirp']
@@ -207,7 +207,7 @@ class TestMain(unittest.TestCase):
         create_splat_transmitter_files(p1/'transmitters_single.csv', p2)
         create_splat_topography_files(p1, p2)
         create_coverage_reports(p2, p3)
-        postprocess_coverage_reports(p3)
+        postprocess_coverage_reports(p3, delete_ppm=False)
 
         # Should contain the correct files
         names_get = [f.name for f in p3.iterdir()]

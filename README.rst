@@ -1,6 +1,6 @@
 Wavetrace
 **********
-A Python 3.5 module to produce radio signal strength reports given radio transmitter data and elevation data for the study region.
+A Python 3.5 package designed to produce radio signal strength reports given radio transmitter data and topography data around the transmitters.
 Uses `SPLAT! <http://www.qsl.net/kd2bd/splat.html>`_ to do the math.
 
 
@@ -22,14 +22,13 @@ Documentation
 In ``docs`` and on Rawgit `here <https://rawgit.com/araichev/wavetrace/develop/docs/_build/singlehtml/index.html>`_
 
 
+Further Reading
+================
+- `SPLAT! documentation <http://www.qsl.net/kd2bd/splat.pdf>`_
+- `Open Street Map wiki page on SRTM data <https://wiki.openstreetmap.org/wiki/SRTM>`_
+
+
 Authors
 =======
 - Chris Guest (2013-06)
 - Alex Raichev (2016-08)
-
-
-References
-=============
-- `SPLAT! documentation <http://www.qsl.net/kd2bd/splat.pdf>`_
-- `SRTM data <https://wiki.openstreetmap.org/wiki/SRTM>`_
-- `SRTM HGT format <http://www.gdal.org/frmt_various.html#SRTMHGT>`_

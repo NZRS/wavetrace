@@ -84,7 +84,7 @@ def get_tile_id(lon, lat):
     EXAMPLES:
 
     >>> get_tile_id(27.5, 3.64)
-    'N04E028'
+    'N03E027'
 
     NOTES:
         SRTM data for an output tile might not actually exist, e.g. data for the tile N90E000 does not exist in NASA's database. 
@@ -131,7 +131,7 @@ def get_bounds(tile_id):
         - ``tile_id``: string; ID of an SRTM tile
 
     OUTPUT:
-        List of floats of the form  ``[min_lon, min_lat, max_lon, max_lat]``
+        List of integers of the form  ``[min_lon, min_lat, max_lon, max_lat]``
         representing the WGS84 bounding box of the tile 
 
     EXAMPLES:
@@ -142,13 +142,13 @@ def get_bounds(tile_id):
     t = tile_id
     min_lat, min_lon = t[:3], t[3:]
     if min_lat[0] == 'N':
-        min_lat = float(min_lat[1:])
+        min_lat = int(min_lat[1:])
     else:
-        min_lat = -float(min_lat[1:])
+        min_lat = -int(min_lat[1:])
     if min_lon[0] == 'E':
-        min_lon = float(min_lon[1:])
+        min_lon = int(min_lon[1:])
     else:
-        min_lon = -float(min_lon[1:])
+        min_lon = -int(min_lon[1:])
 
     return [min_lon, min_lat, min_lon + 1, min_lat + 1]
 
