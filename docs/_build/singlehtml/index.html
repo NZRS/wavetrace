@@ -314,10 +314,10 @@ otherwise a <code class="docutils literal"><span class="pre">ValueError</span></
 
 <dl class="function">
 <dt id="wavetrace.downloader.download_srtm_nasa3">
-<code class="descclassname">wavetrace.downloader.</code><code class="descname">download_srtm_nasa3</code><span class="sig-paren">(</span><em>srtm_tile_ids</em>, <em>path</em>, <em>high_definition=False</em>, <em>username=None</em>, <em>password=None</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.downloader.download_srtm_nasa3" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">wavetrace.downloader.</code><code class="descname">download_srtm_nasa3</code><span class="sig-paren">(</span><em>tile_ids</em>, <em>path</em>, <em>high_definition=False</em>, <em>username=None</em>, <em>password=None</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.downloader.download_srtm_nasa3" title="Permalink to this definition">¶</a></dt>
 <dd><p>INPUT:</p>
 <ul class="simple">
-<li><code class="docutils literal"><span class="pre">srtm_tile_ids</span></code>: list of SRTM tile names (strings)</li>
+<li><code class="docutils literal"><span class="pre">tile_ids</span></code>: list of SRTM tile names (strings)</li>
 <li><code class="docutils literal"><span class="pre">path</span></code>: string or Path object specifying a directory</li>
 <li><code class="docutils literal"><span class="pre">high_definition</span></code>: boolean</li>
 <li><code class="docutils literal"><span class="pre">username</span></code>: string; NASA Earthdata username for high definition files</li>
@@ -428,8 +428,8 @@ the given longitude-latitude points.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="wavetrace.utilities.get_srtm_tile_id">
-<code class="descclassname">wavetrace.utilities.</code><code class="descname">get_srtm_tile_id</code><span class="sig-paren">(</span><em>lon</em>, <em>lat</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.utilities.get_srtm_tile_id" title="Permalink to this definition">¶</a></dt>
+<dt id="wavetrace.utilities.get_tile_id">
+<code class="descclassname">wavetrace.utilities.</code><code class="descname">get_tile_id</code><span class="sig-paren">(</span><em>lon</em>, <em>lat</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.utilities.get_tile_id" title="Permalink to this definition">¶</a></dt>
 <dd><p>INPUT:</p>
 <ul class="simple">
 <li><code class="docutils literal"><span class="pre">lon</span></code>: float; WGS84 longitude</li>
@@ -439,7 +439,7 @@ the given longitude-latitude points.</p>
 <p>Return the name (string) of the SRTM tile that covers the given 
 longitude and latitude.</p>
 <p>EXAMPLES:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">get_srtm_tile_id</span><span class="p">(</span><span class="mf">27.5</span><span class="p">,</span> <span class="mf">3.64</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">get_tile_id</span><span class="p">(</span><span class="mf">27.5</span><span class="p">,</span> <span class="mf">3.64</span><span class="p">)</span>
 <span class="go">&#39;N04E028&#39;</span>
 </pre></div>
 </div>
@@ -449,8 +449,8 @@ tile N90E000 does not exist in NASA&#8217;s database.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="wavetrace.utilities.get_srtm_tile_ids">
-<code class="descclassname">wavetrace.utilities.</code><code class="descname">get_srtm_tile_ids</code><span class="sig-paren">(</span><em>lonlats</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.utilities.get_srtm_tile_ids" title="Permalink to this definition">¶</a></dt>
+<dt id="wavetrace.utilities.get_tile_ids">
+<code class="descclassname">wavetrace.utilities.</code><code class="descname">get_tile_ids</code><span class="sig-paren">(</span><em>lonlats</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.utilities.get_tile_ids" title="Permalink to this definition">¶</a></dt>
 <dd><p>INPUT:</p>
 <ul class="simple">
 <li><code class="docutils literal"><span class="pre">lonlats</span></code>: list of WGS84 longitude-latitude pairs (float pairs)</li>
@@ -459,7 +459,7 @@ tile N90E000 does not exist in NASA&#8217;s database.</p>
 <p>Return the set of names of SRTM tiles that form a minimal cover of 
 the given longitude-latitude points.</p>
 <p>NOTES:</p>
-<p>Calls <a class="reference internal" href="#wavetrace.utilities.get_srtm_tile_id" title="wavetrace.utilities.get_srtm_tile_id"><code class="xref py py-func docutils literal"><span class="pre">get_srtm_tile_id()</span></code></a>.</p>
+<p>Calls <a class="reference internal" href="#wavetrace.utilities.get_tile_id" title="wavetrace.utilities.get_tile_id"><code class="xref py py-func docutils literal"><span class="pre">get_tile_id()</span></code></a>.</p>
 </dd></dl>
 
 <dl class="function">

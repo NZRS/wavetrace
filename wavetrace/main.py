@@ -4,10 +4,80 @@ import csv
 import textwrap
 import shutil
 import subprocess
+import base64
+
+import requests
 
 import wavetrace.utilities as ut
 
 
+SRTM_NZ_TILE_IDS = [
+  'S35E172',
+  'S35E173',
+  'S36E173',
+  'S36E174',
+  'S36E175',
+  'S37E173',
+  'S37E174',
+  'S37E175',
+  'S37E176',
+  'S38E174',
+  'S38E175',
+  'S38E176',
+  'S38E177',
+  'S38E178',
+  'S39E174',
+  'S39E175',
+  'S39E176',
+  'S39E177',
+  'S39E178',
+  'S40E173',
+  'S40E174',
+  'S40E175',
+  'S40E176',
+  'S40E177',
+  'S40E178',
+  'S41E172',
+  'S41E173',
+  'S41E174',
+  'S41E175',
+  'S41E176',
+  'S42E171',
+  'S42E172',
+  'S42E173',
+  'S42E174',
+  'S42E175',
+  'S42E176',
+  'S43E170',
+  'S43E171',
+  'S43E172',
+  'S43E173',
+  'S43E174',
+  'S44E168',
+  'S44E169',
+  'S44E170',
+  'S44E171',
+  'S44E172',
+  'S44E173',
+  'S45E167',
+  'S45E168',
+  'S45E169',
+  'S45E170',
+  'S45E171',
+  'S46E166',
+  'S46E167',
+  'S46E168',
+  'S46E169',
+  'S46E170',
+  'S46E171',
+  'S47E166',
+  'S47E167',
+  'S47E168',
+  'S47E169',
+  'S47E170',
+  'S48E167',
+  'S48E168',
+  ]
 REQUIRED_TRANSMITTER_FIELDS = [
   'network_name',    
   'site_name',
@@ -23,23 +93,66 @@ CONDUCTIVITY = 0.005
 RADIO_CLIMATE = 6
 FRACTION_OF_TIME = 0.5
 
+def download_srtm(tile_ids, path, api_key, high_definition=False):
+    """
+    Download from the Gitlab repository
+    https://gitlab.com/araichev/srtm_nz the SRTM1 or SRTM3 topography data
+    corresponding to the given SRTM tile IDs and save the files to the
+    directory ``path``, creating the directory if it does not exist.
+
+    INPUT:
+        - ``tile_ids``: list of strings; SRTM tile IDs
+        - ``path``: string or Path object specifying a directory
+        - ``high_definition``: boolean; if ``True`` then download SRTM1 tiles; otherwise download SRTM3 tiles
+        - ``api_key``: string; a valid Gitlab API key (access token)
+
+    OUTPUT:
+        None
+
+    NOTES:
+        Only works for SRTM tiles covering New Zealand and raises a ``ValueError`` if the set of tile IDs is not a subset of  ``SRTM_NZ_TILE_IDS``
+    """
+    if not set(tile_ids) <= set(SRTM_NZ_TILE_IDS):
+        raise ValueError("Tile IDs must be a subset of {!s}".format(
+          SRTM_NZ_TILE_IDS))
+
+    # Set download parameters
+    project_id = '1526685'
+    url = 'https://gitlab.com/api/v3/projects/{!s}/repository/files/'.\
+      format(project_id)
+    if high_definition:
+        file_names = ['srtm1/{!s}.SRTMGL1.hgt.zip'.format(t) for t in tile_ids]
+    else:
+        file_names = ['srtm3/{!s}.SRTMGL3.hgt.zip'.format(t) for t in tile_ids]
+
+    # Create output directory
+    path = Path(path)
+    if not path.exists():
+        path.mkdir(parents=True)
+
+    # Download
+    for file_name in file_names:
+        params={
+            'private_token':  api_key,
+            'file_path': file_name,
+            'ref': 'master',
+            }
+        r = requests.get(url, params=params, stream=True)
+
+        if r.status_code != requests.codes.ok:
+            raise ValueError('Downloading file {!s} failed with status '\
+              ' code {!s}'.format(file_name, r.status_code))
+
+        p = path/file_name.split('/')[-1]
+        with p.open('wb') as tgt:
+            content = base64.b64decode(r.json()['content'])
+            tgt.write(content)
+
 def create_splat_transmitter_files(in_path, out_path,
   dialectric_constant=DIALECTRIC_CONSTANT, 
   conductivity=CONDUCTIVITY, radio_climate=RADIO_CLIMATE, 
   fraction_of_time=FRACTION_OF_TIME):
     """
-    INPUT:
-
-    - ``in_path``: string or Path object; location of a CSV file of transmitter data
-    - ``out_path``: string or Path object; directory to which to write outputs
-    - ``dialectric_constant``: float; used to make SPLAT! ``.lrp`` file
-    - ``conductivity``: float; used to make SPLAT! ``.lrp`` file
-    - ``radio_climate``: integer; used to make SPLAT! ``.lrp`` file
-    - ``fraction_of_time``: float in [0, 1]; used to make SPLAT! ``.lrp`` file
-
-    OUTPUT:
-
-    None.
     Read the CSV transmitter data at ``in_path``, and for each transmitter, 
     create the following SPLAT! data for it and save it to the directory
     ``out_path``:
@@ -49,9 +162,19 @@ def create_splat_transmitter_files(in_path, out_path,
     - azimuth data as a ``.az`` file
     - elevation data as a ``.el`` file
 
-    NOTES:
+    INPUT:
+        - ``in_path``: string or Path object; location of a CSV file of transmitter data
+        - ``out_path``: string or Path object; directory to which to write outputs
+        - ``dialectric_constant``: float; used to make SPLAT! ``.lrp`` file
+        - ``conductivity``: float; used to make SPLAT! ``.lrp`` file
+        - ``radio_climate``: integer; used to make SPLAT! ``.lrp`` file
+        - ``fraction_of_time``: float in [0, 1]; used to make SPLAT! ``.lrp`` file
 
-    See the notes section of :func:`read_transmitters`.
+    OUTPUT:
+        None.
+
+    NOTES:
+        See the notes section of :func:`read_transmitters`.
     """
     # Read transmitter data
     ts = read_transmitters(in_path)
@@ -80,34 +203,31 @@ def create_splat_transmitter_files(in_path, out_path,
 
 def read_transmitters(path):
     """
-    INPUT:
-
-    - ``path``: string or Path object; location of a CSV file of transmitter data
-
-    OUTPUT:
-
     Return a list of dictionaries, one for each transmitter in the transmitters
     CSV file.
-    The keys for each transmitter come from the header row of the CSV file.
-    If ``REQUIRED_TRANSMITTER_FIELDS`` is not a subset of these keys, then
-    raise a ``ValueError``
-    Additionally, a 'name' field is added to each transmitter dictionary for
-    later use and is the result of :func:`build_transmitter_name`.
+
+    INPUT:
+        - ``path``: string or Path object; location of a CSV file of transmitter data
+
+    OUTPUT:
+        List of dictionaries.
+        The keys for each transmitter come from the header row of the CSV file.
+        If ``REQUIRED_TRANSMITTER_FIELDS`` is not a subset of these keys, then
+        raise a ``ValueError``.
+        Additionally, a 'name' field is added to each transmitter dictionary for later use and is the result of :func:`build_transmitter_name`.
 
     NOTES:
+        The CSV file of transmitter data should include at least the columns,
+        otherwise a ``ValueError`` will be raised.
 
-    The CSV file of transmitter data should include at least the columns,
-    otherwise a ``ValueError`` will be raised.
-
-    - ``'network_name'``: name of transmitter network
-    - ``'site_name'``: name of transmitter site
-    - ``'longitude'``: WGS84 decimal longitude of transmitter  
-    - ``'latitude``: WGS84 decimal latitude of transmitter
-    - ``'antenna_height'``: height of transmitter antenna in meters above sea level
-    - ``'polarization'``: 0 for horizontal or 1 for vertical
-    - ``'frequency'``: frequency of transmitter in MegaHerz
-    - ``'power_eirp'``: effective radiated power of transmitter in Watts
-
+        - ``'network_name'``: name of transmitter network
+        - ``'site_name'``: name of transmitter site
+        - ``'longitude'``: WGS84 decimal longitude of transmitter  
+        - ``'latitude``: WGS84 decimal latitude of transmitter
+        - ``'antenna_height'``: height of transmitter antenna in meters above sea level
+        - ``'polarization'``: 0 for horizontal or 1 for vertical
+        - ``'frequency'``: frequency of transmitter in MegaHerz
+        - ``'power_eirp'``: effective radiated power of transmitter in Watts
     """
     path = Path(path)
     transmitters = []
@@ -120,21 +240,20 @@ def read_transmitters(path):
 
 def check_and_format_transmitters(transmitters):
     """
-    INPUT:
+    Check and format the given list of transmitter dictionaries.
 
-    - ``transmitters``: list; same format as output of :func:`read_transmitters`
+    INPUT:
+        - ``transmitters``: list; same format as output of :func:`read_transmitters`
 
     OUTPUT:
+        The given list of transmitters dictionaries altered as follows.
+        For each dictionary, 
 
-    Return the given list of transmitters dictionaries altered as follows.
-    For each dictionary, 
+        - create a ``name`` field from the ``network_name`` and ``site_name`` fields
+        - convert the numerical fields to floats
 
-    - create a ``name`` field from the ``network_name`` and ``site_name`` fields
-    - convert the numerical fields to floats
-
-    Raise a ``ValueError`` if the list of transmitters is empty, or if the 
-    ``REQUIRED_TRANSMITTER_FIELDS`` are not present in each transmitter 
-    dictionary, or if the any of the field data is improperly formatted.
+    NOTES:
+        Raises a ``ValueError`` if the list of transmitters is empty, or if the ``REQUIRED_TRANSMITTER_FIELDS`` are not present in each transmitter dictionary, or if the any of the field data is improperly formatted.
     """
     if not transmitters:
         raise ValueError('Transmitters must be a nonempty list')
@@ -163,13 +282,6 @@ def check_and_format_transmitters(transmitters):
 
 def build_transmitter_name(network_name, site_name):
     """
-    INPUT:
-
-    - ``network_name``: string
-    - ``site_name``: string
-
-    OUTPUT:
-
     Return a string that is the network name with spaces removed followed 
     by an underscore followed by the site name with spaces removed.
 
@@ -177,21 +289,20 @@ def build_transmitter_name(network_name, site_name):
 
     >>> build_transmitter_name('Slap hAppy', 'Go go go ')
     'SlaphAppy_Gogogo'
-
     """
     return network_name.replace(' ', '') + '_' +\
       site_name.replace(' ', '')
 
 def build_splat_qth(transmitter):
     """
-    INPUT:
+    Return the text content of a SPLAT! site location file 
+    (``.qth`` file) corresponding to the given transmitter.
 
-    - ``transmitter``: dictionary of the same form as any one of the elements in the list output by :func:`read_transmitters`
+    INPUT:
+        - ``transmitter``: dictionary of the same form as any one of the elements in the list output by :func:`read_transmitters`
 
     OUTPUT:
-
-    Return the text (string) content of a SPLAT! site location file 
-    (``.qth`` file) corresponding to the given transmitter.
+        String.
     """
     t = transmitter
     # Convert to degrees east in range (-360, 0] for SPLAT!
@@ -206,18 +317,18 @@ def build_splat_lrp(transmitter, dialectric_constant=DIALECTRIC_CONSTANT,
   conductivity=CONDUCTIVITY, radio_climate=RADIO_CLIMATE, 
   fraction_of_time=FRACTION_OF_TIME):
     """
-    INPUT:
-
-    - ``transmitter``: dictionary of the same form as any one of the elements in the list output by :func:`read_transmitters`
-    - ``dialectric_constant``: float
-    - ``conductivity``: float
-    - ``radio_climate``: integer
-    - ``fraction_of_time``: float in [0, 1]
-
-    OUTPUT:
-
     Return the text (string) content of a SPLAT! irregular topography model
     parameter file (``.lrp`` file) corresponding to the given transmitter.
+
+    INPUT:
+        - ``transmitter``: dictionary of the same form as any one of the elements in the list output by :func:`read_transmitters`
+        - ``dialectric_constant``: float
+        - ``conductivity``: float
+        - ``radio_climate``: integer
+        - ``fraction_of_time``: float in [0, 1]
+
+    OUTPUT:
+        String
     """
     t = transmitter
     s = """\
@@ -241,19 +352,17 @@ def build_splat_lrp(transmitter, dialectric_constant=DIALECTRIC_CONSTANT,
 
 def build_splat_az(transmitter):
     """
-    INPUT:
-
-    - ``transmitter``: dictionary of the same form as any one of the elements in the list output by :func:`read_transmitters`
-
-    OUTPUT:
-
     Return the text (string) content of a SPLAT! azimuth file (``.az`` file)
     corresponding to the given transmitter.
 
-    NOTES:
+    INPUT:
+        - ``transmitter``: dictionary of the same form as any one of the elements in the list output by :func:`read_transmitters`
 
-    A transmitter with no ``'bearing'`` or ``'horizontal_beamwidth'`` data will
-    produce the string ``'0  0'``.
+    OUTPUT:
+        String
+
+    NOTES:
+        A transmitter with no ``'bearing'`` or ``'horizontal_beamwidth'`` data will produce the string ``'0  0'``.
     """
     t = transmitter
     try:
@@ -275,19 +384,17 @@ def build_splat_az(transmitter):
 
 def build_splat_el(transmitter):
     """
-    INPUT:
-
-    - ``transmitter``: dictionary of the same form as any one of the elements in the list output by :func:`read_transmitters`
-
-    OUTPUT:
-
     Return the text (string) content of a SPLAT! elevation file (``.el`` file)
     corresponding to the given transmitter.
 
-    NOTES:
+    INPUT:
+        - ``transmitter``: dictionary of the same form as any one of the elements in the list output by :func:`read_transmitters`
 
-    A transmitter with no ``'bearing'`` or ``'antenna_downtilt'`` or 
-    ``'vertical_beamwidth'`` data will produce the string ``'0  0'``.
+    OUTPUT:
+        String
+
+    NOTES:
+        A transmitter with no ``'bearing'`` or ``'antenna_downtilt'`` or ``'vertical_beamwidth'`` data will produce the string ``'0  0'``.
     """
     t = transmitter
     try:
@@ -309,40 +416,38 @@ def build_splat_el(transmitter):
 
 def get_lonlats(transmitters):
     """
-    INPUT:
-
-    - ``transmitters``: a list of transmitters of the form output by :func:`read_transmitters`
-
-    OUTPUT:
-
     Return a list of longitude-latitude pairs (float pairs)
     representing the locations of the given transmitters.
     If ``transmitters`` is empty, then return the empty list. 
+
+    INPUT:
+        - ``transmitters``: a list of transmitters of the form output by :func:`read_transmitters`
+
+    OUTPUT:
+        String
     """
     return [(t['longitude'], t['latitude']) for t in transmitters]
 
 def create_splat_topography_files(in_path, out_path, high_definition=False):
     """
-    INPUT:
-
-    - ``in_path``: string or Path object specifying a directory
-    - ``out_path``: string or Path object specifying a directory
-    - ``high_definition``: boolean
-
-    OUTPUT:
-
-    None.
     Convert each SRTM HGT topography file in the directory ``in_path`` to
     a SPLAT! Data File (SDF) file in the directory ``out_path``, 
     creating the directory if it does not exist.
     If ``high_definition``, then assume the input data is high definition.
 
-    NOTES:
+    INPUT:
+        - ``in_path``: string or Path object specifying a directory
+        - ``out_path``: string or Path object specifying a directory
+        - ``high_definition``: boolean
 
-    - Requires and uses SPLAT!'s ``srtm2sdf`` or ``srtm2sdf-hd`` 
-      (if ``high_definition``) command to do the conversion
-    - Raises a ``subprocess.CalledProcessError`` if SPLAT! fails to 
-      convert a file
+    OUTPUT:
+        None.
+
+    NOTES:
+        - Requires and uses SPLAT!'s ``srtm2sdf`` or ``srtm2sdf-hd`` 
+          (if ``high_definition``) command to do the conversion
+        - Raises a ``subprocess.CalledProcessError`` if SPLAT! fails to 
+          convert a file
     """
     in_path = Path(in_path)
     out_path = Path(out_path)
@@ -387,17 +492,6 @@ def create_splat_topography_files(in_path, out_path, high_definition=False):
 def create_coverage_reports(in_path, out_path, transmitter_names=None,
   receiver_sensitivity=-110, high_definition=False):
     """
-    INPUT:
-
-    - ``in_path``: string or Path object specifying a directory; all the SPLAT! transmitter and elevation data should lie here
-    - ``out_path``: string or Path object specifying a directory
-    - ``transmitter_names``: list of transmitter names (outputs of :func:`build_transmitter_name`) to restrict to; if ``None``, then all transmitters in ``in_path`` will be used
-    - ``receiver_sensitivity``: float; measured in decibels; path loss threshold beyond which signal strength contours will not be plotted
-    - ``high_definition``: boolean
-
-    OUTPUT:
-
-    None. 
     Create a SPLAT! coverage report for every transmitter with data located
     at ``in_path``, or, if ``transmitter_names`` is given, every transmitter 
     in that list with data data located at ``in_path``.
@@ -410,10 +504,18 @@ def create_coverage_reports(in_path, out_path, transmitter_names=None,
     - ``'<transmitter name>.ppm'``: PPM file depicting a contour plot of the transmitter signal strength
     - ``'<transmitter name>-ck.ppm'``: PPM file depicting a legend for the signal strengths in ``'<transmitter name>.ppm'``
 
-    NOTES:
+    INPUT:
+        - ``in_path``: string or Path object specifying a directory; all the SPLAT! transmitter and elevation data should lie here
+        - ``out_path``: string or Path object specifying a directory
+        - ``transmitter_names``: list of transmitter names (outputs of :func:`build_transmitter_name`) to restrict to; if ``None``, then all transmitters in ``in_path`` will be used
+        - ``receiver_sensitivity``: float; measured in decibels; path loss threshold beyond which signal strength contours will not be plotted
+        - ``high_definition``: boolean
 
-    On a 2.8 GHz Intel Core i7 processor, this take about 1.15 minutes for 
-    one transmitter.
+    OUTPUT:
+        None. 
+
+    NOTES:
+        On a 3.6 GHz Intel Core i7 processor with 16 GB of RAM, this takes about 1 minute for one transmitter with standard definition data and takes about ? minutes for one transmitter with high definition data.
     """
     in_path = Path(in_path)
     out_path = Path(out_path)
@@ -449,21 +551,20 @@ def create_coverage_reports(in_path, out_path, transmitter_names=None,
             tgt = out_path/(t + ext) 
             shutil.move(str(src), str(tgt))
 
-def postprocess_coverage_reports(path, delete_ppm=False):
+def postprocess_coverage_reports(path, delete_ppm=True):
     """
-    INPUT:
-
-    - ``path``: string or Path object; directory where coverage reports (outputs of :func:`create_coverage_reports`) lie
-    - ``delete_ppm``: boolean; delete the original, large PPM files in the coverage reports if and only if this flag is ``True``
-
-    OUTPUT:
-
-    None.
     Using the PPM files in the directory ``path`` do the following:
 
     - Convert each PPM files into a PNG file, replacing white with transparency using ImageMagick
     - Change the PPM reference in each KML file to the corresponding PNG file
     - Convert the PNG coverage file (not the legend file) into GeoTIFF using GDAL
+
+    INPUT:
+        - ``path``: string or Path object; directory where coverage reports (outputs of :func:`create_coverage_reports`) lie
+        - ``delete_ppm``: boolean; delete the original, large PPM files in the coverage reports if and only if this flag is ``True``
+
+    OUTPUT:
+        None.
     """
     # First pass: create PNG from PPM 
     for f in path.iterdir():    
@@ -507,15 +608,10 @@ def postprocess_coverage_reports(path, delete_ppm=False):
 
 def get_bounds_from_kml(kml_string):
     """
-    INPUT:
-
-    - ``kml_string``: string form of a KML file produced by SPLAT!
-
-    OUTPUT:
-
-    Return a list of floats of the form 
-    ``[min_lon, min_lat, max_lon, max_lat]``, describing the WGS84 
-    bounding box in the SPLAT! KML coverage file.
+    Given the text content of a SPLAT! KML coverage file,
+    return a list of floats of the form 
+    ``[min_lon, min_lat, max_lon, max_lat]`` which describes the WGS84 
+    bounding box of the coverage file.
     Raise an ``AttributeError`` if the KML does not contain a ``<LatLonBox>``
     entry and hence is not a well-formed SPLAT! KML coverage file.
     """

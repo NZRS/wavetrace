@@ -1,7 +1,6 @@
 *.pyc
 *__pycache__
 ipynb/.ipynb_checkpoints
-data/sample_outputs/*
+tmp
 tests/data/tmp*
-data/sample_inputs/nzsos/*
 secrets.json

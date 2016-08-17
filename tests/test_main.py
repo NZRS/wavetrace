@@ -6,7 +6,11 @@ import shutil
 from wavetrace import *
 
 
-DATA_DIR = Path(PROJECT_ROOT)/'tests'/'data'
+DATA_DIR = PROJECT_ROOT/'tests'/'data'
+try:
+    GITLAB_KEY = get_secret("GITLAB_API_KEY")
+except KeyError:
+    GITLAB_KEY = ''
 TRANSMITTER_1 = {
  'antenna_downtilt': '1',
  'antenna_height': 20.0,
@@ -23,16 +27,32 @@ TRANSMITTER_1 = {
  'vertical_beamwidth': '30',
  }
 
-def rm_paths(*paths):
-    for p in paths:
-        p = Path(p)
-        if p.exists():
-            if p.is_file():
-                p.unlink()
-            else:
-                shutil.rmtree(str(p))
-
 class TestMain(unittest.TestCase):
+
+    @unittest.skipIf(not GITLAB_KEY,
+      'Requires a Gitlab API access token stored in ``secrets.json`` under the key ``"GITLAB_API_KEY"``')
+    def test_download_srtm(self):
+        # Test tiles. Last one is not in dataset.
+        tmp = DATA_DIR/'tmp'
+
+        # Should download correct files
+        tiles = ['S36E174', 'S37E175'] 
+        for hd, suffix in [(True, '.SRTMGL1.hgt.zip'), 
+          (False, '.SRTMGL3.hgt.zip')]:
+            rm_paths(tmp)
+            download_srtm(tiles, path=tmp, high_definition=hd, 
+              api_key=GITLAB_KEY)
+            get_names = [f.name for f in tmp.iterdir()]
+            expect_names = [t + suffix for t in tiles]
+            self.assertCountEqual(get_names, expect_names)
+
+        # Should raise ValueError on bad tiles
+        tiles = ['S36E174', 'N00E000']
+        for hd in [True, False]:
+            self.assertRaises(ValueError, download_srtm, tile_ids=tiles, 
+              path=tmp, high_definition=hd, api_key=GITLAB_KEY)
+
+        rm_paths(tmp)
 
     def test_read_transmitters(self):
         # Good inputs should yield good outputs
@@ -139,11 +159,11 @@ class TestMain(unittest.TestCase):
 
         for hd in [False, True]:
             if hd:
-                in_path = DATA_DIR/'srtm-hd'
+                in_path = DATA_DIR/'srtm1'
                 names_expect = ['-36:-35:185:186-hd.sdf']
                 suffix = '-hd.sdf'
             else:
-                in_path = DATA_DIR/'srtm-sd'
+                in_path = DATA_DIR/'srtm3'
                 names_expect = ['-36:-35:185:186.sdf', 
                   '-37:-36:184:185.sdf']
 
@@ -165,7 +185,7 @@ class TestMain(unittest.TestCase):
  
         # High definition tests take too long, so skip them
         create_splat_transmitter_files(p1/'transmitters_single.csv', p2)
-        create_splat_topography_files( p1/'srtm-sd', p2)
+        create_splat_topography_files( p1/'srtm3', p2)
         create_coverage_reports(p2, p3)
 
         # Should contain the correct files

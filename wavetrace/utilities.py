@@ -5,12 +5,12 @@ import json
 from math import ceil, floor
 from itertools import product
 from pathlib import Path 
+import shutil
 
 
 PROJECT_ROOT = Path(os.path.abspath(os.path.join(
   os.path.dirname(__file__), '../')))
 SECRETS_PATH = PROJECT_ROOT/'secrets.json'
-NZSOSDEM_POLYGONS_PATH = PROJECT_ROOT/'data'/'nzsos_polygons.geojson'
 
 def time_it(f):
     """
@@ -27,6 +27,18 @@ def time_it(f):
         print(t2, '  Finished in %.2f min' % minutes)    
         return result
     return wrap
+
+def rm_paths(*paths):
+    """
+    Delete the given file paths/directory paths, if they exists.
+    """
+    for p in paths:
+        p = Path(p)
+        if p.exists():
+            if p.is_file():
+                p.unlink()
+            else:
+                shutil.rmtree(str(p))
 
 def get_secret(secret, secrets_path=SECRETS_PATH):
     """
@@ -56,7 +68,7 @@ def check_lonlat(lon, lat):
     if not (-90 <= lat <= 90):
         raise ValueError('Latitude {!s} is out of bounds'.format(lat))
 
-def get_srtm_tile_id(lon, lat):
+def get_tile_id(lon, lat):
     """
     Return the ID of the SRTM tile that covers the given 
     longitude and latitude. 
@@ -71,7 +83,7 @@ def get_srtm_tile_id(lon, lat):
 
     EXAMPLES:
 
-    >>> get_srtm_tile_id(27.5, 3.64)
+    >>> get_tile_id(27.5, 3.64)
     'N04E028'
 
     NOTES:
@@ -95,7 +107,7 @@ def get_srtm_tile_id(lon, lat):
 
     return lat + lon 
 
-def get_srtm_tile_ids(lonlats):
+def get_tile_ids(lonlats):
     """
     Return the set of IDs of SRTM tiles that form a minimal cover of 
     the given longitude-latitude points.
@@ -107,16 +119,16 @@ def get_srtm_tile_ids(lonlats):
         Set of SRTM tile IDs
 
     NOTES:
-        Calls :func:`get_srtm_tile_id`.
+        Calls :func:`get_tile_id`.
     """
-    return set(get_srtm_tile_id(lon, lat) for lon, lat in lonlats)
+    return set(get_tile_id(lon, lat) for lon, lat in lonlats)
 
-def get_bounds(srtm_tile_id):
+def get_bounds(tile_id):
     """
     Return the bounding box for the given SRTM tile ID.
 
     INPUT:
-        - ``srtm_tile_id``: string; ID of an SRTM tile
+        - ``tile_id``: string; ID of an SRTM tile
 
     OUTPUT:
         List of floats of the form  ``[min_lon, min_lat, max_lon, max_lat]``
@@ -127,7 +139,7 @@ def get_bounds(srtm_tile_id):
     >>> get_bounds('N04W027')
     [-27, 4, -26, 5]
     """
-    t = srtm_tile_id
+    t = tile_id
     min_lat, min_lon = t[:3], t[3:]
     if min_lat[0] == 'N':
         min_lat = float(min_lat[1:])
@@ -140,7 +152,7 @@ def get_bounds(srtm_tile_id):
 
     return [min_lon, min_lat, min_lon + 1, min_lat + 1]
 
-def get_polygons(srtm_tile_ids):
+def build_polygons(tile_ids):
     """
     Return a list of (decoded) GeoJSON features, one for each SRTM tile ID 
     in the given list.
@@ -148,13 +160,13 @@ def get_polygons(srtm_tile_ids):
     the SRTM tile.  
     """
     features = []
-    for t in srtm_tile_ids:
+    for t in tile_ids:
         min_lon, min_lat, max_lon, max_lat = get_bounds(t)
         coords = [[min_lon, min_lat], [min_lon, max_lat], 
           [max_lon, max_lat], [max_lon, min_lat], [min_lon, min_lat]]
         features.append({
             'type': 'Feature',
-            'properties': {'srtm_tile_id': t},
+            'properties': {'tile_id': t},
             'geometry': {
                 'type': 'Polygon',
                 'coordinates': [coords],
