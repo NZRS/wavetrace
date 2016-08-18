@@ -1,5 +1,6 @@
 import unittest
 from pathlib import Path 
+from shapely.geometry import Point
 
 from wavetrace import *
 
@@ -23,12 +24,6 @@ class TestUtilities(unittest.TestCase):
         expect = 'S04W028'
         self.assertEqual(get, expect)
 
-    def test_get_tile_ids(self):
-        lonlats = [(-1.1, 0.9), (-1.1, 0.9), (1.1, 1.1), (0.5, -0.9)]
-        get = get_tile_ids(lonlats)
-        expect = ['N00W002', 'N01E001', 'S01E000']
-        self.assertCountEqual(get, expect)
-
     def test_get_bounds(self):
         get = get_bounds('N03E027')
         expect = [27, 3, 28, 4]
@@ -46,17 +41,32 @@ class TestUtilities(unittest.TestCase):
         expect = [-27, -3, -26, -2]
         self.assertSequenceEqual(get, expect)
 
-    def test_build_polygons(self):
-        tids = ['N03E027', 'S04E027']
-        polygons = build_polygons(tids)
-        # Should be correct length
-        self.assertEqual(len(polygons), 2)
+    def test_build_feature(self):
+        f = build_feature('N03E027')
         # Should have coordinates of a quadrangle
-        for p in polygons:
-            coords = p['geometry']['coordinates'][0]
-            self.assertEqual(len(coords), 5)
-            self.assertSequenceEqual(coords[0], coords[-1])
+        coords = f['geometry']['coordinates'][0]
+        self.assertEqual(len(coords), 5)
+        self.assertSequenceEqual(coords[0], coords[-1])
 
+    def test_build_polygon(self):
+        p = build_polygon('N03E027')
+        # Should have coordinates of a quadrangle
+        coords = list(p.exterior.coords)
+        self.assertEqual(len(coords), 5)
+        self.assertSequenceEqual(coords[0], coords[-1])
+
+    def test_compute_tile_cover(self):
+        geometries = [
+          Point((174.3, -35.7)), 
+          Point((168.6, -45.2)).buffer(1, 1), # square buffer
+          ]
+        get = compute_tile_cover(geometries)
+        expect = ['S36E174', 
+          'S45E167', 'S45E168', 'S45E169', 
+          'S46E167', 'S46E168', 'S46E169', 
+          'S47E168',
+          ]
+        self.assertCountEqual(get, expect)
 
 if __name__ == '__main__':
     unittest.main()

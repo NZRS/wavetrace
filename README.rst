@@ -25,10 +25,24 @@ In ``docs`` and on Rawgit `here <https://rawgit.com/araichev/wavetrace/develop/d
 Further Reading
 ================
 - `SPLAT! documentation <http://www.qsl.net/kd2bd/splat.pdf>`_
-- `Open Street Map wiki page on SRTM data <https://wiki.openstreetmap.org/wiki/SRTM>`_
+- The Wikipedia article on the `Longley-Rice model <https://en.wikipedia.org/wiki/Longley-Rice_Model>`_ 
+- The Open Street Map wiki page on `SRTM data <https://wiki.openstreetmap.org/wiki/SRTM>`_
 
 
 Authors
 =======
 - Chris Guest (2013-06)
 - Alex Raichev (2016-08)
+
+
+Changelog
+==========
+
+v2.0.0, 2016-08
+----------------
+- Complete refactor as a Python package
+
+
+v1.0.0, 2013?
+--------------
+- Initial version 

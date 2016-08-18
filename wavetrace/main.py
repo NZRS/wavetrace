@@ -11,73 +11,6 @@ import requests
 import wavetrace.utilities as ut
 
 
-SRTM_NZ_TILE_IDS = [
-  'S35E172',
-  'S35E173',
-  'S36E173',
-  'S36E174',
-  'S36E175',
-  'S37E173',
-  'S37E174',
-  'S37E175',
-  'S37E176',
-  'S38E174',
-  'S38E175',
-  'S38E176',
-  'S38E177',
-  'S38E178',
-  'S39E174',
-  'S39E175',
-  'S39E176',
-  'S39E177',
-  'S39E178',
-  'S40E173',
-  'S40E174',
-  'S40E175',
-  'S40E176',
-  'S40E177',
-  'S40E178',
-  'S41E172',
-  'S41E173',
-  'S41E174',
-  'S41E175',
-  'S41E176',
-  'S42E171',
-  'S42E172',
-  'S42E173',
-  'S42E174',
-  'S42E175',
-  'S42E176',
-  'S43E170',
-  'S43E171',
-  'S43E172',
-  'S43E173',
-  'S43E174',
-  'S44E168',
-  'S44E169',
-  'S44E170',
-  'S44E171',
-  'S44E172',
-  'S44E173',
-  'S45E167',
-  'S45E168',
-  'S45E169',
-  'S45E170',
-  'S45E171',
-  'S46E166',
-  'S46E167',
-  'S46E168',
-  'S46E169',
-  'S46E170',
-  'S46E171',
-  'S47E166',
-  'S47E167',
-  'S47E168',
-  'S47E169',
-  'S47E170',
-  'S48E167',
-  'S48E168',
-  ]
 REQUIRED_TRANSMITTER_FIELDS = [
   'network_name',    
   'site_name',
@@ -92,61 +25,6 @@ DIALECTRIC_CONSTANT = 15
 CONDUCTIVITY = 0.005
 RADIO_CLIMATE = 6
 FRACTION_OF_TIME = 0.5
-
-def download_srtm(tile_ids, path, api_key, high_definition=False):
-    """
-    Download from the Gitlab repository
-    https://gitlab.com/araichev/srtm_nz the SRTM1 or SRTM3 topography data
-    corresponding to the given SRTM tile IDs and save the files to the
-    directory ``path``, creating the directory if it does not exist.
-
-    INPUT:
-        - ``tile_ids``: list of strings; SRTM tile IDs
-        - ``path``: string or Path object specifying a directory
-        - ``high_definition``: boolean; if ``True`` then download SRTM1 tiles; otherwise download SRTM3 tiles
-        - ``api_key``: string; a valid Gitlab API key (access token)
-
-    OUTPUT:
-        None
-
-    NOTES:
-        Only works for SRTM tiles covering New Zealand and raises a ``ValueError`` if the set of tile IDs is not a subset of  ``SRTM_NZ_TILE_IDS``
-    """
-    if not set(tile_ids) <= set(SRTM_NZ_TILE_IDS):
-        raise ValueError("Tile IDs must be a subset of {!s}".format(
-          SRTM_NZ_TILE_IDS))
-
-    # Set download parameters
-    project_id = '1526685'
-    url = 'https://gitlab.com/api/v3/projects/{!s}/repository/files/'.\
-      format(project_id)
-    if high_definition:
-        file_names = ['srtm1/{!s}.SRTMGL1.hgt.zip'.format(t) for t in tile_ids]
-    else:
-        file_names = ['srtm3/{!s}.SRTMGL3.hgt.zip'.format(t) for t in tile_ids]
-
-    # Create output directory
-    path = Path(path)
-    if not path.exists():
-        path.mkdir(parents=True)
-
-    # Download
-    for file_name in file_names:
-        params={
-            'private_token':  api_key,
-            'file_path': file_name,
-            'ref': 'master',
-            }
-        r = requests.get(url, params=params, stream=True)
-
-        if r.status_code != requests.codes.ok:
-            raise ValueError('Downloading file {!s} failed with status '\
-              ' code {!s}'.format(file_name, r.status_code))
-
-        p = path/file_name.split('/')[-1]
-        with p.open('wb') as tgt:
-            content = base64.b64decode(r.json()['content'])
-            tgt.write(content)
 
 def create_splat_transmitter_files(in_path, out_path,
   dialectric_constant=DIALECTRIC_CONSTANT, 
@@ -428,6 +306,61 @@ def get_lonlats(transmitters):
     """
     return [(t['longitude'], t['latitude']) for t in transmitters]
 
+def download_srtm(tile_ids, path, api_key, high_definition=False):
+    """
+    Download from the Gitlab repository
+    https://gitlab.com/araichev/srtm_nz the SRTM1 or SRTM3 topography data
+    corresponding to the given SRTM tile IDs and save the files to the
+    directory ``path``, creating the directory if it does not exist.
+
+    INPUT:
+        - ``tile_ids``: list of strings; SRTM tile IDs
+        - ``path``: string or Path object specifying a directory
+        - ``high_definition``: boolean; if ``True`` then download SRTM1 tiles; otherwise download SRTM3 tiles
+        - ``api_key``: string; a valid Gitlab API key (access token)
+
+    OUTPUT:
+        None
+
+    NOTES:
+        Only works for SRTM tiles covering New Zealand and raises a ``ValueError`` if the set of tile IDs is not a subset of  ``ut.SRTM_NZ_TILE_IDS``
+    """
+    if not set(tile_ids) <= set(ut.SRTM_NZ_TILE_IDS):
+        raise ValueError("Tile IDs must be a subset of {!s}".format(
+          ut.SRTM_NZ_TILE_IDS))
+
+    # Set download parameters
+    project_id = '1526685'
+    url = 'https://gitlab.com/api/v3/projects/{!s}/repository/files/'.\
+      format(project_id)
+    if high_definition:
+        file_names = ['srtm1/{!s}.SRTMGL1.hgt.zip'.format(t) for t in tile_ids]
+    else:
+        file_names = ['srtm3/{!s}.SRTMGL3.hgt.zip'.format(t) for t in tile_ids]
+
+    # Create output directory
+    path = Path(path)
+    if not path.exists():
+        path.mkdir(parents=True)
+
+    # Download
+    for file_name in file_names:
+        params={
+            'private_token':  api_key,
+            'file_path': file_name,
+            'ref': 'master',
+            }
+        r = requests.get(url, params=params, stream=True)
+
+        if r.status_code != requests.codes.ok:
+            raise ValueError('Downloading file {!s} failed with status '\
+              ' code {!s}'.format(file_name, r.status_code))
+
+        p = path/file_name.split('/')[-1]
+        with p.open('wb') as tgt:
+            content = base64.b64decode(r.json()['content'])
+            tgt.write(content)
+
 def create_splat_topography_files(in_path, out_path, high_definition=False):
     """
     Convert each SRTM HGT topography file in the directory ``in_path`` to
@@ -444,8 +377,8 @@ def create_splat_topography_files(in_path, out_path, high_definition=False):
         None.
 
     NOTES:
-        - Requires and uses SPLAT!'s ``srtm2sdf`` or ``srtm2sdf-hd`` 
-          (if ``high_definition``) command to do the conversion
+        - Calls SPLAT!'s ``srtm2sdf`` or ``srtm2sdf-hd`` 
+          (if ``high_definition``) command to do the work
         - Raises a ``subprocess.CalledProcessError`` if SPLAT! fails to 
           convert a file
     """
@@ -489,11 +422,11 @@ def create_splat_topography_files(in_path, out_path, high_definition=False):
             f.unlink()
 
 @ut.time_it
-def create_coverage_reports(in_path, out_path, transmitter_names=None,
+def create_coverage_reports(in_path, out_path, transmitters=None,
   receiver_sensitivity=-110, high_definition=False):
     """
     Create a SPLAT! coverage report for every transmitter with data located
-    at ``in_path``, or, if ``transmitter_names`` is given, every transmitter 
+    at ``in_path``, or if ``transmitters`` is given, then every transmitter 
     in that list with data data located at ``in_path``.
     Write each report to the directory ``out_path``, creating the directory 
     if necessary.
@@ -507,7 +440,7 @@ def create_coverage_reports(in_path, out_path, transmitter_names=None,
     INPUT:
         - ``in_path``: string or Path object specifying a directory; all the SPLAT! transmitter and elevation data should lie here
         - ``out_path``: string or Path object specifying a directory
-        - ``transmitter_names``: list of transmitter names (outputs of :func:`build_transmitter_name`) to restrict to; if ``None``, then all transmitters in ``in_path`` will be used
+        - ``transmitters``: list of transmitter dictionaries (in the form output by :func:`read_transmitters`) to restrict to; if ``None``, then all transmitters in ``in_path`` will be used
         - ``receiver_sensitivity``: float; measured in decibels; path loss threshold beyond which signal strength contours will not be plotted
         - ``high_definition``: boolean
 
@@ -515,7 +448,9 @@ def create_coverage_reports(in_path, out_path, transmitter_names=None,
         None. 
 
     NOTES:
-        On a 3.6 GHz Intel Core i7 processor with 16 GB of RAM, this takes about 1 minute for one transmitter with standard definition data and takes about 10 minutes for one transmitter with high definition data.
+        - Calls SPLAT!'s ``splat`` or ``splat-hd`` (if ``high_definition``) to do the work
+        - Raises a ``subprocess.CalledProcessError`` if SPLAT! fails
+        - This is a time-intensive function. On a 3.6 GHz Intel Core i7 processor with 16 GB of RAM, this takes about 32 minutes for the 20 New Zealand test transmitters (in ``tests/data/transmitters.csv``) with their 13 standard definition topography files and takes about ? minutes for the same 20 transmitters with their 13 high definition topography files.
     """
     in_path = Path(in_path)
     out_path = Path(out_path)
@@ -523,7 +458,9 @@ def create_coverage_reports(in_path, out_path, transmitter_names=None,
         out_path.mkdir(parents=True)
 
     # Get transmitter names
-    if transmitter_names is None:
+    if transmitters is not None:
+        transmitter_names = [t['name'] for t in transmitters]
+    else:
         transmitter_names = [p.stem for p in in_path.iterdir()
           if p.name.endswith('.qth')]
 
