@@ -8,28 +8,14 @@ import base64
 
 import requests
 
+import wavetrace.constants as cs
 import wavetrace.utilities as ut
 
 
-REQUIRED_TRANSMITTER_FIELDS = [
-  'network_name',    
-  'site_name',
-  'latitude', # WGS84 float
-  'longitude', # WGS84 float 
-  'antenna_height', # meters
-  'polarization', # 0 (horizontal) or 1 (vertical)
-  'frequency', # mega Herz
-  'power_eirp', # Watts
-  ]
-DIALECTRIC_CONSTANT = 15
-CONDUCTIVITY = 0.005
-RADIO_CLIMATE = 6
-FRACTION_OF_TIME = 0.5
-
 def create_splat_transmitter_files(in_path, out_path,
-  dialectric_constant=DIALECTRIC_CONSTANT, 
-  conductivity=CONDUCTIVITY, radio_climate=RADIO_CLIMATE, 
-  fraction_of_time=FRACTION_OF_TIME):
+  dialectric_constant=cs.DIALECTRIC_CONSTANT, 
+  conductivity=cs.CONDUCTIVITY, radio_climate=cs.RADIO_CLIMATE, 
+  fraction_of_time=cs.FRACTION_OF_TIME):
     """
     Read the CSV transmitter data at ``in_path``, and for each transmitter, 
     create the following SPLAT! data for it and save it to the directory
@@ -52,7 +38,17 @@ def create_splat_transmitter_files(in_path, out_path,
         None.
 
     NOTES:
-        See the notes section of :func:`read_transmitters`.
+        The CSV file of transmitter data should include at least the columns,
+        otherwise a ``ValueError`` will be raised.
+
+        - ``'network_name'``: name of transmitter network
+        - ``'site_name'``: name of transmitter site
+        - ``'longitude'``: WGS84 decimal longitude of transmitter  
+        - ``'latitude``: WGS84 decimal latitude of transmitter
+        - ``'antenna_height'``: height of transmitter antenna in meters above sea level
+        - ``'polarization'``: 0 for horizontal or 1 for vertical
+        - ``'frequency'``: frequency of transmitter in MegaHerz
+        - ``'power_eirp'``: effective radiated power of transmitter in Watts
     """
     # Read transmitter data
     ts = read_transmitters(in_path)
@@ -95,17 +91,7 @@ def read_transmitters(path):
         Additionally, a 'name' field is added to each transmitter dictionary for later use and is the result of :func:`build_transmitter_name`.
 
     NOTES:
-        The CSV file of transmitter data should include at least the columns,
-        otherwise a ``ValueError`` will be raised.
-
-        - ``'network_name'``: name of transmitter network
-        - ``'site_name'``: name of transmitter site
-        - ``'longitude'``: WGS84 decimal longitude of transmitter  
-        - ``'latitude``: WGS84 decimal latitude of transmitter
-        - ``'antenna_height'``: height of transmitter antenna in meters above sea level
-        - ``'polarization'``: 0 for horizontal or 1 for vertical
-        - ``'frequency'``: frequency of transmitter in MegaHerz
-        - ``'power_eirp'``: effective radiated power of transmitter in Watts
+        For the format of the transmitters CSV file, see the notes section of :func:`create_splat_transmitters`.
     """
     path = Path(path)
     transmitters = []
@@ -138,9 +124,9 @@ def check_and_format_transmitters(transmitters):
 
     # Check that required fields are present
     keys = transmitters[0].keys()
-    if not set(REQUIRED_TRANSMITTER_FIELDS) <= set(keys):
+    if not set(cs.REQUIRED_TRANSMITTER_FIELDS) <= set(keys):
         raise ValueError('Transmitters header must contain '\
-          'at least the fields {!s}'.format(REQUIRED_TRANSMITTER_FIELDS))
+          'at least the fields {!s}'.format(cs.REQUIRED_TRANSMITTER_FIELDS))
 
     # Format required fields and raise error if run into problems
     new_transmitters = []
@@ -191,9 +177,9 @@ def build_splat_qth(transmitter):
       lon, 
       t['antenna_height'])
 
-def build_splat_lrp(transmitter, dialectric_constant=DIALECTRIC_CONSTANT, 
-  conductivity=CONDUCTIVITY, radio_climate=RADIO_CLIMATE, 
-  fraction_of_time=FRACTION_OF_TIME):
+def build_splat_lrp(transmitter, dialectric_constant=cs.DIALECTRIC_CONSTANT, 
+  conductivity=cs.CONDUCTIVITY, radio_climate=cs.RADIO_CLIMATE, 
+  fraction_of_time=cs.FRACTION_OF_TIME):
     """
     Return the text (string) content of a SPLAT! irregular topography model
     parameter file (``.lrp`` file) corresponding to the given transmitter.
@@ -323,11 +309,11 @@ def download_srtm(tile_ids, path, api_key, high_definition=False):
         None
 
     NOTES:
-        Only works for SRTM tiles covering New Zealand and raises a ``ValueError`` if the set of tile IDs is not a subset of  ``ut.SRTM_NZ_TILE_IDS``
+        Only works for SRTM tiles covering New Zealand and raises a ``ValueError`` if the set of tile IDs is not a subset of :data:`SRTM_NZ_TILE_IDS`
     """
-    if not set(tile_ids) <= set(ut.SRTM_NZ_TILE_IDS):
+    if not set(tile_ids) <= set(cs.SRTM_NZ_TILE_IDS):
         raise ValueError("Tile IDs must be a subset of {!s}".format(
-          ut.SRTM_NZ_TILE_IDS))
+          cs.SRTM_NZ_TILE_IDS))
 
     # Set download parameters
     project_id = '1526685'
@@ -422,8 +408,8 @@ def create_splat_topography_files(in_path, out_path, high_definition=False):
             f.unlink()
 
 @ut.time_it
-def create_coverage_reports(in_path, out_path, transmitters=None,
-  receiver_sensitivity=-110, high_definition=False):
+def compute_coverage(in_path, out_path, transmitters=None,
+  receiver_sensitivity=cs.RECEIVER_SENSITIVITY, high_definition=False):
     """
     Create a SPLAT! coverage report for every transmitter with data located
     at ``in_path``, or if ``transmitters`` is given, then every transmitter 
@@ -450,7 +436,7 @@ def create_coverage_reports(in_path, out_path, transmitters=None,
     NOTES:
         - Calls SPLAT!'s ``splat`` or ``splat-hd`` (if ``high_definition``) to do the work
         - Raises a ``subprocess.CalledProcessError`` if SPLAT! fails
-        - This is a time-intensive function. On a 3.6 GHz Intel Core i7 processor with 16 GB of RAM, this takes about 32 minutes for the 20 New Zealand test transmitters (in ``tests/data/transmitters.csv``) with their 13 standard definition topography files and takes about ? minutes for the same 20 transmitters with their 13 high definition topography files.
+        - This is a time-intensive function. On a 3.6 GHz Intel Core i7 processor with 16 GB of RAM, this takes about 32 minutes for the 20 New Zealand test transmitters (in ``tests/data/transmitters.csv``) with their 13 standard definition topography files and takes about 687 minutes for the same 20 transmitters with their 13 high definition topography files.
     """
     in_path = Path(in_path)
     out_path = Path(out_path)
@@ -488,7 +474,7 @@ def create_coverage_reports(in_path, out_path, transmitters=None,
             tgt = out_path/(t + ext) 
             shutil.move(str(src), str(tgt))
 
-def postprocess_coverage_reports(path, delete_ppm=True):
+def postprocess_coverage(path, keep_ppm=False):
     """
     Using the PPM files in the directory ``path`` do the following:
 
@@ -497,8 +483,8 @@ def postprocess_coverage_reports(path, delete_ppm=True):
     - Convert the PNG coverage file (not the legend file) into GeoTIFF using GDAL
 
     INPUT:
-        - ``path``: string or Path object; directory where coverage reports (outputs of :func:`create_coverage_reports`) lie
-        - ``delete_ppm``: boolean; delete the original, large PPM files in the coverage reports if and only if this flag is ``True``
+        - ``path``: string or Path object; directory where coverage reports (outputs of :func:`compute_coverage`) lie
+        - ``keep_ppm``: boolean; keep the original, large PPM files in the coverage reports if and only if this flag is ``True``
 
     OUTPUT:
         None.
@@ -518,7 +504,7 @@ def postprocess_coverage_reports(path, delete_ppm=True):
             # subprocess.run(args, cwd=str(path),
             #   stdout=subprocess.PIPE, universal_newlines=True, check=True)
 
-            if delete_ppm:
+            if not keep_ppm:
                 # Delete PPM
                 f.unlink()
 

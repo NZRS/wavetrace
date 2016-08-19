@@ -176,7 +176,7 @@ class TestMain(unittest.TestCase):
 
             shutil.rmtree(str(out_path))
 
-    def test_create_coverage_reports(self):
+    def test_compute_coverage(self):
         p1 = DATA_DIR
         p2 = DATA_DIR/'tmp_inputs'
         p3 = DATA_DIR/'tmp_outputs'
@@ -186,7 +186,7 @@ class TestMain(unittest.TestCase):
         # High definition tests take too long, so skip them
         create_splat_transmitter_files(p1/'transmitters_single.csv', p2)
         create_splat_topography_files( p1/'srtm3', p2)
-        create_coverage_reports(p2, p3)
+        compute_coverage(p2, p3)
 
         # Should contain the correct files
         names_get = [f.name for f in p3.iterdir()]
@@ -197,7 +197,7 @@ class TestMain(unittest.TestCase):
 
         rm_paths(p2, p3)
 
-    def test_postprocess_coverage_reports(self):
+    def test_postprocess_coverage(self):
         p1 = DATA_DIR
         p2 = DATA_DIR/'tmp_inputs'
         p3 = DATA_DIR/'tmp_outputs'
@@ -206,8 +206,8 @@ class TestMain(unittest.TestCase):
         transmitters = read_transmitters(p1/'transmitters_single.csv')
         create_splat_transmitter_files(p1/'transmitters_single.csv', p2)
         create_splat_topography_files(p1, p2)
-        create_coverage_reports(p2, p3)
-        postprocess_coverage_reports(p3, delete_ppm=False)
+        compute_coverage(p2, p3)
+        postprocess_coverage(p3, keep_ppm=True)
 
         # Should contain the correct files
         names_get = [f.name for f in p3.iterdir()]

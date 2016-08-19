@@ -1,0 +1,3 @@
+[console_scripts]
+wio = wavetrace.cli:wio
+

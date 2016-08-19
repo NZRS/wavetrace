@@ -194,8 +194,8 @@ For each dictionary,</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="wavetrace.main.create_coverage_reports">
-<code class="descclassname">wavetrace.main.</code><code class="descname">create_coverage_reports</code><span class="sig-paren">(</span><em>in_path</em>, <em>out_path</em>, <em>transmitter_names=None</em>, <em>receiver_sensitivity=-110</em>, <em>high_definition=False</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.main.create_coverage_reports" title="Permalink to this definition">¶</a></dt>
+<dt id="wavetrace.main.compute_coverage">
+<code class="descclassname">wavetrace.main.</code><code class="descname">compute_coverage</code><span class="sig-paren">(</span><em>in_path</em>, <em>out_path</em>, <em>transmitter_names=None</em>, <em>receiver_sensitivity=-110</em>, <em>high_definition=False</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.main.compute_coverage" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a SPLAT! coverage report for every transmitter with data located
 at <code class="docutils literal"><span class="pre">in_path</span></code>, or, if <code class="docutils literal"><span class="pre">transmitter_names</span></code> is given, every transmitter 
 in that list with data data located at <code class="docutils literal"><span class="pre">in_path</span></code>.
@@ -335,8 +335,8 @@ If <code class="docutils literal"><span class="pre">transmitters</span></code> i
 </dd></dl>
 
 <dl class="function">
-<dt id="wavetrace.main.postprocess_coverage_reports">
-<code class="descclassname">wavetrace.main.</code><code class="descname">postprocess_coverage_reports</code><span class="sig-paren">(</span><em>path</em>, <em>delete_ppm=True</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.main.postprocess_coverage_reports" title="Permalink to this definition">¶</a></dt>
+<dt id="wavetrace.main.postprocess_coverage">
+<code class="descclassname">wavetrace.main.</code><code class="descname">postprocess_coverage</code><span class="sig-paren">(</span><em>path</em>, <em>delete_ppm=True</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.main.postprocess_coverage" title="Permalink to this definition">¶</a></dt>
 <dd><p>Using the PPM files in the directory <code class="docutils literal"><span class="pre">path</span></code> do the following:</p>
 <ul class="simple">
 <li>Convert each PPM files into a PNG file, replacing white with transparency using ImageMagick</li>
@@ -346,7 +346,7 @@ If <code class="docutils literal"><span class="pre">transmitters</span></code> i
 <dl class="docutils">
 <dt>INPUT:</dt>
 <dd><ul class="first last simple">
-<li><code class="docutils literal"><span class="pre">path</span></code>: string or Path object; directory where coverage reports (outputs of <a class="reference internal" href="#wavetrace.main.create_coverage_reports" title="wavetrace.main.create_coverage_reports"><code class="xref py py-func docutils literal"><span class="pre">create_coverage_reports()</span></code></a>) lie</li>
+<li><code class="docutils literal"><span class="pre">path</span></code>: string or Path object; directory where coverage reports (outputs of <a class="reference internal" href="#wavetrace.main.compute_coverage" title="wavetrace.main.compute_coverage"><code class="xref py py-func docutils literal"><span class="pre">compute_coverage()</span></code></a>) lie</li>
 <li><code class="docutils literal"><span class="pre">delete_ppm</span></code>: boolean; delete the original, large PPM files in the coverage reports if and only if this flag is <code class="docutils literal"><span class="pre">True</span></code></li>
 </ul>
 </dd>

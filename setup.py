@@ -7,10 +7,13 @@ setup(
     packages=['wavetrace', 'tests'],
     url='https://github.com/nzrs/wavetrace',
     license='LICENSE',
-    description='A Python 3.4 tool kit for processing General Transit Feed Specification (GTFS) data',
+    description='Python 3.5 tools to produce radio signal propagation maps for New Zealand',
     long_description=open('README.rst').read(),
     install_requires=[
         'requests>=2.10.0',
-        'beautifulsoup4>=4.5.1',
+        'click>=6.6',
     ],
+    entry_points={
+        'console_scripts': ['wio=wavetrace.cli:wio'],
+    },
 )

@@ -1,9 +1,10 @@
 wavetrace Package
 ======================
 
-The ``wavetrace`` package contains two modules that depend on each other like so::
+The ``wavetrace`` package contains three modules that depend on each other like this::
 
-    main -> utilities
+    main -> constants, utilities
+    utilities -> constants
 
     
 main Module
