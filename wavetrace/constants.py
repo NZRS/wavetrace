@@ -6,6 +6,7 @@ PROJECT_ROOT = Path(os.path.abspath(os.path.join(
   os.path.dirname(__file__), '../')))
 SECRETS_PATH = PROJECT_ROOT/'secrets.json'
 #: SRTM tiles covering New Zealand
+#: For a visualization of the tiles, see http://geojson.io/#id=gist:anonymous/81b4cb465f1c78941f665c9038494f0f&map=5/-41.360/172.463
 SRTM_NZ_TILE_IDS = [
   'S35E172',
   'S35E173',
