@@ -6,6 +6,7 @@ import shutil
 import subprocess
 import base64
 
+from shapely.geometry import Point
 import requests
 
 import wavetrace.constants as cs
@@ -13,7 +14,7 @@ import wavetrace.utilities as ut
 
 
 def create_splat_transmitter_files(in_path, out_path,
-  dialectric_constant=cs.DIALECTRIC_CONSTANT, 
+  dielectric_constant=cs.DIELECTRIC_CONSTANT, 
   conductivity=cs.CONDUCTIVITY, radio_climate=cs.RADIO_CLIMATE, 
   fraction_of_time=cs.FRACTION_OF_TIME):
     """
@@ -29,7 +30,7 @@ def create_splat_transmitter_files(in_path, out_path,
     INPUT:
         - ``in_path``: string or Path object; location of a CSV file of transmitter data
         - ``out_path``: string or Path object; directory to which to write outputs
-        - ``dialectric_constant``: float; used to make SPLAT! ``.lrp`` file
+        - ``dielectric_constant``: float; used to make SPLAT! ``.lrp`` file
         - ``conductivity``: float; used to make SPLAT! ``.lrp`` file
         - ``radio_climate``: integer; used to make SPLAT! ``.lrp`` file
         - ``fraction_of_time``: float in [0, 1]; used to make SPLAT! ``.lrp`` file
@@ -62,7 +63,7 @@ def create_splat_transmitter_files(in_path, out_path,
         for f, kwargs, ext in [
           (build_splat_qth, {}, '.qth'),
           (build_splat_lrp, {
-          'dialectric_constant': dialectric_constant,
+          'dielectric_constant': dielectric_constant,
           'conductivity': conductivity, 
           'radio_climate': radio_climate,
           'fraction_of_time':fraction_of_time
@@ -177,7 +178,7 @@ def build_splat_qth(transmitter):
       lon, 
       t['antenna_height'])
 
-def build_splat_lrp(transmitter, dialectric_constant=cs.DIALECTRIC_CONSTANT, 
+def build_splat_lrp(transmitter, dielectric_constant=cs.DIELECTRIC_CONSTANT, 
   conductivity=cs.CONDUCTIVITY, radio_climate=cs.RADIO_CLIMATE, 
   fraction_of_time=cs.FRACTION_OF_TIME):
     """
@@ -186,7 +187,7 @@ def build_splat_lrp(transmitter, dialectric_constant=cs.DIALECTRIC_CONSTANT,
 
     INPUT:
         - ``transmitter``: dictionary of the same form as any one of the elements in the list output by :func:`read_transmitters`
-        - ``dialectric_constant``: float
+        - ``dielectric_constant``: float
         - ``conductivity``: float
         - ``radio_climate``: integer
         - ``fraction_of_time``: float in [0, 1]
@@ -205,7 +206,7 @@ def build_splat_lrp(transmitter, dialectric_constant=cs.DIALECTRIC_CONSTANT,
     0.5 ; Fraction of situations
     {!s} ; Fraction of time 
     {!s} ; ERP in watts""".format(
-      dialectric_constant, 
+      dielectric_constant, 
       conductivity, 
       t['frequency'],
       radio_climate, 
@@ -292,6 +293,20 @@ def get_lonlats(transmitters):
     """
     return [(t['longitude'], t['latitude']) for t in transmitters]
 
+def compute_tile_ids(transmitters, transmitter_buffer=0.5, 
+  tile_ids=cs.SRTM_NZ_TILE_IDS):
+    """
+    Given a list of transmitters (of the form output by :func:`read_transmitters`), get their locations, buffer them by ``transmitter_buffer`` decimal degrees, and return an ordered list of the unique SRTM tile IDs in ``tile_ids`` whose corresponding tiles intersect the buffers.
+    As long as ``tile_ids`` and ``transmitter_buffer`` are big enough, the result will be a list of tile IDs to use when computing coverage for the given transmitters.
+    The defaults are appropriate for transmitters in New Zealand.
+
+    NOTES:
+        - Regarding the transmitter buffer, one degree of latitude represents about 111 km on the ground and one degree of longitude at -45 degrees latitude represents about 78 km on the ground; see https://en.wikipedia.org/wiki/Decimal_degrees
+    """
+    blobs = [Point(p).buffer(transmitter_buffer) 
+      for p in get_lonlats(transmitters)]
+    return ut.compute_intersecting_tiles(blobs)
+
 def download_srtm(tile_ids, path, api_key, high_definition=False):
     """
     Download from the Gitlab repository
@@ -313,7 +328,7 @@ def download_srtm(tile_ids, path, api_key, high_definition=False):
     """
     if not set(tile_ids) <= set(cs.SRTM_NZ_TILE_IDS):
         raise ValueError("Tile IDs must be a subset of {!s}".format(
-          cs.SRTM_NZ_TILE_IDS))
+          ' '.join(cs.SRTM_NZ_TILE_IDS)))
 
     # Set download parameters
     project_id = '1526685'

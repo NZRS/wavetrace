@@ -1,7 +1,8 @@
 Introduction
 *************
-Wavetrace is a Python 3.5 package designed to produce radio signal strength reports given radio transmitter data and topography data around the transmitters.
-It uses `SPLAT! <http://www.qsl.net/kd2bd/splat.html>`_ to predict the attenuation of radio signals, which implements a `Longley-Rice model <https://en.wikipedia.org/wiki/Longley%E2%80%93Rice_model>`_. 
+Wavetrace is a Python 3.5 package designed to produce radio signal coverage reports given radio transmitter data and topography data around the transmitters.
+It uses `SPLAT! <http://www.qsl.net/kd2bd/splat.html>`_ to predict the attenuation of radio signals, which implements a `Longley-Rice model <https://en.wikipedia.org/wiki/Longley%E2%80%93Rice_model>`_.
+The package is intended for use in New Zealand but can be configured to work elsewhere on Earth. 
  
 
 Installation
@@ -13,10 +14,15 @@ Installation
 
 Usage
 =========
+Here is a common workflow.
+
 #. Create a CSV file containing transmitter data
-#. Download SRTM3 (standard definition) or SRTM1 (high definition) topography data for the regions surrounding the transmitters
-#. Create SPLAT! data files
-#. Create coverage reports
+#. Process the transmitter data
+#. Download SRTM3 (standard definition) or SRTM1 (high definition) topography data for the regions around the transmitters
+#. Process the topography data
+#. Compute radio signal coverage maps from the processed transmitter and topography data 
+
+More details soon...
 
 
 Further Reading

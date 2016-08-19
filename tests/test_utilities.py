@@ -7,6 +7,11 @@ from wavetrace import *
 
 class TestUtilities(unittest.TestCase):
 
+    def test_check_tile_id(self):
+        self.assertIsNone(check_tile_id('N03E027'))
+        self.assertRaises(ValueError, check_tile_id, 'n03E027')
+        self.assertRaises(ValueError, check_tile_id, 'N93E027')
+
     def test_get_tile_id(self):
         get = get_tile_id(27.5, 3.64)
         expect = 'N03E027'
@@ -55,12 +60,12 @@ class TestUtilities(unittest.TestCase):
         self.assertEqual(len(coords), 5)
         self.assertSequenceEqual(coords[0], coords[-1])
 
-    def test_compute_tile_cover(self):
+    def test_compute_intersecting_tiles(self):
         geometries = [
           Point((174.3, -35.7)), 
           Point((168.6, -45.2)).buffer(1, 1), # square buffer
           ]
-        get = compute_tile_cover(geometries)
+        get = compute_intersecting_tiles(geometries)
         expect = ['S36E174', 
           'S45E167', 'S45E168', 'S45E169', 
           'S46E167', 'S46E168', 'S46E169', 

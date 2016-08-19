@@ -5,6 +5,7 @@ from pathlib import Path
 PROJECT_ROOT = Path(os.path.abspath(os.path.join(
   os.path.dirname(__file__), '../')))
 SECRETS_PATH = PROJECT_ROOT/'secrets.json'
+#: SRTM tiles covering New Zealand
 SRTM_NZ_TILE_IDS = [
   'S35E172',
   'S35E173',
@@ -72,6 +73,7 @@ SRTM_NZ_TILE_IDS = [
   'S48E167',
   'S48E168',
   ]
+#:
 REQUIRED_TRANSMITTER_FIELDS = [
   'network_name',    
   'site_name',
@@ -82,8 +84,13 @@ REQUIRED_TRANSMITTER_FIELDS = [
   'frequency', # mega Herz
   'power_eirp', # Watts
   ]
-DIALECTRIC_CONSTANT = 15
+#:
+DIELECTRIC_CONSTANT = 15
+#:
 CONDUCTIVITY = 0.005
+#:
 RADIO_CLIMATE = 6
+#:
 FRACTION_OF_TIME = 0.5
+#:
 RECEIVER_SENSITIVITY = -110 # decibels

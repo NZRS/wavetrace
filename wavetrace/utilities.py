@@ -53,20 +53,31 @@ def get_secret(secret, secrets_path=cs.SECRETS_PATH):
 
 def check_lonlat(lon, lat):
     """
-    Raise a ``ValueError if ``lon`` and ``lat`` do not represent a valid 
+    Raise a ``ValueError`` if ``lon`` and ``lat`` do not represent a valid 
     WGS84 longitude-latitude pair.
-
-    INPUT:
-        - ``lon``: float
-        - ``lat``: float
-
-    OUTPUT:
-        None.
+    Otherwise, return nothing.
     """
     if not (-180 <= lon <= 180):
         raise ValueError('Longitude {!s} is out of bounds'.format(lon))
     if not (-90 <= lat <= 90):
         raise ValueError('Latitude {!s} is out of bounds'.format(lat))
+
+def check_tile_id(tile_id):
+    """
+    Raise a ``ValueError`` if the given SRTM tile ID (string) 
+    is improperly formatted.
+    Otherwise, return nothing.
+    """
+    t = tile_id
+    msg = "{!s} is not a valid STRM tile ID".format(t)
+    try:
+        lat = int(t[1:3])
+        lon = int(t[4:])
+    except:
+        raise ValueError(msg)
+    if not(t[0] in ['N', 'S'] and t[3] in ['E', 'W'] and\
+      0 <= lat <= 90 and 0 <= lon <= 180):
+        raise ValueError(msg)
 
 def get_bounds(tile_id):
     """
@@ -85,6 +96,7 @@ def get_bounds(tile_id):
     [-27, 4, -26, 5]
     """
     t = tile_id
+    check_tile_id(t)
     min_lat, min_lon = t[:3], t[3:]
     if min_lat[0] == 'N':
         min_lat = int(min_lat[1:])
@@ -150,9 +162,9 @@ def get_tile_id(lon, lat):
 
     return lat + lon 
 
-def compute_tile_cover(geometries, tile_ids=cs.SRTM_NZ_TILE_IDS):
+def compute_intersecting_tiles(geometries, tile_ids=cs.SRTM_NZ_TILE_IDS):
     """
-    Given a list of Shapely geometries in WGS84 coordinates, return an ordered list of the unique SRTM tile IDs in ``tile_id_set`` whose corresponding tiles intersect the geometries.
+    Given a list of Shapely geometries in WGS84 coordinates, return an ordered list of the unique SRTM tile IDs in ``tile_ids`` whose corresponding tiles intersect the geometries.
 
     NOTES:
         - Uses a simple double loop instead of a spatial index, so runs in O(num geometries * num tiles) time. That is fast enough for the 65 SRTM tiles that cover New Zealand. Could be fast enough for all SRTM tiles, but i never tried. 

@@ -11,6 +11,7 @@ setup(
     long_description=open('README.rst').read(),
     install_requires=[
         'requests>=2.10.0',
+        'Shapely>=1.5.16',
         'click>=6.6',
     ],
     entry_points={
