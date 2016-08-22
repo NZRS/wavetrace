@@ -31,7 +31,7 @@ class TestMain(unittest.TestCase):
 
     @unittest.skipIf(not GITLAB_KEY,
       'Requires a Gitlab API access token stored in ``secrets.json`` under the key ``"GITLAB_API_KEY"``')
-    def test_download_srtm(self):
+    def test_download_topography(self):
         # Test tiles. Last one is not in dataset.
         tmp = DATA_DIR/'tmp'
 
@@ -40,7 +40,7 @@ class TestMain(unittest.TestCase):
         for hd, suffix in [(True, '.SRTMGL1.hgt.zip'), 
           (False, '.SRTMGL3.hgt.zip')]:
             rm_paths(tmp)
-            download_srtm(tiles, path=tmp, high_definition=hd, 
+            download_topography(tiles, path=tmp, high_definition=hd, 
               api_key=GITLAB_KEY)
             get_names = [f.name for f in tmp.iterdir()]
             expect_names = [t + suffix for t in tiles]
@@ -49,7 +49,7 @@ class TestMain(unittest.TestCase):
         # Should raise ValueError on bad tiles
         tiles = ['S36E174', 'N00E000']
         for hd in [True, False]:
-            self.assertRaises(ValueError, download_srtm, tile_ids=tiles, 
+            self.assertRaises(ValueError, download_topography, tile_ids=tiles, 
               path=tmp, high_definition=hd, api_key=GITLAB_KEY)
 
         rm_paths(tmp)
@@ -125,12 +125,12 @@ class TestMain(unittest.TestCase):
         # Should have the correct number of lines
         self.assertEqual(len(get.split('\n')), 1)
 
-    def test_create_splat_transmitter_files(self):
+    def test_process_transmitters(self):
         in_path = DATA_DIR/'transmitters.csv'
         out_path = DATA_DIR/'tmp'
         rm_paths(out_path)
 
-        create_splat_transmitter_files(in_path, out_path)
+        process_transmitters(in_path, out_path)
 
         # Should contain the correct files
         names_get = [f.name for f in out_path.iterdir()]
@@ -152,7 +152,7 @@ class TestMain(unittest.TestCase):
 
         self.assertEqual(get_lonlats([]), [])
 
-    def test_create_splat_topography_files(self):
+    def test_process_topography(self):
         out_path = DATA_DIR/'tmp'
         if out_path.exists():
             shutil.rmtree(str(out_path))
@@ -167,7 +167,7 @@ class TestMain(unittest.TestCase):
                 names_expect = ['-36:-35:185:186.sdf', 
                   '-37:-36:184:185.sdf']
 
-            create_splat_topography_files(in_path, out_path, 
+            process_topography(in_path, out_path, 
               high_definition=hd)
 
             # Should contain the correct files
@@ -176,7 +176,7 @@ class TestMain(unittest.TestCase):
 
             shutil.rmtree(str(out_path))
 
-    def test_compute_coverage(self):
+    def test_compute_coverage_0(self):
         p1 = DATA_DIR
         p2 = DATA_DIR/'tmp_inputs'
         p3 = DATA_DIR/'tmp_outputs'
@@ -184,9 +184,9 @@ class TestMain(unittest.TestCase):
         rm_paths(p2, p3)
  
         # High definition tests take too long, so skip them
-        create_splat_transmitter_files(p1/'transmitters_single.csv', p2)
-        create_splat_topography_files( p1/'srtm3', p2)
-        compute_coverage(p2, p3)
+        process_transmitters(p1/'transmitters_single.csv', p2)
+        process_topography( p1/'srtm3', p2)
+        compute_coverage_0(p2, p3)
 
         # Should contain the correct files
         names_get = [f.name for f in p3.iterdir()]
@@ -197,17 +197,26 @@ class TestMain(unittest.TestCase):
 
         rm_paths(p2, p3)
 
-    def test_postprocess_coverage(self):
+    def test_get_bounds_from_kml(self):
+        path = DATA_DIR/'test.kml'
+        with path.open() as src:
+            kml = src.read()
+
+        bounds = get_bounds_from_kml(kml)
+        expect = [173.00000, -38.00000, 177.00000, -35.00083]
+        self.assertSequenceEqual(bounds, expect)
+
+    def test_postprocess_coverage_0(self):
         p1 = DATA_DIR
         p2 = DATA_DIR/'tmp_inputs'
         p3 = DATA_DIR/'tmp_outputs'
         rm_paths(p2, p3)
 
         transmitters = read_transmitters(p1/'transmitters_single.csv')
-        create_splat_transmitter_files(p1/'transmitters_single.csv', p2)
-        create_splat_topography_files(p1, p2)
-        compute_coverage(p2, p3)
-        postprocess_coverage(p3, keep_ppm=True)
+        process_transmitters(p1/'transmitters_single.csv', p2)
+        process_topography(p1, p2)
+        compute_coverage_0(p2, p3)
+        postprocess_coverage_0(p3, keep_ppm=True)
 
         # Should contain the correct files
         names_get = [f.name for f in p3.iterdir()]
@@ -227,14 +236,27 @@ class TestMain(unittest.TestCase):
 
         rm_paths(p2, p3)
 
-    def test_get_bounds_from_kml(self):
-        path = DATA_DIR/'test.kml'
-        with path.open() as src:
-            kml = src.read()
+    def test_compute_coverage(self):
+        p1 = DATA_DIR
+        p2 = DATA_DIR/'tmp_inputs'
+        p3 = DATA_DIR/'tmp_outputs'
 
-        bounds = get_bounds_from_kml(kml)
-        expect = [173.00000, -38.00000, 177.00000, -35.00083]
-        self.assertSequenceEqual(bounds, expect)
+        rm_paths(p2, p3)
+ 
+        # High definition tests take too long, so skip them
+        process_transmitters(p1/'transmitters_single.csv', p2)
+        process_topography( p1/'srtm3', p2)
+        compute_coverage(p2, p3, keep_ppm=False)
+
+        # Should contain the correct files
+        names_get = [f.name for f in p3.iterdir()]
+        names_expect = [t['name'] + suffix
+          for t in read_transmitters(p1/'transmitters_single.csv')
+          for suffix in ['.kml', '-site_report.txt', 
+            '.png', '-ck.png', '.tif']]
+        self.assertCountEqual(names_get, names_expect)
+
+        rm_paths(p2, p3)
 
 
 if __name__ == '__main__':

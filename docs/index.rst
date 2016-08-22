@@ -10,7 +10,7 @@ Wavetrace |version| documentation
    :maxdepth: 2
 
    introduction
-   wavetrace
+   package
 
 
 Indices and tables

@@ -5,28 +5,31 @@ import wavetrace.utilities as ut
 import wavetrace.main as m
 
 
-
 @click.group()
-def wio(**kwargs):
+def wavey(**kwargs):
     pass
 
-@wio.command()
+@wavey.command(short_help="Process transmitter data (CSV)")
 @click.argument('in_path', type=click.Path())
 @click.argument('out_path', type=click.Path())
-@click.option('-dc', '--dielectric_constant', type=float, 
-  default=cs.DIELECTRIC_CONSTANT,
-  help="Earth dielectric constant (relative permittivity)")
-@click.option('-c', '--conductivity', type=float, 
-  default=cs.CONDUCTIVITY,
-  help="Earth conductivity (Siemens per meter)")
+@click.option('-edc', '--earth_dielectric_constant', type=float, 
+  default=cs.EARTH_DIELECTRIC_CONSTANT,
+  help="SPLAT! Earth dielectric constant (relative permittivity)")
+@click.option('-ec', '--earth_conductivity', type=float, 
+  default=cs.EARTH_CONDUCTIVITY,
+  help="SPLAT! Earth earth_conductivity (Siemens per meter)")
 @click.option('-rc', '--radio_climate', type=click.IntRange(1, 7), 
   default=cs.RADIO_CLIMATE,  
-  help="radio climate; 1=Equatorial (Congo), 2=Continental Subtropical (Sudan), 3=Maritime Subtropical (West coast of Africa), 4=Desert (Sahara), 5=Continental Temperate, 6=Maritime Temperate, over land (UK and west coasts of US & EU), 7=Maritime Temperate, over sea")
+  help="SPLAT! radio climate code; 1=Equatorial (Congo), 2=Continental Subtropical (Sudan), 3=Maritime Subtropical (West coast of Africa), 4=Desert (Sahara), 5=Continental Temperate, 6=Maritime Temperate, over land (UK and west coasts of US & EU), 7=Maritime Temperate, over sea")
 @click.option('-ft', '--fraction_of_time', type=float,
   default=cs.FRACTION_OF_TIME,
-  help="transmitter time variability")
-def process_transmitters(in_path, out_path, dielectric_constant, conductivity,
-  radio_climate, fraction_of_time):
+  help="SPLAT! time variability")
+@click.option('-fs', '--fraction_of_situations', type=float,
+  default=cs.FRACTION_OF_SITUATIONS,
+  help="SPLAT! location variability")
+def process_transmitters(in_path, out_path, 
+  earth_dielectric_constant, earth_conductivity, radio_climate, 
+  fraction_of_time, fraction_of_situations):
     """
     Read a CSV file of transmitter data located at IN_PATH, and for each transmitter, create its following SPLAT! files and save them to the directory OUT_PATH.
 
@@ -48,19 +51,21 @@ def process_transmitters(in_path, out_path, dielectric_constant, conductivity,
     - frequency: frequency of transmitter in MegaHerz
     - power_eirp: effective radiated power of transmitter in Watts
     """
-    m.create_splat_transmitter_files(in_path=in_path, out_path=out_path,
-      dielectric_constant=dielectric_constant, 
-      conductivity=dielectric_constant, radio_climate=radio_climate, 
-      fraction_of_time=fraction_of_time)
+    m.process_transmitters(in_path=in_path, out_path=out_path,
+      earth_dielectric_constant=earth_dielectric_constant, 
+      earth_conductivity=earth_dielectric_constant, 
+      radio_climate=radio_climate, 
+      fraction_of_time=fraction_of_time,
+      fraction_of_situations=fraction_of_situations)
 
-@wio.command()
+@wavey.command(short_help="List the SRTM tiles that cover New Zealand")
 def srtm_nz():
     """
     List the IDs of the SRTM tiles that cover New Zealand (SRTM NZ tiles)
     """
     click.echo(' '.join(cs.SRTM_NZ_TILE_IDS))
 
-@wio.command()
+@wavey.command(short_help="Compute SRTM tiles IDs needed")
 @click.argument('path', type=click.Path())
 @click.option('-b', '--transmitter_buffer', type=float, default=0.5,
   help="distance in decimal degrees with which to buffer each transmitter when computing a tile cover")
@@ -76,7 +81,7 @@ def compute_tile_ids(path, transmitter_buffer):
     tids = m.compute_tile_ids(tms, transmitter_buffer=transmitter_buffer)
     click.echo(' '.join(tids))
 
-@wio.command()
+@wavey.command(short_help="Download topography data (SRTM)")
 @click.argument('tile_ids', nargs=-1)
 @click.argument('path', type=click.Path())
 @click.argument('api_key')
@@ -90,9 +95,9 @@ def download_topography(tile_ids, path, api_key, high_definition):
 
     This command only works for SRTM tiles covering New Zealand ---use :func:`srtm_nz` to list these--- and raises a ``ValueError`` if other tiles are given.
     """
-    m.download_srtm(tile_ids, path, api_key, high_definition)
+    m.download_topography(tile_ids, path, api_key, high_definition)
 
-@wio.command()
+@wavey.command(short_help="Process topography data (SRTM)")
 @click.argument('in_path', type=click.Path())
 @click.argument('out_path', type=click.Path())
 @click.option('-hd/-sd', '--high-definition/--standard-definition', 
@@ -106,9 +111,9 @@ def process_topography(in_path, out_path, high_definition):
 
     This command calls SPLAT!'s ``srtm2sdf`` or ``srtm2sdf-hd`` (if ``high_definition``) command to do the work
     """
-    m.create_splat_topography_files(in_path, out_path, high_definition)
+    m.process_topography(in_path, out_path, high_definition)
 
-@wio.command()
+@wavey.command(short_help="Compute radio signal coverage reports")
 @click.argument('in_path', type=click.Path())
 @click.argument('out_path', type=click.Path())
 @click.option('-rs', '--receiver_sensitivity', type=float, 
@@ -135,5 +140,4 @@ def compute_coverage(in_path, out_path, receiver_sensitivity, high_definition):
     """
     m.compute_coverage(in_path, out_path, 
       receiver_sensitivity=receiver_sensitivity, 
-      high_definition=high_definition)
-    m.postprocess_coverage(out_path, keep_ppm=False)
+      high_definition=high_definition, keep_ppm=False)

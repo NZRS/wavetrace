@@ -44,13 +44,16 @@
 <div class="toctree-wrapper compound">
 <span id="document-introduction"></span><div class="section" id="introduction">
 <h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
-<p>Wavetrace is a Python 3.5 package designed to produce radio signal coverage reports given radio transmitter data and topography data around the transmitters.
+<p>Wavetrace is a Python 3.5 package designed to produce radio signal coverage reports, such as GeoTIFF files of signal strength contours,</p>
+<a class="reference internal image-reference" href="_images/signal_strength_contours.png"><img alt="_images/signal_strength_contours.png" class="align-left" src="_images/signal_strength_contours.png" style="width: 350px;" /></a>
+<a class="reference internal image-reference" href="_images/legend.png"><img alt="_images/legend.png" src="_images/legend.png" style="height: 350px;" /></a>
+<p>given radio transmitter data and topography data around the transmitters.
 It uses <a class="reference external" href="http://www.qsl.net/kd2bd/splat.html">SPLAT!</a> to predict the attenuation of radio signals, which implements a <a class="reference external" href="https://en.wikipedia.org/wiki/Longley%E2%80%93Rice_model">Longley-Rice model</a>.
-The package is intended for use in New Zealand but can be configured to work elsewhere on Earth.</p>
+Wavetrace is intended for use in New Zealand but can be configured to work elsewhere on Earth.</p>
 <div class="section" id="installation">
 <h3>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h3>
 <ol class="arabic simple">
-<li>Install SPLAT!, ImageMagick, and GDAL. For example, to install these on a Linux system do <a href="#id1"><span class="problematic" id="id2">``</span></a>sudo apt-get update; sudo apt-get install splat imagemagick gdal-bin ``</li>
+<li>Install SPLAT!, ImageMagick, and GDAL. For example, to install these on a Linux system do <code class="docutils literal"><span class="pre">sudo</span> <span class="pre">apt-get</span> <span class="pre">update;</span> <span class="pre">sudo</span> <span class="pre">apt-get</span> <span class="pre">install</span> <span class="pre">splat</span> <span class="pre">imagemagick</span> <span class="pre">gdal-bin</span></code></li>
 <li>Create a Python 3.5 virtual environment</li>
 <li>In your virtual environment, install Wavetrace via Pip via <code class="docutils literal"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">wavetrace</span></code></li>
 </ol>
@@ -59,13 +62,14 @@ The package is intended for use in New Zealand but can be configured to work els
 <h3>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h3>
 <p>Here is a common workflow.</p>
 <ol class="arabic simple">
-<li>Create a CSV file containing transmitter data</li>
-<li>Process the transmitter data</li>
-<li>Download SRTM3 (standard definition) or SRTM1 (high definition) topography data for the regions around the transmitters</li>
-<li>Process the topography data</li>
-<li>Compute radio signal coverage maps from the processed transmitter and topography data</li>
+<li>Create a CSV file containing transmitter data; see <code class="docutils literal"><span class="pre">tests/data/transmitters.csv</span></code></li>
+<li>Process the transmitter data into SPLAT! files via the function <code class="docutils literal"><span class="pre">wavetrace.main.process_transmitters</span></code></li>
+<li>Download topography data around the transmitters via the functions <code class="docutils literal"><span class="pre">wavetrace.main.compute_tiles</span></code> and <code class="docutils literal"><span class="pre">wavetrace.main.download_topography</span></code>.  Topography data comes in two flavors: SRTM3 (standard definition; 3 arc second resolution; roughly 66 meters at 45 degrees south latitude) or SRTM1 (high definition; 1 arc second resolution; roughly 22 meters at 45 degrees south latitude). SPLAT! can only handle those two formats.</li>
+<li>Process the topography data into SPLAT! files via the function <code class="docutils literal"><span class="pre">wavetrace.main.process_topography</span></code></li>
+<li>Compute signal coverage reports, including GeoTIFF signal strength contour maps, from the processed transmitter and topography data via the function <code class="docutils literal"><span class="pre">wavetrace.main.compute_coverage</span></code></li>
 </ol>
-<p>More details soon...</p>
+<p>See the IPython notebook <code class="docutils literal"><span class="pre">ipynb/examples.ipynb</span></code> for a detailed example.</p>
+<p>Additionally, you can call the most useful functions in the module <code class="docutils literal"><span class="pre">wavetrace.main</span></code> are through Wavey, a command line interface for Wavetrace implemented in the module <code class="docutils literal"><span class="pre">wavetrace.cli</span></code>.</p>
 </div>
 <div class="section" id="further-reading">
 <h3>Further Reading<a class="headerlink" href="#further-reading" title="Permalink to this headline">¶</a></h3>
@@ -82,7 +86,7 @@ The package is intended for use in New Zealand but can be configured to work els
 </ul>
 </div>
 </div>
-<span id="document-wavetrace"></span><div class="section" id="wavetrace-package">
+<span id="document-package"></span><div class="section" id="wavetrace-package">
 <h2>wavetrace Package<a class="headerlink" href="#wavetrace-package" title="Permalink to this headline">¶</a></h2>
 <p>The <code class="docutils literal"><span class="pre">wavetrace</span></code> package contains four modules that depend on each other like this:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">main</span> <span class="o">-&gt;</span> <span class="n">constants</span><span class="p">,</span> <span class="n">utilities</span>
@@ -95,8 +99,7 @@ The package is intended for use in New Zealand but can be configured to work els
 <dl class="function">
 <dt id="wavetrace.main.build_splat_az">
 <code class="descclassname">wavetrace.main.</code><code class="descname">build_splat_az</code><span class="sig-paren">(</span><em>transmitter</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.main.build_splat_az" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the text (string) content of a SPLAT! azimuth file (<code class="docutils literal"><span class="pre">.az</span></code> file)
-corresponding to the given transmitter.</p>
+<dd><p>Return the text (string) content of a SPLAT! azimuth file (AZ file) corresponding to the given transmitter.</p>
 <dl class="docutils">
 <dt>INPUT:</dt>
 <dd><ul class="first last simple">
@@ -113,8 +116,7 @@ corresponding to the given transmitter.</p>
 <dl class="function">
 <dt id="wavetrace.main.build_splat_el">
 <code class="descclassname">wavetrace.main.</code><code class="descname">build_splat_el</code><span class="sig-paren">(</span><em>transmitter</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.main.build_splat_el" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the text (string) content of a SPLAT! elevation file (<code class="docutils literal"><span class="pre">.el</span></code> file)
-corresponding to the given transmitter.</p>
+<dd><p>Return the text (string) content of a SPLAT! elevation file (EL file) corresponding to the given transmitter.</p>
 <dl class="docutils">
 <dt>INPUT:</dt>
 <dd><ul class="first last simple">
@@ -130,17 +132,17 @@ corresponding to the given transmitter.</p>
 
 <dl class="function">
 <dt id="wavetrace.main.build_splat_lrp">
-<code class="descclassname">wavetrace.main.</code><code class="descname">build_splat_lrp</code><span class="sig-paren">(</span><em>transmitter</em>, <em>dielectric_constant=15</em>, <em>conductivity=0.005</em>, <em>radio_climate=6</em>, <em>fraction_of_time=0.5</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.main.build_splat_lrp" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the text (string) content of a SPLAT! irregular topography model
-parameter file (<code class="docutils literal"><span class="pre">.lrp</span></code> file) corresponding to the given transmitter.</p>
+<code class="descclassname">wavetrace.main.</code><code class="descname">build_splat_lrp</code><span class="sig-paren">(</span><em>transmitter</em>, <em>earth_dielectric_constant=15</em>, <em>earth_conductivity=0.005</em>, <em>radio_climate=6</em>, <em>fraction_of_time=0.5</em>, <em>fraction_of_situations=0.5</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.main.build_splat_lrp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the text (string) content of a SPLAT! irregular topography model parameter file (LRP file) corresponding to the given transmitter.</p>
 <dl class="docutils">
 <dt>INPUT:</dt>
 <dd><ul class="first last simple">
 <li><code class="docutils literal"><span class="pre">transmitter</span></code>: dictionary of the same form as any one of the elements in the list output by <a class="reference internal" href="#wavetrace.main.read_transmitters" title="wavetrace.main.read_transmitters"><code class="xref py py-func docutils literal"><span class="pre">read_transmitters()</span></code></a></li>
-<li><code class="docutils literal"><span class="pre">dielectric_constant</span></code>: float</li>
-<li><code class="docutils literal"><span class="pre">conductivity</span></code>: float</li>
+<li><code class="docutils literal"><span class="pre">earth_dielectric_constant</span></code>: float</li>
+<li><code class="docutils literal"><span class="pre">earth_conductivity</span></code>: float</li>
 <li><code class="docutils literal"><span class="pre">radio_climate</span></code>: integer</li>
 <li><code class="docutils literal"><span class="pre">fraction_of_time</span></code>: float in [0, 1]</li>
+<li><code class="docutils literal"><span class="pre">fraction_of_situations</span></code>: float in [0, 1]</li>
 </ul>
 </dd>
 <dt>OUTPUT:</dt>
@@ -152,7 +154,7 @@ parameter file (<code class="docutils literal"><span class="pre">.lrp</span></co
 <dt id="wavetrace.main.build_splat_qth">
 <code class="descclassname">wavetrace.main.</code><code class="descname">build_splat_qth</code><span class="sig-paren">(</span><em>transmitter</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.main.build_splat_qth" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the text content of a SPLAT! site location file 
-(<code class="docutils literal"><span class="pre">.qth</span></code> file) corresponding to the given transmitter.</p>
+(QTH file) corresponding to the given transmitter.</p>
 <dl class="docutils">
 <dt>INPUT:</dt>
 <dd><ul class="first last simple">
@@ -170,8 +172,8 @@ parameter file (<code class="docutils literal"><span class="pre">.lrp</span></co
 <dd><p>Return a string that is the network name with spaces removed followed 
 by an underscore followed by the site name with spaces removed.</p>
 <p>EXAMPLES:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">build_transmitter_name</span><span class="p">(</span><span class="s1">&#39;Slap hAppy&#39;</span><span class="p">,</span> <span class="s1">&#39;Go go go &#39;</span><span class="p">)</span>
-<span class="go">&#39;SlaphAppy_Gogogo&#39;</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">build_transmitter_name</span><span class="p">(</span><span class="s1">&#39;Slap hAppy&#39;</span><span class="p">,</span> <span class="s1">&#39;Go go &#39;</span><span class="p">)</span>
+<span class="go">&#39;SlaphAppy_Gogo&#39;</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -201,12 +203,16 @@ For each dictionary,</p>
 
 <dl class="function">
 <dt id="wavetrace.main.compute_coverage">
-<code class="descclassname">wavetrace.main.</code><code class="descname">compute_coverage</code><span class="sig-paren">(</span><em>in_path</em>, <em>out_path</em>, <em>transmitters=None</em>, <em>receiver_sensitivity=-110</em>, <em>high_definition=False</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.main.compute_coverage" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create a SPLAT! coverage report for every transmitter with data located
-at <code class="docutils literal"><span class="pre">in_path</span></code>, or if <code class="docutils literal"><span class="pre">transmitters</span></code> is given, then every transmitter 
+<code class="descclassname">wavetrace.main.</code><code class="descname">compute_coverage</code><span class="sig-paren">(</span><em>in_path</em>, <em>out_path</em>, <em>transmitters=None</em>, <em>receiver_sensitivity=-110</em>, <em>keep_ppm=False</em>, <em>high_definition=False</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.main.compute_coverage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run <a class="reference internal" href="#wavetrace.main.compute_coverage_0" title="wavetrace.main.compute_coverage_0"><code class="xref py py-func docutils literal"><span class="pre">compute_coverage_0()</span></code></a> and then run <code class="xref py py-func docutils literal"><span class="pre">post_process_coverage_0()</span></code>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="wavetrace.main.compute_coverage_0">
+<code class="descclassname">wavetrace.main.</code><code class="descname">compute_coverage_0</code><span class="sig-paren">(</span><em>in_path</em>, <em>out_path</em>, <em>transmitters=None</em>, <em>receiver_sensitivity=-110</em>, <em>high_definition=False</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.main.compute_coverage_0" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a SPLAT! coverage report for every transmitter with data located at <code class="docutils literal"><span class="pre">in_path</span></code>, or if <code class="docutils literal"><span class="pre">transmitters</span></code> is given, then every transmitter 
 in that list with data data located at <code class="docutils literal"><span class="pre">in_path</span></code>.
-Write each report to the directory <code class="docutils literal"><span class="pre">out_path</span></code>, creating the directory 
-if necessary.
+Write each report to the directory <code class="docutils literal"><span class="pre">out_path</span></code>, creating the directory   if necessary.
 A report comprises the files</p>
 <ul class="simple">
 <li><code class="docutils literal"><span class="pre">'&lt;transmitter</span> <span class="pre">name&gt;-site_report.txt'</span></code></li>
@@ -252,82 +258,9 @@ The defaults are appropriate for transmitters in New Zealand.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="wavetrace.main.create_splat_topography_files">
-<code class="descclassname">wavetrace.main.</code><code class="descname">create_splat_topography_files</code><span class="sig-paren">(</span><em>in_path</em>, <em>out_path</em>, <em>high_definition=False</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.main.create_splat_topography_files" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convert each SRTM HGT topography file in the directory <code class="docutils literal"><span class="pre">in_path</span></code> to
-a SPLAT! Data File (SDF) file in the directory <code class="docutils literal"><span class="pre">out_path</span></code>, 
-creating the directory if it does not exist.
-If <code class="docutils literal"><span class="pre">high_definition</span></code>, then assume the input data is high definition.</p>
-<dl class="docutils">
-<dt>INPUT:</dt>
-<dd><ul class="first last simple">
-<li><code class="docutils literal"><span class="pre">in_path</span></code>: string or Path object specifying a directory</li>
-<li><code class="docutils literal"><span class="pre">out_path</span></code>: string or Path object specifying a directory</li>
-<li><code class="docutils literal"><span class="pre">high_definition</span></code>: boolean</li>
-</ul>
-</dd>
-<dt>OUTPUT:</dt>
-<dd>None.</dd>
-<dt>NOTES:</dt>
-<dd><ul class="first last simple">
-<li>Calls SPLAT!&#8217;s <code class="docutils literal"><span class="pre">srtm2sdf</span></code> or <code class="docutils literal"><span class="pre">srtm2sdf-hd</span></code> 
-(if <code class="docutils literal"><span class="pre">high_definition</span></code>) command to do the work</li>
-<li>Raises a <code class="docutils literal"><span class="pre">subprocess.CalledProcessError</span></code> if SPLAT! fails to 
-convert a file</li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="function">
-<dt id="wavetrace.main.create_splat_transmitter_files">
-<code class="descclassname">wavetrace.main.</code><code class="descname">create_splat_transmitter_files</code><span class="sig-paren">(</span><em>in_path</em>, <em>out_path</em>, <em>dielectric_constant=15</em>, <em>conductivity=0.005</em>, <em>radio_climate=6</em>, <em>fraction_of_time=0.5</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.main.create_splat_transmitter_files" title="Permalink to this definition">¶</a></dt>
-<dd><p>Read the CSV transmitter data at <code class="docutils literal"><span class="pre">in_path</span></code>, and for each transmitter, 
-create the following SPLAT! data for it and save it to the directory
-<code class="docutils literal"><span class="pre">out_path</span></code>:</p>
-<ul class="simple">
-<li>location data as a <code class="docutils literal"><span class="pre">.qth</span></code> file</li>
-<li>irregular topography model parameter as a <code class="docutils literal"><span class="pre">.lrp</span></code> file</li>
-<li>azimuth data as a <code class="docutils literal"><span class="pre">.az</span></code> file</li>
-<li>elevation data as a <code class="docutils literal"><span class="pre">.el</span></code> file</li>
-</ul>
-<dl class="docutils">
-<dt>INPUT:</dt>
-<dd><ul class="first last simple">
-<li><code class="docutils literal"><span class="pre">in_path</span></code>: string or Path object; location of a CSV file of transmitter data</li>
-<li><code class="docutils literal"><span class="pre">out_path</span></code>: string or Path object; directory to which to write outputs</li>
-<li><code class="docutils literal"><span class="pre">dielectric_constant</span></code>: float; used to make SPLAT! <code class="docutils literal"><span class="pre">.lrp</span></code> file</li>
-<li><code class="docutils literal"><span class="pre">conductivity</span></code>: float; used to make SPLAT! <code class="docutils literal"><span class="pre">.lrp</span></code> file</li>
-<li><code class="docutils literal"><span class="pre">radio_climate</span></code>: integer; used to make SPLAT! <code class="docutils literal"><span class="pre">.lrp</span></code> file</li>
-<li><code class="docutils literal"><span class="pre">fraction_of_time</span></code>: float in [0, 1]; used to make SPLAT! <code class="docutils literal"><span class="pre">.lrp</span></code> file</li>
-</ul>
-</dd>
-<dt>OUTPUT:</dt>
-<dd>None.</dd>
-<dt>NOTES:</dt>
-<dd><p class="first">The CSV file of transmitter data should include at least the columns,
-otherwise a <code class="docutils literal"><span class="pre">ValueError</span></code> will be raised.</p>
-<ul class="last simple">
-<li><code class="docutils literal"><span class="pre">'network_name'</span></code>: name of transmitter network</li>
-<li><code class="docutils literal"><span class="pre">'site_name'</span></code>: name of transmitter site</li>
-<li><code class="docutils literal"><span class="pre">'longitude'</span></code>: WGS84 decimal longitude of transmitter</li>
-<li><code class="docutils literal"><span class="pre">'latitude</span></code>: WGS84 decimal latitude of transmitter</li>
-<li><code class="docutils literal"><span class="pre">'antenna_height'</span></code>: height of transmitter antenna in meters above sea level</li>
-<li><code class="docutils literal"><span class="pre">'polarization'</span></code>: 0 for horizontal or 1 for vertical</li>
-<li><code class="docutils literal"><span class="pre">'frequency'</span></code>: frequency of transmitter in MegaHerz</li>
-<li><code class="docutils literal"><span class="pre">'power_eirp'</span></code>: effective radiated power of transmitter in Watts</li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="function">
-<dt id="wavetrace.main.download_srtm">
-<code class="descclassname">wavetrace.main.</code><code class="descname">download_srtm</code><span class="sig-paren">(</span><em>tile_ids</em>, <em>path</em>, <em>api_key</em>, <em>high_definition=False</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.main.download_srtm" title="Permalink to this definition">¶</a></dt>
-<dd><p>Download from the Gitlab repository
-<a class="reference external" href="https://gitlab.com/araichev/srtm_nz">https://gitlab.com/araichev/srtm_nz</a> the SRTM1 or SRTM3 topography data
-corresponding to the given SRTM tile IDs and save the files to the
-directory <code class="docutils literal"><span class="pre">path</span></code>, creating the directory if it does not exist.</p>
+<dt id="wavetrace.main.download_topography">
+<code class="descclassname">wavetrace.main.</code><code class="descname">download_topography</code><span class="sig-paren">(</span><em>tile_ids</em>, <em>path</em>, <em>api_key</em>, <em>high_definition=False</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.main.download_topography" title="Permalink to this definition">¶</a></dt>
+<dd><p>Download from the Gitlab repository <a class="reference external" href="https://gitlab.com/araichev/srtm_nz">https://gitlab.com/araichev/srtm_nz</a> the SRTM1 or SRTM3 topography data corresponding to the given SRTM tile IDs and save the files to the directory <code class="docutils literal"><span class="pre">path</span></code>, creating the directory if it does not exist.</p>
 <dl class="docutils">
 <dt>INPUT:</dt>
 <dd><ul class="first last simple">
@@ -358,8 +291,7 @@ entry and hence is not a well-formed SPLAT! KML coverage file.</p>
 <dl class="function">
 <dt id="wavetrace.main.get_lonlats">
 <code class="descclassname">wavetrace.main.</code><code class="descname">get_lonlats</code><span class="sig-paren">(</span><em>transmitters</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.main.get_lonlats" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a list of longitude-latitude pairs (float pairs)
-representing the locations of the given transmitters.
+<dd><p>Return a list of longitude-latitude pairs (float pairs) representing the locations of the given transmitters.
 If <code class="docutils literal"><span class="pre">transmitters</span></code> is empty, then return the empty list.</p>
 <dl class="docutils">
 <dt>INPUT:</dt>
@@ -373,8 +305,8 @@ If <code class="docutils literal"><span class="pre">transmitters</span></code> i
 </dd></dl>
 
 <dl class="function">
-<dt id="wavetrace.main.postprocess_coverage">
-<code class="descclassname">wavetrace.main.</code><code class="descname">postprocess_coverage</code><span class="sig-paren">(</span><em>path</em>, <em>keep_ppm=False</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.main.postprocess_coverage" title="Permalink to this definition">¶</a></dt>
+<dt id="wavetrace.main.postprocess_coverage_0">
+<code class="descclassname">wavetrace.main.</code><code class="descname">postprocess_coverage_0</code><span class="sig-paren">(</span><em>path</em>, <em>keep_ppm</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.main.postprocess_coverage_0" title="Permalink to this definition">¶</a></dt>
 <dd><p>Using the PPM files in the directory <code class="docutils literal"><span class="pre">path</span></code> do the following:</p>
 <ul class="simple">
 <li>Convert each PPM files into a PNG file, replacing white with transparency using ImageMagick</li>
@@ -390,6 +322,75 @@ If <code class="docutils literal"><span class="pre">transmitters</span></code> i
 </dd>
 <dt>OUTPUT:</dt>
 <dd>None.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="wavetrace.main.process_topography">
+<code class="descclassname">wavetrace.main.</code><code class="descname">process_topography</code><span class="sig-paren">(</span><em>in_path</em>, <em>out_path</em>, <em>high_definition=False</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.main.process_topography" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert each SRTM HGT topography file in the directory <code class="docutils literal"><span class="pre">in_path</span></code> to a SPLAT! Data File (SDF) file in the directory <code class="docutils literal"><span class="pre">out_path</span></code>,     creating the directory if it does not exist.
+If <code class="docutils literal"><span class="pre">high_definition</span></code>, then assume the input data is high definition.</p>
+<dl class="docutils">
+<dt>INPUT:</dt>
+<dd><ul class="first last simple">
+<li><code class="docutils literal"><span class="pre">in_path</span></code>: string or Path object specifying a directory</li>
+<li><code class="docutils literal"><span class="pre">out_path</span></code>: string or Path object specifying a directory</li>
+<li><code class="docutils literal"><span class="pre">high_definition</span></code>: boolean</li>
+</ul>
+</dd>
+<dt>OUTPUT:</dt>
+<dd>None.</dd>
+<dt>NOTES:</dt>
+<dd><ul class="first last simple">
+<li>Calls SPLAT!&#8217;s <code class="docutils literal"><span class="pre">srtm2sdf</span></code> or <code class="docutils literal"><span class="pre">srtm2sdf-hd</span></code> 
+(if <code class="docutils literal"><span class="pre">high_definition</span></code>) command to do the work</li>
+<li>Raises a <code class="docutils literal"><span class="pre">subprocess.CalledProcessError</span></code> if SPLAT! fails to 
+convert a file</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="wavetrace.main.process_transmitters">
+<code class="descclassname">wavetrace.main.</code><code class="descname">process_transmitters</code><span class="sig-paren">(</span><em>in_path</em>, <em>out_path</em>, <em>earth_dielectric_constant=15</em>, <em>earth_conductivity=0.005</em>, <em>radio_climate=6</em>, <em>fraction_of_time=0.5</em>, <em>fraction_of_situations=0.5</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.main.process_transmitters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read the CSV transmitter data at <code class="docutils literal"><span class="pre">in_path</span></code>, and for each transmitter, 
+create the following SPLAT! data for it and save it to the directory
+<code class="docutils literal"><span class="pre">out_path</span></code>:</p>
+<ul class="simple">
+<li>location data as a QTH file</li>
+<li>irregular topography model parameter as an LRP file</li>
+<li>azimuth data as an AZ file</li>
+<li>elevation data as an EL file</li>
+</ul>
+<dl class="docutils">
+<dt>INPUT:</dt>
+<dd><ul class="first last simple">
+<li><code class="docutils literal"><span class="pre">in_path</span></code>: string or Path object; location of a CSV file of transmitter data</li>
+<li><code class="docutils literal"><span class="pre">out_path</span></code>: string or Path object; directory to which to write outputs</li>
+<li><code class="docutils literal"><span class="pre">earth_dielectric_constant</span></code>: float; Earth dielectric constant; SPLAT! parameter used to make an LRP file</li>
+<li><code class="docutils literal"><span class="pre">earth_conductivity</span></code>: float; Earth conductivity; SPLAT! parameter used to make an LRP file</li>
+<li><code class="docutils literal"><span class="pre">radio_climate</span></code>: integer; SPLAT! parameter used to make an LRP file</li>
+<li><code class="docutils literal"><span class="pre">fraction_of_time</span></code>: float in [0, 1]; SPLAT! parameter used to make an LRP file</li>
+<li><code class="docutils literal"><span class="pre">fraction_of_situations</span></code>: float in [0, 1]; SPLAT! parameter used to make an LRP file</li>
+</ul>
+</dd>
+<dt>OUTPUT:</dt>
+<dd>None.</dd>
+<dt>NOTES:</dt>
+<dd><p class="first">The CSV file of transmitter data must include at least the columns,
+otherwise a <code class="docutils literal"><span class="pre">ValueError</span></code> will be raised.</p>
+<ul class="last simple">
+<li><code class="docutils literal"><span class="pre">'network_name'</span></code>: name of transmitter network</li>
+<li><code class="docutils literal"><span class="pre">'site_name'</span></code>: name of transmitter site</li>
+<li><code class="docutils literal"><span class="pre">'longitude'</span></code>: WGS84 decimal longitude of transmitter</li>
+<li><code class="docutils literal"><span class="pre">'latitude</span></code>: WGS84 decimal latitude of transmitter</li>
+<li><code class="docutils literal"><span class="pre">'antenna_height'</span></code>: height of transmitter antenna in meters above sea level</li>
+<li><code class="docutils literal"><span class="pre">'polarization'</span></code>: 0 for horizontal or 1 for vertical</li>
+<li><code class="docutils literal"><span class="pre">'frequency'</span></code>: frequency of transmitter in megaherz</li>
+<li><code class="docutils literal"><span class="pre">'power_eirp'</span></code>: effective radiated power of transmitter in watts</li>
+</ul>
+</dd>
 </dl>
 </dd></dl>
 
@@ -527,45 +528,92 @@ representing the WGS84 bounding box of the tile</dd>
 <div class="section" id="module-wavetrace.constants">
 <span id="constants-module"></span><h3>constants Module<a class="headerlink" href="#module-wavetrace.constants" title="Permalink to this headline">¶</a></h3>
 <dl class="data">
-<dt id="wavetrace.constants.CONDUCTIVITY">
-<code class="descclassname">wavetrace.constants.</code><code class="descname">CONDUCTIVITY</code><em class="property"> = 0.005</em><a class="headerlink" href="#wavetrace.constants.CONDUCTIVITY" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dt id="wavetrace.constants.EARTH_CONDUCTIVITY">
+<code class="descclassname">wavetrace.constants.</code><code class="descname">EARTH_CONDUCTIVITY</code><em class="property"> = 0.005</em><a class="headerlink" href="#wavetrace.constants.EARTH_CONDUCTIVITY" title="Permalink to this definition">¶</a></dt>
+<dd><p>SPLAT! Earth earth_conductivity in Siemens per meter</p>
+</dd></dl>
 
 <dl class="data">
-<dt id="wavetrace.constants.DIELECTRIC_CONSTANT">
-<code class="descclassname">wavetrace.constants.</code><code class="descname">DIELECTRIC_CONSTANT</code><em class="property"> = 15</em><a class="headerlink" href="#wavetrace.constants.DIELECTRIC_CONSTANT" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dt id="wavetrace.constants.EARTH_DIELECTRIC_CONSTANT">
+<code class="descclassname">wavetrace.constants.</code><code class="descname">EARTH_DIELECTRIC_CONSTANT</code><em class="property"> = 15</em><a class="headerlink" href="#wavetrace.constants.EARTH_DIELECTRIC_CONSTANT" title="Permalink to this definition">¶</a></dt>
+<dd><p>SPLAT! Earth dielectric constant.
+According to the SPLAT! documentation, typical Earth dielectric constants and conductivities are:
+Salt water, 80, 5.000;
+Good ground, 25, 0.020;
+Fresh water, 80, 0.010;
+Marshy land, 12, 0.007;
+Farmland or forest, 15, 0.005;
+Average ground, 15, 0.005;
+Mountain or sand, 13, 0.002;
+City, 5, 0.001;
+Poor ground, 4, 0.001;</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="wavetrace.constants.FRACTION_OF_SITUATIONS">
+<code class="descclassname">wavetrace.constants.</code><code class="descname">FRACTION_OF_SITUATIONS</code><em class="property"> = 0.5</em><a class="headerlink" href="#wavetrace.constants.FRACTION_OF_SITUATIONS" title="Permalink to this definition">¶</a></dt>
+<dd><p>SPLAT! location variability parameter</p>
+</dd></dl>
 
 <dl class="data">
 <dt id="wavetrace.constants.FRACTION_OF_TIME">
 <code class="descclassname">wavetrace.constants.</code><code class="descname">FRACTION_OF_TIME</code><em class="property"> = 0.5</em><a class="headerlink" href="#wavetrace.constants.FRACTION_OF_TIME" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>SPLAT! time variability parameter</p>
+</dd></dl>
 
 <dl class="data">
 <dt id="wavetrace.constants.RADIO_CLIMATE">
 <code class="descclassname">wavetrace.constants.</code><code class="descname">RADIO_CLIMATE</code><em class="property"> = 6</em><a class="headerlink" href="#wavetrace.constants.RADIO_CLIMATE" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>SPLAT! radio climate codes.
+1=Equatorial (Congo);
+2=Continental Subtropical (Sudan);
+3=Maritime Subtropical (West coast of Africa);
+4=Desert (Sahara);
+5=Continental Temperate;
+6=Maritime Temperate, over land (UK and west coasts of US &amp; EU);
+7=Maritime Temperate, over sea</p>
+</dd></dl>
 
 <dl class="data">
 <dt id="wavetrace.constants.RECEIVER_SENSITIVITY">
 <code class="descclassname">wavetrace.constants.</code><code class="descname">RECEIVER_SENSITIVITY</code><em class="property"> = -110</em><a class="headerlink" href="#wavetrace.constants.RECEIVER_SENSITIVITY" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>SPLAT receiver sensitivity parameter in decibel-milliwatts (dBm).
+For example, minimum received signal power of wireless networks (802.11 variants) is -100 dBm.</p>
+</dd></dl>
 
 <dl class="data">
 <dt id="wavetrace.constants.REQUIRED_TRANSMITTER_FIELDS">
 <code class="descclassname">wavetrace.constants.</code><code class="descname">REQUIRED_TRANSMITTER_FIELDS</code><em class="property"> = ['network_name', 'site_name', 'latitude', 'longitude', 'antenna_height', 'polarization', 'frequency', 'power_eirp']</em><a class="headerlink" href="#wavetrace.constants.REQUIRED_TRANSMITTER_FIELDS" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Transmitter CSV files must have these header columns</p>
+</dd></dl>
 
 <dl class="data">
 <dt id="wavetrace.constants.SRTM_NZ_TILE_IDS">
 <code class="descclassname">wavetrace.constants.</code><code class="descname">SRTM_NZ_TILE_IDS</code><em class="property"> = ['S35E172', 'S35E173', 'S36E173', 'S36E174', 'S36E175', 'S37E173', 'S37E174', 'S37E175', 'S37E176', 'S38E174', 'S38E175', 'S38E176', 'S38E177', 'S38E178', 'S39E174', 'S39E175', 'S39E176', 'S39E177', 'S39E178', 'S40E173', 'S40E174', 'S40E175', 'S40E176', 'S40E177', 'S40E178', 'S41E172', 'S41E173', 'S41E174', 'S41E175', 'S41E176', 'S42E171', 'S42E172', 'S42E173', 'S42E174', 'S42E175', 'S42E176', 'S43E170', 'S43E171', 'S43E172', 'S43E173', 'S43E174', 'S44E168', 'S44E169', 'S44E170', 'S44E171', 'S44E172', 'S44E173', 'S45E167', 'S45E168', 'S45E169', 'S45E170', 'S45E171', 'S46E166', 'S46E167', 'S46E168', 'S46E169', 'S46E170', 'S46E171', 'S47E166', 'S47E167', 'S47E168', 'S47E169', 'S47E170', 'S48E167', 'S48E168']</em><a class="headerlink" href="#wavetrace.constants.SRTM_NZ_TILE_IDS" title="Permalink to this definition">¶</a></dt>
-<dd><p>SRTM tiles covering New Zealand</p>
+<dd><p>SRTM tiles that cover New Zealand; for a visual, see <a class="reference external" href="http://geojson.io/#id=gist:anonymous/81b4cb465f1c78941f665c9038494f0f&amp;map=5/-41.360/172.463">http://geojson.io/#id=gist:anonymous/81b4cb465f1c78941f665c9038494f0f&amp;map=5/-41.360/172.463</a></p>
 </dd></dl>
 
 </div>
-<div class="section" id="module-wavetrace.cli">
-<span id="cli-module"></span><h3>cli Module<a class="headerlink" href="#module-wavetrace.cli" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="cli-module">
+<h3>cli Module<a class="headerlink" href="#cli-module" title="Permalink to this headline">¶</a></h3>
+<p>Sphinx auto-documentation does not work on this module, because all the functions inside are decorated by Click decorators, which don&#8217;t play nicely with Sphinx.
+So use the command line to access the documentation for Wavey, the command line interface for Wavetrace:</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>wavey --help
+Usage: wavey <span class="o">[</span>OPTIONS<span class="o">]</span> COMMAND <span class="o">[</span>ARGS<span class="o">]</span>...
+
+Options:
+  --help  Show this message and exit.
+
+Commands:
+  compute_coverage      Compute radio signal coverage reports
+  compute_tile_ids      Compute SRTM tiles IDs needed
+  download_topography   Download topography data <span class="o">(</span>SRTM<span class="o">)</span>
+  process_topography    Process topography data <span class="o">(</span>SRTM<span class="o">)</span>
+  process_transmitters  Process transmitter data <span class="o">(</span>CSV<span class="o">)</span>
+  srtm_nz               Print the SRTM tiles that cover New Zealand
+</pre></div>
 </div>
+<span class="target" id="module-wavetrace.cli"></span></div>
 </div>
 </div>
 </div>
@@ -593,11 +641,11 @@ representing the WGS84 bounding box of the tile</dd>
 <li class="toctree-l2"><a class="reference internal" href="index.html#authors">Authors</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="index.html#document-wavetrace">wavetrace Package</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="index.html#document-package">wavetrace Package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="index.html#module-wavetrace.main">main Module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="index.html#module-wavetrace.utilities">utilities Module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="index.html#module-wavetrace.constants">constants Module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="index.html#module-wavetrace.cli">cli Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#cli-module">cli Module</a></li>
 </ul>
 </li>
 </ul>
