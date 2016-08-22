@@ -1,0 +1,2 @@
+network_name,site_name,longitude,latitude,antenna_height,frequency,power_eirp,polarization,bearing,horizontal_beamwidth,vertical_beamwidth,antenna_downtilt,extra
+Gray Wireless,4,174.336547,-35.712247,10,5725,4,0,0,,,,
