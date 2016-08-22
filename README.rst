@@ -38,7 +38,7 @@ Additionally, you can call the most useful functions in the module ``wavetrace.m
 
 Documentation
 ==============
-In ``docs`` and on Rawgit `here <https://rawgit.com/araichev/wavetrace/develop/docs/_build/singlehtml/index.html>`_
+In ``docs`` and on Rawgit `here <https://rawgit.com/araichev/wavetrace/master/docs/_build/singlehtml/index.html>`_
 
 
 Further Reading
