@@ -29,7 +29,7 @@ Here is a common workflow.
 #. Process the transmitter data into SPLAT! files via the function ``wavetrace.main.process_transmitters``
 #. Download topography data around the transmitters via the functions ``wavetrace.main.compute_tiles`` and ``wavetrace.main.download_topography``.  Topography data comes in two flavors: SRTM3 (standard definition; 3 arc second resolution; roughly 66 meters at 45 degrees south latitude) or SRTM1 (high definition; 1 arc second resolution; roughly 22 meters at 45 degrees south latitude). SPLAT! can only handle those two formats.
 #. Process the topography data into SPLAT! files via the function ``wavetrace.main.process_topography``
-#. Compute signal coverage reports, including GeoTIFF signal strength contour maps, from the processed transmitter and topography data via the function ``wavetrace.main.compute_coverage``
+#. Compute signal coverage reports, which include GeoTIFF signal strength contour maps, from the processed transmitter and topography data via the function ``wavetrace.main.compute_coverage``
 
 See the IPython notebook ``ipynb/examples.ipynb`` for a detailed example.
 
