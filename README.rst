@@ -56,8 +56,8 @@ Authors
 Changelog
 ==========
 
-v2.0.0, 2016-08
-----------------
+v2.0.0, 2016-08-22
+-------------------
 - Complete refactor and conversion into a Python package
 
 
