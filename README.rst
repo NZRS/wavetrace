@@ -6,7 +6,7 @@ Wavetrace is a Python 3.5 package designed to produce radio signal coverage repo
     :width: 350px
     :align: left
 
-.. image:: images/legend.png
+.. image:: docs/images/legend.png
     :height: 350px
 
 given radio transmitter data and topography data around the transmitters.
