@@ -122,3 +122,16 @@ FRACTION_OF_SITUATIONS = 0.5
 #: SPLAT receiver sensitivity parameter in decibel-milliwatts (dBm). 
 #: For example, minimum received signal power of wireless networks (802.11 variants) is -100 dBm.
 RECEIVER_SENSITIVITY = -110 
+#: WGS84 semimajor radius in meters
+WGS84_A = 6378137
+#: WGS84 inverse flattening (1/f)
+WGS84_FINV = 298.257223563
+#: WGS84 flattening
+WGS84_F = 1/WGS84_FINV
+#: WGS84 eccentricity squared (e^2)
+WGS84_E2 = 2*WGS84_F - WGS84_F**2
+#: Distance in meters of a geostationary satellite from the center of the Earth (and hence the center of the WGS84 ellipsoid);
+#: taken from the Wikipedia article `Geostationary orbit <https://en.wikipedia.org/wiki/Geostationary_orbit>`_
+R_S = 42164000
+#: Distance in meters of a geostationary satellite from the WGS84 ellipsoid
+H_S = R_S - WGS84_A

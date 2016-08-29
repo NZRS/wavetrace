@@ -5,6 +5,7 @@ import textwrap
 import shutil
 import subprocess
 import base64
+from math import sin, cos, atan, atan2, sqrt, pi, radians, degrees
 
 from shapely.geometry import Point
 import requests
@@ -565,3 +566,62 @@ def get_bounds_from_kml(kml_string):
     north = re.search(r"<north>([0-9-][0-9\.]*)<\/north>", kml).group(1)
     result = [west, south, east, north]
     return list(map(float, result))
+
+def compute_look_angles(lon, lat, height, satellite_lon):
+    """
+    Given the WGS84 longitude and latitude and the height in meters of a point P on Earth and given the longitude of a geostationary satellite S, return the azimuth and elevation in degrees of S relative to P, respectively.
+
+    INPUT:
+        - ``lon``: float; WGS84 longitude of point 
+        - ``lat```: float; WGS84 latitude of point
+        - ``height``: float; distance in meters between P and the WGS84 ellipsoid; GPS height
+        - ``satellite_lon``: float; WGS84 longitude of S
+
+    OUTPUT:
+        - ``azimuth``: float; degrees in [0, 360)
+        - ``elevation``: float; degrees in [-90, 90]; a negative value indicates that S lies below the local horizon of P
+
+    NOTES:
+
+    - Algorithm taken from `Determination of look angles to geostationary communication satellites <https://www.ngs.noaa.gov/CORS/Articles/SolerEisemannJSE.pdf>`_ by Tomas Soler David W. Eisemann
+    - The input ``height`` is *not* the SRTM elevation of P, because the latter is the height ``H`` above the EGM96 geoid; see the `SRTM collection user guide <https://lpdaac.usgs.gov/sites/default/files/public/measures/docs/NASA_SRTM_V3.pdf>`_. A common way to approximate ``height`` (ellipsoid height) from ``H`` (orthometric height) is to use the formula ``height ~ H + N``, where ``N`` is the height of the EGM96 geoid above the WGS84 ellipsoid (geoid height). 
+    """
+    # Convert to radians and define constants
+    lam = radians(lon)
+    phi = radians(lat)
+    h = height
+    lam_s = radians(satellite_lon)
+    a = cs.WGS84_A
+    e2 = cs.WGS84_E2
+    N = a/sqrt(1 - e2*sin(phi)**2)
+    r = cs.R_S
+
+    # Transform P and S coordinates from spherical to rectangular
+    x_p = (N + h)*cos(lam)*cos(phi)
+    y_p = (N + h)*sin(lam)*cos(phi)
+    z_p = (N*(1 - e2) + h)*sin(phi)
+
+    x_s = r*cos(lam_s)
+    y_s = r*sin(lam_s)
+    z_s = 0
+
+    # Translate coordinate system origin to P
+    x = x_s - x_p
+    y = y_s - y_p
+    z = z_s - z_p 
+
+    # Transform to P-local geodetic coordinates
+    e = -x*sin(lam) + y*cos(lam)
+    n = -x*sin(phi)*cos(lam) -y*sin(phi)*sin(lam) + z*cos(phi)
+    u = x*cos(phi)*cos(lam) + y*cos(phi)*sin(lam) + z*sin(phi)
+
+    # Compute azimuth and elevation of S relative to P
+    alp = atan2(e, n)
+    nu = atan2(u, sqrt(e**2 + n**2))
+
+    # Azimuths are positive by convention
+    if alp < 0:
+        alp += 2*pi
+
+    # Return in degrees
+    return degrees(alp), degrees(nu)
