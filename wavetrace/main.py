@@ -591,10 +591,10 @@ def compute_look_angles(lon, lat, height, satellite_lon):
     phi = radians(lat)
     h = height
     lam_s = radians(satellite_lon)
+    r = cs.R_S
     a = cs.WGS84_A
     e2 = cs.WGS84_E2
     N = a/sqrt(1 - e2*sin(phi)**2)
-    r = cs.R_S
 
     # Transform P and S coordinates from spherical to rectangular
     x_p = (N + h)*cos(lam)*cos(phi)
