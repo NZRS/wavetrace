@@ -290,6 +290,7 @@ class TestMain(unittest.TestCase):
             get_az, get_el = compute_look_angles(0, 45, 0, lon_s)
             self.assertAlmostEqual(get_az, az, places=decimals)
             self.assertAlmostEqual(get_el, el, places=decimals)
+            
 
 if __name__ == '__main__':
     unittest.main()

@@ -1,3 +1,7 @@
+"""
+CONVENTIONS:
+    - All longitudes and latitudes below are referenced to the WGS84 ellipsoid, unless stated otherwise
+"""
 import os
 from functools import wraps
 import datetime as dt
@@ -6,7 +10,9 @@ from math import ceil, floor
 from itertools import product
 from pathlib import Path 
 import shutil
+import re
 
+import requests
 from shapely.geometry import box, mapping
 
 import wavetrace.constants as cs
@@ -54,7 +60,7 @@ def get_secret(secret, secrets_path=cs.SECRETS_PATH):
 def check_lonlat(lon, lat):
     """
     Raise a ``ValueError`` if ``lon`` and ``lat`` do not represent a valid 
-    WGS84 longitude-latitude pair.
+    longitude-latitude pair.
     Otherwise, return nothing.
     """
     if not (-180 <= lon <= 180):
@@ -88,7 +94,7 @@ def get_bounds(tile_id):
 
     OUTPUT:
         List of integers of the form  ``[min_lon, min_lat, max_lon, max_lat]``
-        representing the WGS84 bounding box of the tile 
+        representing the longitude-latitude bounding box of the tile 
 
     EXAMPLES:
 
@@ -111,7 +117,7 @@ def get_bounds(tile_id):
 
 def build_polygon(tile_id):
     """
-    Given an SRTM tile ID, return a Shapely Polygon object corresponding to the WGS84 longitude-latitude boundary of the tiles.
+    Given an SRTM tile ID, return a Shapely Polygon object corresponding to the longitude-latitude boundary of the tiles.
     """
     return box(*get_bounds(tile_id))
 
@@ -127,11 +133,11 @@ def build_feature(tile_id):
 
 def get_tile_id(lon, lat):
     """
-    Return the ID of the SRTM tile that covers the given WGS84 longitude and latitude. 
+    Return the ID of the SRTM tile that covers the given longitude and latitude. 
 
     INPUT:
-        - ``lon``: float; WGS84 longitude
-        - ``lat``: float; WGS84 latitude 
+        - ``lon``: float; longitude
+        - ``lat``: float; latitude 
 
     OUTPUT:
         SRTM tile ID (string)
@@ -177,3 +183,59 @@ def compute_intersecting_tiles(geometries, tile_ids=cs.SRTM_NZ_TILE_IDS):
                 result.append(tid)
                 break
     return sorted(result)
+
+def get_center(bounds):
+    """
+    Given a longitude-latitude bounding square, return the longitude-latitude center of the square.
+    """
+    return (bounds[0] + bounds[2])/2, (bounds[1] + bounds[3])/2
+
+def get_subtile_bounds(tile_id, n=3):
+    """
+    Given the ID of an SRTM tile, partition the tile into ``n**2`` longitude-latitude squares, each of side length ``1/n`` degrees, and return the bounds of each those tiles, enumerating the tiles from west to east and then north to south.
+    For example, for ``n = 3``, the tile order would be::
+
+    -------------
+    | 0 | 1 | 2 |
+    -------------
+    | 3 | 4 | 5 |
+    -------------
+    | 6 | 7 | 8 |
+    -------------
+    """
+    bounds = get_bounds(tile_id)
+    delta = 1/n
+    x0 = bounds[0]
+    y0 = bounds[1]
+    return [[
+      x0 + j*delta, 
+      y0 + (n - i - 1)*delta,
+      x0 + (j + 1)*delta,
+      y0 + (n - i)*delta,
+      ] for i in range(n) for j in range(n)]
+
+def get_geoid_height(lon, lat, num_tries=3):
+    """
+    Query http://geographiclib.sourceforge.net/cgi-bin/GeoidEval for the height in meters of the EGM96 geoid above the WGS84 ellipsoid for the given longitude and latitude. 
+    If the result is negative, then the geoid lies below the ellipsoid.
+    Raise a ``ValueError`` if the query fails after ``num_tries`` tries.
+
+    NOTES:
+        - It would be good to rewrite this function so that it does not depend on internet access. For a starters, see `https://github.com/vandry/geoidheight <https://github.com/vandry/geoidheight>`_, which uses the EGM2008 ellipsoid.
+    """
+    url = 'http://geographiclib.sourceforge.net/cgi-bin/GeoidEval'
+    data = {'input': '{!s}+{!s}'.format(lat, lon)}
+    pattern = r'EGM96</a>\s*=\s*<font color="blue">([\d\.\-]+)</font>'
+    
+    for i in range(num_tries):
+        r = requests.get(url, data)
+        if r.status_code != requests.codes.ok:
+            continue
+            
+        m = re.search(pattern, r.text)
+        if m is None:
+            raise ValueError('Failed to parse data from', url)
+        else:
+            return float(m.group(1)) 
+        
+    raise ValueError('Failed to download data from', url)
