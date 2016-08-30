@@ -73,5 +73,31 @@ class TestUtilities(unittest.TestCase):
           ]
         self.assertCountEqual(get, expect)
 
+    def test_get_geoid_height(self):
+        get = get_geoid_height(-3.01, 16.78)
+        expect = 28.7069
+        self.assertEqual(get, expect)
+
+    def test_get_center(self):
+        bounds = [174, -36, 175, -35]
+        get = get_center(tile_id)
+        expect = (174.5, -35.5)
+        self.assertSequenceEqual(get, expect)
+
+    def test_get_subtile_bounds(self):
+        tile_id = 'S36E174'
+        n = 3
+        bounds_list = get_subtile_bounds(tile_id, n=n)
+        # Should be the correct length
+        self.assertEqual(len(bounds_list), n**2)
+        # Each bounds should be the correct length
+        self.assertSequenceEqual([len(b) for b in bounds_list], 
+          [4 for i in range(n**2)])
+        # Should be correct on an example subtile
+        delta = 1/n
+        expect = [174, -36 + delta, 174 + delta, -36 + 2*delta]
+        self.assertSequenceEqual(bounds_list[n], expect)
+
+
 if __name__ == '__main__':
     unittest.main()

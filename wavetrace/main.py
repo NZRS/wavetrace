@@ -1,3 +1,7 @@
+"""
+CONVENTIONS:
+    - All longitudes and latitudes below are referenced to the WGS84 ellipsoid, unless stated otherwise
+"""
 from pathlib import Path 
 import re
 import csv
@@ -48,8 +52,8 @@ def process_transmitters(in_path, out_path,
 
         - ``'network_name'``: name of transmitter network
         - ``'site_name'``: name of transmitter site
-        - ``'longitude'``: WGS84 decimal longitude of transmitter  
-        - ``'latitude``: WGS84 decimal latitude of transmitter
+        - ``'longitude'``: decimal longitude of transmitter  
+        - ``'latitude``: decimal latitude of transmitter
         - ``'antenna_height'``: height of transmitter antenna in meters above sea level
         - ``'polarization'``: 0 for horizontal or 1 for vertical
         - ``'frequency'``: frequency of transmitter in megaherz
@@ -382,6 +386,7 @@ def process_topography(in_path, out_path, high_definition=False):
           (if ``high_definition``) command to do the work
         - Raises a ``subprocess.CalledProcessError`` if SPLAT! fails to 
           convert a file
+        - Each SRTM1 or SRTM3 file must have a name of the form <SRTM tile ID>[.something].hgt.zip or <SRTM tile ID>[.something].hgt, e.g. S36E173.SRTMGL3.hgt.zip 
     """
     in_path = Path(in_path)
     out_path = Path(out_path)
@@ -552,12 +557,8 @@ def postprocess_coverage_0(path, keep_ppm):
 
 def get_bounds_from_kml(kml_string):
     """
-    Given the text content of a SPLAT! KML coverage file,
-    return a list of floats of the form 
-    ``[min_lon, min_lat, max_lon, max_lat]`` which describes the WGS84 
-    bounding box of the coverage file.
-    Raise an ``AttributeError`` if the KML does not contain a ``<LatLonBox>``
-    entry and hence is not a well-formed SPLAT! KML coverage file.
+    Given the text content of a SPLAT! KML coverage file, return a list of floats of the form ``[min_lon, min_lat, max_lon, max_lat]`` which describes the longitude-latitude bounding box of the coverage file.
+    Raise an ``AttributeError`` if the KML does not contain a ``<LatLonBox>``  entry and hence is not a well-formed SPLAT! KML coverage file.
     """
     kml = kml_string
     west = re.search(r"<west>([0-9-][0-9\.]*)<\/west>", kml).group(1)
@@ -569,13 +570,13 @@ def get_bounds_from_kml(kml_string):
 
 def compute_look_angles(lon, lat, height, satellite_lon):
     """
-    Given the WGS84 longitude and latitude and the height in meters of a point P on Earth and given the longitude of a geostationary satellite S, return the azimuth and elevation in degrees of S relative to P, respectively.
+    Given the longitude, latitude, and height in meters of a point P on Earth and given the longitude of a geostationary satellite S, return the azimuth and elevation in degrees of S relative to P, respectively.
 
     INPUT:
-        - ``lon``: float; WGS84 longitude of point 
-        - ``lat```: float; WGS84 latitude of point
+        - ``lon``: float; longitude of P 
+        - ``lat```: float; latitude of P
         - ``height``: float; distance in meters between P and the WGS84 ellipsoid; GPS height
-        - ``satellite_lon``: float; WGS84 longitude of S
+        - ``satellite_lon``: float; longitude of S
 
     OUTPUT:
         - ``azimuth``: float; degrees in [0, 360)
@@ -584,7 +585,7 @@ def compute_look_angles(lon, lat, height, satellite_lon):
     NOTES:
 
     - Algorithm taken from `Determination of look angles to geostationary communication satellites <https://www.ngs.noaa.gov/CORS/Articles/SolerEisemannJSE.pdf>`_ by Tomas Soler David W. Eisemann
-    - The input ``height`` is *not* the SRTM elevation of P, because the latter is the height ``H`` above the EGM96 geoid; see the `SRTM collection user guide <https://lpdaac.usgs.gov/sites/default/files/public/measures/docs/NASA_SRTM_V3.pdf>`_. A common way to approximate ``height`` (ellipsoid height) from ``H`` (orthometric height) is to use the formula ``height ~ H + N``, where ``N`` is the height of the EGM96 geoid above the WGS84 ellipsoid (geoid height). 
+    - The input ``height`` is *not* the SRTM elevation of P, because the latter is the height ``H`` above the EGM96 geoid; see the `SRTM collection user guide <https://lpdaac.usgs.gov/sites/default/files/public/measures/docs/NASA_SRTM_V3.pdf>`_. Rather the ``height`` (ellipsoid height) is the sum of ``H`` (orthometric height) and ``N`` (geoid height), where ``N`` is the height of the EGM96 geoid above the WGS84 ellipsoid. 
     """
     # Convert to radians and define constants
     lam = radians(lon)
@@ -625,3 +626,17 @@ def compute_look_angles(lon, lat, height, satellite_lon):
 
     # Return in degrees
     return degrees(alp), degrees(nu)
+
+def compute_satellite_shadow(in_path, satellite_lon, out_path, n=3):
+    """
+    Given the path ``in_path`` to an SRTM1 or SRTM3 file and the longitude of a geostationary satellite, color the raster cells according to whether they are in (white) or out (black) of the line-of-site of the satellite, and return the result as a GeoTIFF file.
+
+    ALGORITHM: 
+        #. Partition the SRTM tile into ``n**2`` square subtiles, each of side length ``1/n`` degrees
+        #. For each subtile, compute the longitude, latitude, and (WGS84) height of the center 
+        #. Compute the the look angles of the satellite from the center 
+        #. Use the look angles to hillshade the subtile via GDAL's ``hillshade`` command
+        #. Reassemble the tile from the subtiles and save the result as a GeoTIFF file 
+    """
+    in_path = Path(in_path)
+    out_path = Path(out_path)
