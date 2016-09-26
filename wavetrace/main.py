@@ -10,6 +10,7 @@ import shutil
 import subprocess
 import base64
 from math import sin, cos, atan, atan2, sqrt, pi, radians, degrees
+import tempfile
 
 from shapely.geometry import Point
 import requests
@@ -546,12 +547,13 @@ def postprocess_coverage_0(path, keep_ppm):
 
             # Convert main PNG to GeoTIFF using the lon-lat bounds from the KML
             bounds = get_bounds_from_kml(kml)
+            ulx, uly, lrx, lry = str(bounds[0]), str(bounds[3]),\
+              str(bounds[2]), str(bounds[1])
             epsg = 'EPSG:4326'  # WGS84
             png = f.stem + '.png'
             tif = f.stem + '.tif'
             args = ['gdal_translate', '-of', 'Gtiff', '-a_ullr', 
-              str(bounds[0]), str(bounds[3]), str(bounds[2]), str(bounds[1]),
-              '-a_srs', epsg, png, tif]
+              ulx, uly, lrx, lry, '-a_srs', epsg, png, tif]
             subprocess.run(args, cwd=str(path),
               stdout=subprocess.PIPE, universal_newlines=True, check=True)
 
@@ -585,7 +587,7 @@ def compute_look_angles(lon, lat, height, satellite_lon):
     NOTES:
 
     - Algorithm taken from `Determination of look angles to geostationary communication satellites <https://www.ngs.noaa.gov/CORS/Articles/SolerEisemannJSE.pdf>`_ by Tomas Soler David W. Eisemann
-    - The input ``height`` is *not* the SRTM elevation of P, because the latter is the height ``H`` above the EGM96 geoid; see the `SRTM collection user guide <https://lpdaac.usgs.gov/sites/default/files/public/measures/docs/NASA_SRTM_V3.pdf>`_. Rather the ``height`` (ellipsoid height) is the sum of ``H`` (orthometric height) and ``N`` (geoid height), where ``N`` is the height of the EGM96 geoid above the WGS84 ellipsoid. 
+    - The input ``height`` is the sum of H and N, where H is the SRTM elevation of P (the orthometric height; see the `SRTM collection user guide <https://lpdaac.usgs.gov/sites/default/files/public/measures/docs/NASA_SRTM_V3.pdf>`_) and N is the height of the EGM96 geoid above the WGS84 ellipsoid at P (the geoid height). 
     """
     # Convert to radians and define constants
     lam = radians(lon)
@@ -627,7 +629,8 @@ def compute_look_angles(lon, lat, height, satellite_lon):
     # Return in degrees
     return degrees(alp), degrees(nu)
 
-def compute_satellite_shadow(in_path, satellite_lon, out_path, n=3):
+def compute_satellite_shadow(in_path, satellite_lon, out_path, n=3,
+  high_definition=False):
     """
     Given the path ``in_path`` to an SRTM1 or SRTM3 file and the longitude of a geostationary satellite, color the raster cells according to whether they are in (white) or out (black) of the line-of-site of the satellite, and return the result as a GeoTIFF file.
 
@@ -635,8 +638,62 @@ def compute_satellite_shadow(in_path, satellite_lon, out_path, n=3):
         #. Partition the SRTM tile into ``n**2`` square subtiles, each of side length ``1/n`` degrees
         #. For each subtile, compute the longitude, latitude, and (WGS84) height of the center 
         #. Compute the the look angles of the satellite from the center 
-        #. Use the look angles to hillshade the subtile via GDAL's ``hillshade`` command
+        #. Use the look angles to shade the subtile via GDAL's ``hillshade`` command
         #. Reassemble the tile from the subtiles and save the result as a GeoTIFF file 
     """
     in_path = Path(in_path)
     out_path = Path(out_path)
+    tile_id = ut.extract_tile_id(in_path)
+
+    # Unzip tile if necessary
+    if in_path.name.endswith('.zip'):
+        is_zip = True
+        shutil.unpack_archive(str(in_path), str(in_path.parent))
+        f = in_path.parent/'{!s}.hgt'.format(tile_id)
+    else:
+        is_zip = False
+        f = in_path
+
+    # Create temporary directory to hold the subtiles
+    tmp_path = Path(tempfile.mkdtemp())
+
+    # Iterate through subtiles
+    subtile_paths = []
+    bounds = ut.get_bounds(tile_id, high_definition)
+    for i, subbounds in enumerate(ut.partition(bounds, n)):
+        # Extract subtile
+        g = tmp_path/'{!s}.tif'.format(i)
+        subtile_paths.append(g)
+        ulx, uly, lrx, lry = str(subbounds[0]), str(subbounds[3]), \
+          str(subbounds[2]), str(subbounds[1])
+        args = ['gdal_translate', '-of', 'Gtiff', '-projwin', 
+          ulx, uly, lrx, lry, str(f), str(g)]       
+        subprocess.run(args, cwd=str(f.parent),
+          stdout=subprocess.PIPE, universal_newlines=True, check=True)
+        lon, lat = ut.get_center(subbounds)
+
+        # Compute orthometric height H and geoid height N at center of subtile
+        args = ['gdallocationinfo', str(g), '-wgs84', '-valonly', 
+          str(lon), str(lat)]
+        sp = subprocess.run(args, cwd=str(f.parent),
+          stdout=subprocess.PIPE, universal_newlines=True, check=True)
+        H = float(sp.stdout) 
+        N = ut.get_geoid_height(lon, lat)
+        
+        # Compute look angles and then shade with GDAL
+        az, el = compute_look_angles(lon, lat, H + N, satellite_lon)
+        args = ['gdaldem', 'hillshade', '-az', str(az), '-alt', str(el), 
+          str(g), str(g)]
+        subprocess.run(args, cwd=str(f.parent),
+          stdout=subprocess.PIPE, universal_newlines=True, check=True)
+
+    # Merge subtiles
+    args = ['gdal_merge.py', '-o', str(out_path)] +\
+      [str(g) for g in subtile_paths]
+    subprocess.run(args, cwd=str(f.parent),
+      stdout=subprocess.PIPE, universal_newlines=True, check=True)
+    
+    # Clean up
+    ut.rm_paths(tmp_path)
+    if is_zip:
+        f.unlink()
