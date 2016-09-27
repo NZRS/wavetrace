@@ -23,7 +23,7 @@ Wavetrace is intended for use in New Zealand but can be configured to work elsew
 
 Installation
 ============
-1. Install SPLAT!, ImageMagick, and GDAL. For example, to install these on a Linux system do ``sudo apt-get update; sudo apt-get install splat imagemagick gdal-bin``
+1. Install SPLAT! >= 1.4.0, GDAL >= 1.11, and ImageMagick. For example, to install these on a Linux system do ``sudo apt-get update; sudo apt-get install splat gdal-bin imagemagick``
 2. Create a Python 3.5 virtual environment
 3. In your virtual environment, install Wavetrace via Pip via ``pip install wavetrace``
 
