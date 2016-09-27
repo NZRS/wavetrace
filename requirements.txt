@@ -1,9 +1,11 @@
 alabaster==0.7.9
 Babel==2.3.4
+beautifulsoup4==4.5.1
 click==6.6
 decorator==4.0.10
 docutils==0.12
 entrypoints==0.2.2
+geographiclib==1.46.3
 imagesize==0.7.1
 ipykernel==4.3.1
 ipython==5.0.0
@@ -30,6 +32,7 @@ pytz==2016.6.1
 pyzmq==15.3.0
 qtconsole==4.2.1
 requests==2.10.0
+Shapely==1.5.16
 simplegeneric==0.8.1
 six==1.10.0
 snowballstemmer==1.2.1

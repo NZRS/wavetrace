@@ -23,7 +23,7 @@ Installation
 
 Usage
 =========
-Here is a common workflow.
+Here is a common workflow for computing radio signal coverage reports for terrestrial transmitters.
 
 #. Create a CSV file containing transmitter data; see ``tests/data/transmitters.csv``
 #. Process the transmitter data into SPLAT! files via the function ``wavetrace.main.process_transmitters``
@@ -33,7 +33,7 @@ Here is a common workflow.
 
 See the IPython notebook ``ipynb/examples.ipynb`` for a detailed example.
 
-Additionally, you can call the most useful functions in the module ``wavetrace.main`` are through Wavey a command line interface for Wavetrace implemented in the module ``wavetrace.cli``.
+Additionally, you can call the most useful functions in the module ``wavetrace.main`` through Wavey, a command line interface for Wavetrace implemented in the module ``wavetrace.cli``.
 
 
 Documentation
@@ -55,6 +55,12 @@ Authors
 
 Changelog
 ==========
+
+v3.0.0, 2016-08-22
+-------------------
+- Added functions to compute line-of-sight for geostationary satellites
+- Renamed some functions, hence the version bump
+
 
 v2.0.0, 2016-08-22
 -------------------
