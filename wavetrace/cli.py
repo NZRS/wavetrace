@@ -68,8 +68,8 @@ def srtm_nz():
 @wavey.command(short_help="Compute SRTM tiles IDs needed")
 @click.argument('path', type=click.Path())
 @click.option('-b', '--transmitter_buffer', type=float, default=0.5,
-  help="distance in decimal degrees with which to buffer each transmitter when computing a tile cover")
-def select_tile_ids(path, transmitter_buffer):
+  help="Distance in decimal degrees with which to buffer each transmitter when computing a tile cover")
+def get_covering_tiles_ids(path, transmitter_buffer):
     """
     Read the CSV of transmitter data located at PATH, get the location of each transmitter, buffer each location by ``transmitter_buffer`` decimal degrees, and return an ordered list of unique New Zealand SRTM tile IDs whose corresponding tiles intersect the buffers.
     
@@ -78,7 +78,7 @@ def select_tile_ids(path, transmitter_buffer):
     By the way, one degree of latitude represents about 111 km on the ground and one degree of longitude at -45 degrees latitude represents about 78 km on the ground; see https://en.wikipedia.org/wiki/Decimal_degrees
     """
     tms = m.read_transmitters(path)
-    tids = m.select_tile_ids(tms, transmitter_buffer=transmitter_buffer)
+    tids = m.get_covering_tiles_ids(tms, transmitter_buffer=transmitter_buffer)
     click.echo(' '.join(tids))
 
 @wavey.command(short_help="Download topography data (SRTM)")
@@ -87,7 +87,7 @@ def select_tile_ids(path, transmitter_buffer):
 @click.argument('api_key')
 @click.option('-hd/-sd', '--high-definition/--standard-definition', 
   default=False,
-  help="if True, then download SRTM1 tiles; otherwise download SRTM3 tiles")
+  help="If True, then download SRTM1 tiles; otherwise download SRTM3 tiles")
 def download_topography(tile_ids, path, api_key, high_definition):
     """
     Download from the Gitlab repository https://gitlab.com/araichev/srtm_nz the SRTM1 (high definition) or SRTM3 (standard definition) topography data corresponding to the given SRTM tile IDs and save the files to the directory PATH, creating the directory if it does not exist.
@@ -102,7 +102,7 @@ def download_topography(tile_ids, path, api_key, high_definition):
 @click.argument('out_path', type=click.Path())
 @click.option('-hd/-sd', '--high-definition/--standard-definition', 
   default=False,
-  help="if True, then assume topography data is high definition (SRTM1); otherwise assume it is standard definition (SRTM3)")
+  help="If True, then assume topography data is high definition (SRTM1); otherwise assume it is standard definition (SRTM3)")
 def process_topography(in_path, out_path, high_definition):
     """
     Convert each SRTM HGT topography file in the directory IN_PATH to
@@ -120,7 +120,7 @@ def process_topography(in_path, out_path, high_definition):
   default=cs.RECEIVER_SENSITIVITY)
 @click.option('-hd/-sd', '--high-definition/--standard-definition', 
   default=False,
-  help="if True, then assume source topography data is high definition (SRTM1); otherwise assume it is standard definition (SRTM3)")
+  help="If True, then assume source topography data is high definition (SRTM1); otherwise assume it is standard definition (SRTM3)")
 def compute_coverage(in_path, out_path, receiver_sensitivity, high_definition):
     """
     Create and post-process a SPLAT! coverage report for every transmitter with data located at IN_PATH.
@@ -146,7 +146,7 @@ def compute_coverage(in_path, out_path, receiver_sensitivity, high_definition):
 @click.argument('in_path', type=click.Path())
 @click.argument('satellite_lon', type=click.FLOAT)
 @click.argument('out_path', type=click.Path())
-@click.option('-n', type=click.INT, default=3, help="The SRTM tile is partitioned into n**2 subtiles of roughly the same size and then satellite line-of-sights are computed for each subtile")
+@click.option('-n', type=click.INT, default=3, help="The given SRTM tile is partitioned into n**2 subtiles of roughly the same size and then satellite line-of-sights are computed for each subtile")
 def compute_satellite_los(in_path, satellite_lon, out_path, n):
     """
     Given the path to an SRTM1 or SRTM3 file and the longitude SATELLITE_LON of a geostationary satellite, color with 8-bits of grayscale the raster cells according to whether they are in (whitish) or out (blackish) of the line-of-site of the satellite, and save the result as a GeoTIFF file located at OUT_PATH.

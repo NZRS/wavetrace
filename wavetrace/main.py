@@ -303,7 +303,7 @@ def get_lonlats(transmitters):
     """
     return [(t['longitude'], t['latitude']) for t in transmitters]
 
-def select_tile_ids(transmitters, transmitter_buffer=0.5, 
+def get_covering_tiles_ids(transmitters, transmitter_buffer=0.5, 
   tile_ids=cs.SRTM_NZ_TILE_IDS):
     """
     Given a list of transmitters (of the form output by :func:`read_transmitters`), get their locations, buffer them by ``transmitter_buffer`` decimal degrees, and return an ordered list of the unique SRTM tile IDs in ``tile_ids`` whose corresponding tiles intersect the buffers.

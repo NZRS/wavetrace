@@ -40,6 +40,5 @@ Sphinx==1.4.5
 terminado==0.6
 tornado==4.4.1
 traitlets==4.2.2
--e git+git@github.com:araichev/wavetrace.git@2f8735fd7b4292feece1ea8079cbfad570c42a28#egg=wavetrace
 wcwidth==0.1.7
 widgetsnbextension==1.2.6

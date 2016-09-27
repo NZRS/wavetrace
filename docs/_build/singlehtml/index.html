@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Wavetrace 2.0 documentation</title>
+    <title>Wavetrace documentation</title>
     
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '2.0',
+        VERSION:     '',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -40,7 +40,7 @@
           <div class="body" role="main">
             
   <div class="section" id="wavetrace-version-documentation">
-<h1>Wavetrace 2.0 documentation<a class="headerlink" href="#wavetrace-version-documentation" title="Permalink to this headline">¶</a></h1>
+<h1>Wavetrace 3.0 documentation<a class="headerlink" href="#wavetrace-version-documentation" title="Permalink to this headline">¶</a></h1>
 <div class="toctree-wrapper compound">
 <span id="document-introduction"></span><div class="section" id="introduction">
 <h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
@@ -48,28 +48,30 @@
 <a class="reference internal image-reference" href="_images/signal_strength_contours.png"><img alt="_images/signal_strength_contours.png" class="align-left" src="_images/signal_strength_contours.png" style="width: 350px;" /></a>
 <a class="reference internal image-reference" href="_images/legend.png"><img alt="_images/legend.png" src="_images/legend.png" style="height: 350px;" /></a>
 <p>given radio transmitter data and topography data around the transmitters.
-It uses <a class="reference external" href="http://www.qsl.net/kd2bd/splat.html">SPLAT!</a> to predict the attenuation of radio signals, which implements a <a class="reference external" href="https://en.wikipedia.org/wiki/Longley%E2%80%93Rice_model">Longley-Rice model</a>.
-Wavetrace is intended for use in New Zealand but can be configured to work elsewhere on Earth.</p>
+It uses <a class="reference external" href="http://www.qsl.net/kd2bd/splat.html">SPLAT!</a> to predict the attenuation of radio signals, which implements a <a class="reference external" href="https://en.wikipedia.org/wiki/Longley%E2%80%93Rice_model">Longley-Rice model</a>.</p>
+<p>Wavetrace can also compute line-of-site maps for geostationary satellites:</p>
+<a class="reference internal image-reference" href="_images/S36E173_satellite_los.png"><img alt="_images/S36E173_satellite_los.png" class="align-center" src="_images/S36E173_satellite_los.png" style="width: 300px;" /></a>
+<p>Wavetrace is intended for use in New Zealand but can be configured to work elsewhere on Earth.</p>
 <div class="section" id="installation">
 <h3>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h3>
 <ol class="arabic simple">
-<li>Install SPLAT!, ImageMagick, and GDAL. For example, to install these on a Linux system do <code class="docutils literal"><span class="pre">sudo</span> <span class="pre">apt-get</span> <span class="pre">update;</span> <span class="pre">sudo</span> <span class="pre">apt-get</span> <span class="pre">install</span> <span class="pre">splat</span> <span class="pre">imagemagick</span> <span class="pre">gdal-bin</span></code></li>
+<li>Install SPLAT! &gt;= 1.4.0, GDAL &gt;= 1.11, and ImageMagick. For example, to install these on a Linux system do <code class="docutils literal"><span class="pre">sudo</span> <span class="pre">apt-get</span> <span class="pre">update;</span> <span class="pre">sudo</span> <span class="pre">apt-get</span> <span class="pre">install</span> <span class="pre">splat</span> <span class="pre">gdal-bin</span> <span class="pre">imagemagick</span></code></li>
 <li>Create a Python 3.5 virtual environment</li>
 <li>In your virtual environment, install Wavetrace via Pip via <code class="docutils literal"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">wavetrace</span></code></li>
 </ol>
 </div>
 <div class="section" id="usage">
 <h3>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h3>
-<p>Here is a common workflow.</p>
+<p>Here is a common workflow for computing radio signal coverage reports for terrestrial transmitters.</p>
 <ol class="arabic simple">
 <li>Create a CSV file containing transmitter data; see <code class="docutils literal"><span class="pre">tests/data/transmitters.csv</span></code></li>
 <li>Process the transmitter data into SPLAT! files via the function <code class="docutils literal"><span class="pre">wavetrace.main.process_transmitters</span></code></li>
 <li>Download topography data around the transmitters via the functions <code class="docutils literal"><span class="pre">wavetrace.main.compute_tiles</span></code> and <code class="docutils literal"><span class="pre">wavetrace.main.download_topography</span></code>.  Topography data comes in two flavors: SRTM3 (standard definition; 3 arc second resolution; roughly 66 meters at 45 degrees south latitude) or SRTM1 (high definition; 1 arc second resolution; roughly 22 meters at 45 degrees south latitude). SPLAT! can only handle those two formats.</li>
 <li>Process the topography data into SPLAT! files via the function <code class="docutils literal"><span class="pre">wavetrace.main.process_topography</span></code></li>
-<li>Compute signal coverage reports, including GeoTIFF signal strength contour maps, from the processed transmitter and topography data via the function <code class="docutils literal"><span class="pre">wavetrace.main.compute_coverage</span></code></li>
+<li>Compute signal coverage reports, which include GeoTIFF signal strength contour maps, from the processed transmitter and topography data via the function <code class="docutils literal"><span class="pre">wavetrace.main.compute_coverage</span></code></li>
 </ol>
 <p>See the IPython notebook <code class="docutils literal"><span class="pre">ipynb/examples.ipynb</span></code> for a detailed example.</p>
-<p>Additionally, you can call the most useful functions in the module <code class="docutils literal"><span class="pre">wavetrace.main</span></code> are through Wavey, a command line interface for Wavetrace implemented in the module <code class="docutils literal"><span class="pre">wavetrace.cli</span></code>.</p>
+<p>Additionally, you can call the most useful functions in the module <code class="docutils literal"><span class="pre">wavetrace.main</span></code> through Wavey, a command line interface for Wavetrace implemented in the module <code class="docutils literal"><span class="pre">wavetrace.cli</span></code>.</p>
 </div>
 <div class="section" id="further-reading">
 <h3>Further Reading<a class="headerlink" href="#further-reading" title="Permalink to this headline">¶</a></h3>
@@ -96,6 +98,13 @@ Wavetrace is intended for use in New Zealand but can be configured to work elsew
 </div>
 <div class="section" id="module-wavetrace.main">
 <span id="main-module"></span><h3>main Module<a class="headerlink" href="#module-wavetrace.main" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>CONVENTIONS:</dt>
+<dd><ul class="first last simple">
+<li>All longitudes and latitudes below are referenced to the WGS84 ellipsoid, unless stated otherwise</li>
+</ul>
+</dd>
+</dl>
 <dl class="function">
 <dt id="wavetrace.main.build_splat_az">
 <code class="descclassname">wavetrace.main.</code><code class="descname">build_splat_az</code><span class="sig-paren">(</span><em>transmitter</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.main.build_splat_az" title="Permalink to this definition">¶</a></dt>
@@ -243,15 +252,49 @@ A report comprises the files</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="wavetrace.main.select_tile_ids">
-<code class="descclassname">wavetrace.main.</code><code class="descname">select_tile_ids</code><span class="sig-paren">(</span><em>transmitters, transmitter_buffer=0.5, tile_ids=['S35E172', 'S35E173', 'S36E173', 'S36E174', 'S36E175', 'S37E173', 'S37E174', 'S37E175', 'S37E176', 'S38E174', 'S38E175', 'S38E176', 'S38E177', 'S38E178', 'S39E174', 'S39E175', 'S39E176', 'S39E177', 'S39E178', 'S40E173', 'S40E174', 'S40E175', 'S40E176', 'S40E177', 'S40E178', 'S41E172', 'S41E173', 'S41E174', 'S41E175', 'S41E176', 'S42E171', 'S42E172', 'S42E173', 'S42E174', 'S42E175', 'S42E176', 'S43E170', 'S43E171', 'S43E172', 'S43E173', 'S43E174', 'S44E168', 'S44E169', 'S44E170', 'S44E171', 'S44E172', 'S44E173', 'S45E167', 'S45E168', 'S45E169', 'S45E170', 'S45E171', 'S46E166', 'S46E167', 'S46E168', 'S46E169', 'S46E170', 'S46E171', 'S47E166', 'S47E167', 'S47E168', 'S47E169', 'S47E170', 'S48E167', 'S48E168']</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.main.select_tile_ids" title="Permalink to this definition">¶</a></dt>
-<dd><p>Given a list of transmitters (of the form output by <a class="reference internal" href="#wavetrace.main.read_transmitters" title="wavetrace.main.read_transmitters"><code class="xref py py-func docutils literal"><span class="pre">read_transmitters()</span></code></a>), get their locations, buffer them by <code class="docutils literal"><span class="pre">transmitter_buffer</span></code> decimal degrees, and return an ordered list of the unique SRTM tile IDs in <code class="docutils literal"><span class="pre">tile_ids</span></code> whose corresponding tiles intersect the buffers.
-As long as <code class="docutils literal"><span class="pre">tile_ids</span></code> and <code class="docutils literal"><span class="pre">transmitter_buffer</span></code> are big enough, the result will be a list of tile IDs to use when computing coverage for the given transmitters.
-The defaults are appropriate for transmitters in New Zealand.</p>
+<dt id="wavetrace.main.compute_look_angles">
+<code class="descclassname">wavetrace.main.</code><code class="descname">compute_look_angles</code><span class="sig-paren">(</span><em>lon</em>, <em>lat</em>, <em>height</em>, <em>satellite_lon</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.main.compute_look_angles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given the longitude, latitude, and height in meters of a point P on Earth and given the longitude of a geostationary satellite S, return the azimuth and elevation in degrees of S relative to P, respectively.</p>
 <dl class="docutils">
+<dt>INPUT:</dt>
+<dd><ul class="first last simple">
+<li><code class="docutils literal"><span class="pre">lon</span></code>: float; longitude of P</li>
+<li><code class="docutils literal"><span class="pre">lat`</span></code>: float; latitude of P</li>
+<li><code class="docutils literal"><span class="pre">height</span></code>: float; distance in meters between P and the WGS84 ellipsoid; GPS height</li>
+<li><code class="docutils literal"><span class="pre">satellite_lon</span></code>: float; longitude of S</li>
+</ul>
+</dd>
+<dt>OUTPUT:</dt>
+<dd><ul class="first last simple">
+<li><code class="docutils literal"><span class="pre">azimuth</span></code>: float; degrees in [0, 360)</li>
+<li><code class="docutils literal"><span class="pre">elevation</span></code>: float; degrees in [-90, 90]; a negative value indicates that S lies below the local horizon of P</li>
+</ul>
+</dd>
+</dl>
+<p>NOTES:</p>
+<ul class="simple">
+<li>Algorithm taken from <a class="reference external" href="https://www.ngs.noaa.gov/CORS/Articles/SolerEisemannJSE.pdf">Determination of look angles to geostationary communication satellites</a> by Tomas Soler David W. Eisemann</li>
+<li>The input <code class="docutils literal"><span class="pre">height</span></code> is the sum of H and N, where H is the SRTM elevation of P (the orthometric height; see the <a class="reference external" href="https://lpdaac.usgs.gov/sites/default/files/public/measures/docs/NASA_SRTM_V3.pdf">SRTM collection user guide</a>) and N is the height of the EGM96 geoid above the WGS84 ellipsoid at P (the geoid height).</li>
+</ul>
+</dd></dl>
+
+<dl class="function">
+<dt id="wavetrace.main.compute_satellite_los">
+<code class="descclassname">wavetrace.main.</code><code class="descname">compute_satellite_los</code><span class="sig-paren">(</span><em>in_path</em>, <em>satellite_lon</em>, <em>out_path</em>, <em>n=3</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.main.compute_satellite_los" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given the path <code class="docutils literal"><span class="pre">in_path</span></code> to an SRTM1 or SRTM3 file and the longitude of a geostationary satellite, color with 8-bits of grayscale the raster cells according to whether they are in (whitish) or out (blackish) of the line-of-site of the satellite, and save the result as a GeoTIFF file located at <code class="docutils literal"><span class="pre">out_path</span></code>.</p>
+<dl class="docutils">
+<dt>ALGORITHM: </dt>
+<dd><ol class="first last arabic simple">
+<li>Partition the SRTM tile into <code class="docutils literal"><span class="pre">n**2</span></code> square subtiles or roughly the same size</li>
+<li>For each subtile, compute the longitude, latitude, and (WGS84) height of its center</li>
+<li>Compute the the look angles of the satellite from the center</li>
+<li>Use the look angles to shade the subtile via GDAL&#8217;s <code class="docutils literal"><span class="pre">gdaldem</span> <span class="pre">hillshade</span></code> command</li>
+<li>Merge the subtiles and save the result as a GeoTIFF file</li>
+</ol>
+</dd>
 <dt>NOTES:</dt>
 <dd><ul class="first last simple">
-<li>Regarding the transmitter buffer, one degree of latitude represents about 111 km on the ground and one degree of longitude at -45 degrees latitude represents about 78 km on the ground; see <a class="reference external" href="https://en.wikipedia.org/wiki/Decimal_degrees">https://en.wikipedia.org/wiki/Decimal_degrees</a></li>
+<li>Calls <a class="reference internal" href="#wavetrace.main.get_geoid_height" title="wavetrace.main.get_geoid_height"><code class="xref py py-func docutils literal"><span class="pre">get_geoid_height()</span></code></a> <code class="docutils literal"><span class="pre">n**2</span></code> times. Because that function is currently implemented as an HTTP GET request, that slows things down and also introduces <code class="docutils literal"><span class="pre">n**2</span></code> opportunities for failure (raising a <code class="docutils literal"><span class="pre">ValueError</span></code>).</li>
 </ul>
 </dd>
 </dl>
@@ -280,12 +323,38 @@ The defaults are appropriate for transmitters in New Zealand.</p>
 <dl class="function">
 <dt id="wavetrace.main.get_bounds_from_kml">
 <code class="descclassname">wavetrace.main.</code><code class="descname">get_bounds_from_kml</code><span class="sig-paren">(</span><em>kml_string</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.main.get_bounds_from_kml" title="Permalink to this definition">¶</a></dt>
-<dd><p>Given the text content of a SPLAT! KML coverage file,
-return a list of floats of the form 
-<code class="docutils literal"><span class="pre">[min_lon,</span> <span class="pre">min_lat,</span> <span class="pre">max_lon,</span> <span class="pre">max_lat]</span></code> which describes the WGS84 
-bounding box of the coverage file.
-Raise an <code class="docutils literal"><span class="pre">AttributeError</span></code> if the KML does not contain a <code class="docutils literal"><span class="pre">&lt;LatLonBox&gt;</span></code>
-entry and hence is not a well-formed SPLAT! KML coverage file.</p>
+<dd><p>Given the text content of a SPLAT! KML coverage file, return a list of floats of the form <code class="docutils literal"><span class="pre">[min_lon,</span> <span class="pre">min_lat,</span> <span class="pre">max_lon,</span> <span class="pre">max_lat]</span></code> which describes the longitude-latitude bounding box of the coverage file.
+Raise an <code class="docutils literal"><span class="pre">AttributeError</span></code> if the KML does not contain a <code class="docutils literal"><span class="pre">&lt;LatLonBox&gt;</span></code>  entry and hence is not a well-formed SPLAT! KML coverage file.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="wavetrace.main.get_covering_tiles_ids">
+<code class="descclassname">wavetrace.main.</code><code class="descname">get_covering_tiles_ids</code><span class="sig-paren">(</span><em>transmitters, transmitter_buffer=0.5, tile_ids=['S35E172', 'S35E173', 'S36E173', 'S36E174', 'S36E175', 'S37E173', 'S37E174', 'S37E175', 'S37E176', 'S38E174', 'S38E175', 'S38E176', 'S38E177', 'S38E178', 'S39E174', 'S39E175', 'S39E176', 'S39E177', 'S39E178', 'S40E173', 'S40E174', 'S40E175', 'S40E176', 'S40E177', 'S40E178', 'S41E172', 'S41E173', 'S41E174', 'S41E175', 'S41E176', 'S42E171', 'S42E172', 'S42E173', 'S42E174', 'S42E175', 'S42E176', 'S43E170', 'S43E171', 'S43E172', 'S43E173', 'S43E174', 'S44E168', 'S44E169', 'S44E170', 'S44E171', 'S44E172', 'S44E173', 'S45E167', 'S45E168', 'S45E169', 'S45E170', 'S45E171', 'S46E166', 'S46E167', 'S46E168', 'S46E169', 'S46E170', 'S46E171', 'S47E166', 'S47E167', 'S47E168', 'S47E169', 'S47E170', 'S48E167', 'S48E168']</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.main.get_covering_tiles_ids" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a list of transmitters (of the form output by <a class="reference internal" href="#wavetrace.main.read_transmitters" title="wavetrace.main.read_transmitters"><code class="xref py py-func docutils literal"><span class="pre">read_transmitters()</span></code></a>), get their locations, buffer them by <code class="docutils literal"><span class="pre">transmitter_buffer</span></code> decimal degrees, and return an ordered list of the unique SRTM tile IDs in <code class="docutils literal"><span class="pre">tile_ids</span></code> whose corresponding tiles intersect the buffers.
+As long as <code class="docutils literal"><span class="pre">tile_ids</span></code> and <code class="docutils literal"><span class="pre">transmitter_buffer</span></code> are big enough, the result will be a list of tile IDs to use when computing coverage for the given transmitters.
+The defaults are appropriate for transmitters in New Zealand.</p>
+<dl class="docutils">
+<dt>NOTES:</dt>
+<dd><ul class="first last simple">
+<li>Regarding the transmitter buffer, one degree of latitude represents about 111 km on the ground and one degree of longitude at -45 degrees latitude represents about 78 km on the ground; see <a class="reference external" href="https://en.wikipedia.org/wiki/Decimal_degrees">https://en.wikipedia.org/wiki/Decimal_degrees</a></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="wavetrace.main.get_geoid_height">
+<code class="descclassname">wavetrace.main.</code><code class="descname">get_geoid_height</code><span class="sig-paren">(</span><em>lon</em>, <em>lat</em>, <em>num_tries=3</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.main.get_geoid_height" title="Permalink to this definition">¶</a></dt>
+<dd><p>Query <a class="reference external" href="http://geographiclib.sourceforge.net/cgi-bin/GeoidEval">http://geographiclib.sourceforge.net/cgi-bin/GeoidEval</a> for the height in meters of the EGM96 geoid above the WGS84 ellipsoid for the given longitude and latitude. 
+If the result is negative, then the geoid lies below the ellipsoid.
+Raise a <code class="docutils literal"><span class="pre">ValueError</span></code> if the query fails after <code class="docutils literal"><span class="pre">num_tries</span></code> tries.</p>
+<dl class="docutils">
+<dt>NOTES:</dt>
+<dd><ul class="first last simple">
+<li>It would be good to rewrite this function so that it does not depend on internet access. For a starters, see <a class="reference external" href="https://github.com/vandry/geoidheight">https://github.com/vandry/geoidheight</a>, which uses the EGM2008 ellipsoid.</li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
@@ -302,6 +371,24 @@ If <code class="docutils literal"><span class="pre">transmitters</span></code> i
 <dt>OUTPUT:</dt>
 <dd>String</dd>
 </dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="wavetrace.main.partition">
+<code class="descclassname">wavetrace.main.</code><code class="descname">partition</code><span class="sig-paren">(</span><em>width</em>, <em>height</em>, <em>n=3</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.main.partition" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given the pixel width and pixel height of a rectangular image and an integer <code class="docutils literal"><span class="pre">n</span></code>, partition the rectangle into <code class="docutils literal"><span class="pre">n**2</span></code> subrectangles, each of roughly the same sizes.
+Return a list of the subrectangle offsets and sizes for easy use with  GDAL&#8217;s <code class="docutils literal"><span class="pre">gdal_translate</span> <span class="pre">-srcwin</span></code> option.
+Each list item has the form (x-offset, y-offset, x-size, y-size) and the items/subrectangles are ordered from left to right and then from top to bottom, e.g. for <code class="docutils literal"><span class="pre">n=3</span></code> the layout of the subrectangles looks like this:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">-------------</span>
+<span class="o">|</span> <span class="mi">0</span> <span class="o">|</span> <span class="mi">1</span> <span class="o">|</span> <span class="mi">2</span> <span class="o">|</span>
+<span class="o">-------------</span>
+<span class="o">|</span> <span class="mi">3</span> <span class="o">|</span> <span class="mi">4</span> <span class="o">|</span> <span class="mi">5</span> <span class="o">|</span>
+<span class="o">-------------</span>
+<span class="o">|</span> <span class="mi">6</span> <span class="o">|</span> <span class="mi">7</span> <span class="o">|</span> <span class="mi">8</span> <span class="o">|</span>
+<span class="o">-------------</span>
+</pre></div>
+</div>
+<p>The subrectangles in the right-most column and those in the bottom-most row will be slightly wider and taller, respectively, than the other subrectangles in case <code class="docutils literal"><span class="pre">width</span></code> or <code class="docutils literal"><span class="pre">height</span></code> are not divisible by <code class="docutils literal"><span class="pre">n</span></code>, respectively.</p>
 </dd></dl>
 
 <dl class="function">
@@ -346,6 +433,7 @@ If <code class="docutils literal"><span class="pre">high_definition</span></code
 (if <code class="docutils literal"><span class="pre">high_definition</span></code>) command to do the work</li>
 <li>Raises a <code class="docutils literal"><span class="pre">subprocess.CalledProcessError</span></code> if SPLAT! fails to 
 convert a file</li>
+<li>Each SRTM1 or SRTM3 file must have a name of the form &lt;SRTM tile ID&gt;[.something].hgt.zip or &lt;SRTM tile ID&gt;[.something].hgt, e.g. S36E173.SRTMGL3.hgt.zip</li>
 </ul>
 </dd>
 </dl>
@@ -383,8 +471,8 @@ otherwise a <code class="docutils literal"><span class="pre">ValueError</span></
 <ul class="last simple">
 <li><code class="docutils literal"><span class="pre">'network_name'</span></code>: name of transmitter network</li>
 <li><code class="docutils literal"><span class="pre">'site_name'</span></code>: name of transmitter site</li>
-<li><code class="docutils literal"><span class="pre">'longitude'</span></code>: WGS84 decimal longitude of transmitter</li>
-<li><code class="docutils literal"><span class="pre">'latitude</span></code>: WGS84 decimal latitude of transmitter</li>
+<li><code class="docutils literal"><span class="pre">'longitude'</span></code>: decimal longitude of transmitter</li>
+<li><code class="docutils literal"><span class="pre">'latitude</span></code>: decimal latitude of transmitter</li>
 <li><code class="docutils literal"><span class="pre">'antenna_height'</span></code>: height of transmitter antenna in meters above sea level</li>
 <li><code class="docutils literal"><span class="pre">'polarization'</span></code>: 0 for horizontal or 1 for vertical</li>
 <li><code class="docutils literal"><span class="pre">'frequency'</span></code>: frequency of transmitter in megaherz</li>
@@ -419,23 +507,32 @@ Additionally, a &#8216;name&#8217; field is added to each transmitter dictionary
 </div>
 <div class="section" id="module-wavetrace.utilities">
 <span id="utilities-module"></span><h3>utilities Module<a class="headerlink" href="#module-wavetrace.utilities" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>CONVENTIONS:</dt>
+<dd><ul class="first last simple">
+<li>All longitudes and latitudes below are referenced to the WGS84 ellipsoid, unless stated otherwise</li>
+</ul>
+</dd>
+</dl>
 <dl class="function">
 <dt id="wavetrace.utilities.build_feature">
-<code class="descclassname">wavetrace.utilities.</code><code class="descname">build_feature</code><span class="sig-paren">(</span><em>tile_id</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.utilities.build_feature" title="Permalink to this definition">¶</a></dt>
-<dd><p>Given an SRTM tile ID, a list of (decoded) GeoJSON Feature object corresponding to the WGS84 longitude-latitude boundary of the tile.</p>
+<code class="descclassname">wavetrace.utilities.</code><code class="descname">build_feature</code><span class="sig-paren">(</span><em>tile_id</em>, <em>be_precise=None</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.utilities.build_feature" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given an SRTM tile ID, a list of (decoded) GeoJSON Feature object corresponding to the WGS84 longitude-latitude boundary of the tile.
+Use the same <code class="docutils literal"><span class="pre">be_precise</span></code> keyword as in <a class="reference internal" href="#wavetrace.utilities.get_bounds" title="wavetrace.utilities.get_bounds"><code class="xref py py-func docutils literal"><span class="pre">get_bounds()</span></code></a>.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="wavetrace.utilities.build_polygon">
-<code class="descclassname">wavetrace.utilities.</code><code class="descname">build_polygon</code><span class="sig-paren">(</span><em>tile_id</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.utilities.build_polygon" title="Permalink to this definition">¶</a></dt>
-<dd><p>Given an SRTM tile ID, return a Shapely Polygon object corresponding to the WGS84 longitude-latitude boundary of the tiles.</p>
+<code class="descclassname">wavetrace.utilities.</code><code class="descname">build_polygon</code><span class="sig-paren">(</span><em>tile_id</em>, <em>be_precise=None</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.utilities.build_polygon" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given an SRTM tile ID, return a Shapely Polygon object corresponding to the longitude-latitude boundary of the tiles.
+Use the same <code class="docutils literal"><span class="pre">be_precise</span></code> keyword as in <a class="reference internal" href="#wavetrace.utilities.get_bounds" title="wavetrace.utilities.get_bounds"><code class="xref py py-func docutils literal"><span class="pre">get_bounds()</span></code></a>.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="wavetrace.utilities.check_lonlat">
 <code class="descclassname">wavetrace.utilities.</code><code class="descname">check_lonlat</code><span class="sig-paren">(</span><em>lon</em>, <em>lat</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.utilities.check_lonlat" title="Permalink to this definition">¶</a></dt>
 <dd><p>Raise a <code class="docutils literal"><span class="pre">ValueError</span></code> if <code class="docutils literal"><span class="pre">lon</span></code> and <code class="docutils literal"><span class="pre">lat</span></code> do not represent a valid 
-WGS84 longitude-latitude pair.
+longitude-latitude pair.
 Otherwise, return nothing.</p>
 </dd></dl>
 
@@ -461,41 +558,51 @@ Otherwise, return nothing.</p>
 </dd></dl>
 
 <dl class="function">
+<dt id="wavetrace.utilities.gdalinfo">
+<code class="descclassname">wavetrace.utilities.</code><code class="descname">gdalinfo</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.utilities.gdalinfo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given the path to an raster file, run <code class="docutils literal"><span class="pre">gdalinfo</span></code> on the file and extract and return from the result a dictionary with the following keys and values:</p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">'width'</span></code>: pixel width of raster</li>
+<li><code class="docutils literal"><span class="pre">'height'</span></code>: pixel height of raster</li>
+<li><code class="docutils literal"><span class="pre">'center'</span></code>: center coordinates.</li>
+</ul>
+</dd></dl>
+
+<dl class="function">
 <dt id="wavetrace.utilities.get_bounds">
-<code class="descclassname">wavetrace.utilities.</code><code class="descname">get_bounds</code><span class="sig-paren">(</span><em>tile_id</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.utilities.get_bounds" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">wavetrace.utilities.</code><code class="descname">get_bounds</code><span class="sig-paren">(</span><em>tile_id</em>, <em>be_precise=None</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.utilities.get_bounds" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the bounding box for the given SRTM tile ID.</p>
 <dl class="docutils">
 <dt>INPUT:</dt>
 <dd><ul class="first last simple">
 <li><code class="docutils literal"><span class="pre">tile_id</span></code>: string; ID of an SRTM tile</li>
+<li><code class="docutils literal"><span class="pre">be_precise</span></code> (optional): string; &#8216;SRTM1&#8217; or &#8216;SRTM3&#8217;</li>
 </ul>
 </dd>
 <dt>OUTPUT:</dt>
 <dd>List of integers of the form  <code class="docutils literal"><span class="pre">[min_lon,</span> <span class="pre">min_lat,</span> <span class="pre">max_lon,</span> <span class="pre">max_lat]</span></code>
-representing the WGS84 bounding box of the tile</dd>
+representing the longitude-latitude bounding box of the tile.
+This assumes that the tile is exactly 1 degree by 1 degree in dimension, which is not actually the case. 
+If <code class="docutils literal"><span class="pre">be_precise</span></code> equals &#8216;SRTM1&#8217; or &#8216;SRTM3&#8217;, then return the precise bounds corresponding to the tile type; SRTM1 tiles are 1 degree and 1 arcsecond in side length; SRTM3 tiles are 1 degree and 3 arcseconds in side length.</dd>
 </dl>
 <p>EXAMPLES:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">get_bounds</span><span class="p">(</span><span class="s1">&#39;N04W027&#39;</span><span class="p">)</span>
 <span class="go">[-27, 4, -26, 5]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">get_bounds</span><span class="p">(</span><span class="s1">&#39;N04W027&#39;</span><span class="p">,</span> <span class="n">be_precise</span><span class="o">=</span><span class="s1">&#39;SRTM1&#39;</span><span class="p">)</span>
+<span class="go">[-27.000138888888888, 3.999861111111111, -25.999861111111112, 5.0001388888888885]</span>
 </pre></div>
 </div>
 </dd></dl>
 
 <dl class="function">
-<dt id="wavetrace.utilities.get_secret">
-<code class="descclassname">wavetrace.utilities.</code><code class="descname">get_secret</code><span class="sig-paren">(</span><em>secret</em>, <em>secrets_path=PosixPath('/home/araichev/wavetrace/secrets.json')</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.utilities.get_secret" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the given setting variable or return explicit exception.</p>
-</dd></dl>
-
-<dl class="function">
 <dt id="wavetrace.utilities.get_covering_tile_id">
 <code class="descclassname">wavetrace.utilities.</code><code class="descname">get_covering_tile_id</code><span class="sig-paren">(</span><em>lon</em>, <em>lat</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.utilities.get_covering_tile_id" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the ID of the SRTM tile that covers the given WGS84 longitude and latitude.</p>
+<dd><p>Return the ID of the SRTM tile that covers the given longitude and latitude.</p>
 <dl class="docutils">
 <dt>INPUT:</dt>
 <dd><ul class="first last simple">
-<li><code class="docutils literal"><span class="pre">lon</span></code>: float; WGS84 longitude</li>
-<li><code class="docutils literal"><span class="pre">lat</span></code>: float; WGS84 latitude</li>
+<li><code class="docutils literal"><span class="pre">lon</span></code>: float; longitude</li>
+<li><code class="docutils literal"><span class="pre">lat</span></code>: float; latitude</li>
 </ul>
 </dd>
 <dt>OUTPUT:</dt>
@@ -510,6 +617,19 @@ representing the WGS84 bounding box of the tile</dd>
 <dt>NOTES:</dt>
 <dd>SRTM data for an output tile might not actually exist, e.g. data for the tile N90E000 does not exist in NASA&#8217;s database.</dd>
 </dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="wavetrace.utilities.get_secret">
+<code class="descclassname">wavetrace.utilities.</code><code class="descname">get_secret</code><span class="sig-paren">(</span><em>secret</em>, <em>secrets_path=PosixPath('/home/araichev/wavetrace/secrets.json')</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.utilities.get_secret" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the given setting variable or return explicit exception.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="wavetrace.utilities.get_tile_id">
+<code class="descclassname">wavetrace.utilities.</code><code class="descname">get_tile_id</code><span class="sig-paren">(</span><em>tile_path</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.utilities.get_tile_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given the path to an SRTM1 or SRTM3 tile, return the ID of the tile (a string), e.g. &#8220;S36E174&#8221; for the path &#8220;bingo/S36E174.SRTMGL1.hgt.zip&#8221;
+Assume that the tile ID is the first part of the file name, as is the SRTM convention.</p>
 </dd></dl>
 
 <dl class="function">
@@ -562,6 +682,12 @@ Poor ground, 4, 0.001;</p>
 </dd></dl>
 
 <dl class="data">
+<dt id="wavetrace.constants.H_S">
+<code class="descclassname">wavetrace.constants.</code><code class="descname">H_S</code><em class="property"> = 35785863</em><a class="headerlink" href="#wavetrace.constants.H_S" title="Permalink to this definition">¶</a></dt>
+<dd><p>Distance in meters of a geostationary satellite from the WGS84 ellipsoid</p>
+</dd></dl>
+
+<dl class="data">
 <dt id="wavetrace.constants.RADIO_CLIMATE">
 <code class="descclassname">wavetrace.constants.</code><code class="descname">RADIO_CLIMATE</code><em class="property"> = 6</em><a class="headerlink" href="#wavetrace.constants.RADIO_CLIMATE" title="Permalink to this definition">¶</a></dt>
 <dd><p>SPLAT! radio climate codes.
@@ -588,9 +714,34 @@ For example, minimum received signal power of wireless networks (802.11 variants
 </dd></dl>
 
 <dl class="data">
+<dt id="wavetrace.constants.R_S">
+<code class="descclassname">wavetrace.constants.</code><code class="descname">R_S</code><em class="property"> = 42164000</em><a class="headerlink" href="#wavetrace.constants.R_S" title="Permalink to this definition">¶</a></dt>
+<dd><p>Distance in meters of a geostationary satellite from the center of the Earth (and hence the center of the WGS84 ellipsoid);
+taken from the Wikipedia article <a class="reference external" href="https://en.wikipedia.org/wiki/Geostationary_orbit">Geostationary orbit</a></p>
+</dd></dl>
+
+<dl class="data">
 <dt id="wavetrace.constants.SRTM_NZ_TILE_IDS">
 <code class="descclassname">wavetrace.constants.</code><code class="descname">SRTM_NZ_TILE_IDS</code><em class="property"> = ['S35E172', 'S35E173', 'S36E173', 'S36E174', 'S36E175', 'S37E173', 'S37E174', 'S37E175', 'S37E176', 'S38E174', 'S38E175', 'S38E176', 'S38E177', 'S38E178', 'S39E174', 'S39E175', 'S39E176', 'S39E177', 'S39E178', 'S40E173', 'S40E174', 'S40E175', 'S40E176', 'S40E177', 'S40E178', 'S41E172', 'S41E173', 'S41E174', 'S41E175', 'S41E176', 'S42E171', 'S42E172', 'S42E173', 'S42E174', 'S42E175', 'S42E176', 'S43E170', 'S43E171', 'S43E172', 'S43E173', 'S43E174', 'S44E168', 'S44E169', 'S44E170', 'S44E171', 'S44E172', 'S44E173', 'S45E167', 'S45E168', 'S45E169', 'S45E170', 'S45E171', 'S46E166', 'S46E167', 'S46E168', 'S46E169', 'S46E170', 'S46E171', 'S47E166', 'S47E167', 'S47E168', 'S47E169', 'S47E170', 'S48E167', 'S48E168']</em><a class="headerlink" href="#wavetrace.constants.SRTM_NZ_TILE_IDS" title="Permalink to this definition">¶</a></dt>
 <dd><p>SRTM tiles that cover New Zealand; for a visual, see <a class="reference external" href="http://geojson.io/#id=gist:anonymous/81b4cb465f1c78941f665c9038494f0f&amp;map=5/-41.360/172.463">http://geojson.io/#id=gist:anonymous/81b4cb465f1c78941f665c9038494f0f&amp;map=5/-41.360/172.463</a></p>
+</dd></dl>
+
+<dl class="data">
+<dt id="wavetrace.constants.WGS84_A">
+<code class="descclassname">wavetrace.constants.</code><code class="descname">WGS84_A</code><em class="property"> = 6378137</em><a class="headerlink" href="#wavetrace.constants.WGS84_A" title="Permalink to this definition">¶</a></dt>
+<dd><p>WGS84 semimajor axis in meters</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="wavetrace.constants.WGS84_E2">
+<code class="descclassname">wavetrace.constants.</code><code class="descname">WGS84_E2</code><em class="property"> = 0.0066943799901413165</em><a class="headerlink" href="#wavetrace.constants.WGS84_E2" title="Permalink to this definition">¶</a></dt>
+<dd><p>WGS84 eccentricity squared (e^2)</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="wavetrace.constants.WGS84_F">
+<code class="descclassname">wavetrace.constants.</code><code class="descname">WGS84_F</code><em class="property"> = 0.0033528106647474805</em><a class="headerlink" href="#wavetrace.constants.WGS84_F" title="Permalink to this definition">¶</a></dt>
+<dd><p>WGS84 flattening</p>
 </dd></dl>
 
 </div>
@@ -605,12 +756,13 @@ Options:
   --help  Show this message and exit.
 
 Commands:
-  compute_coverage      Compute radio signal coverage reports
-  select_tile_ids      Compute SRTM tiles IDs needed
-  download_topography   Download topography data <span class="o">(</span>SRTM<span class="o">)</span>
-  process_topography    Process topography data <span class="o">(</span>SRTM<span class="o">)</span>
-  process_transmitters  Process transmitter data <span class="o">(</span>CSV<span class="o">)</span>
-  srtm_nz               Print the SRTM tiles that cover New Zealand
+  compute_coverage       Compute radio signal coverage reports
+  compute_satellite_los  Compute satellite line-of-sight
+  download_topography    Download topography data <span class="o">(</span>SRTM<span class="o">)</span>
+  process_topography     Process topography data <span class="o">(</span>SRTM<span class="o">)</span>
+  process_transmitters   Process transmitter data <span class="o">(</span>CSV<span class="o">)</span>
+  get_covering_tiles_ids        Compute SRTM tiles IDs needed
+  srtm_nz                List the SRTM tiles that cover New Zealand
 </pre></div>
 </div>
 <span class="target" id="module-wavetrace.cli"></span></div>

@@ -54,7 +54,7 @@ So use the command line to access the documentation for Wavey, the command line 
       download_topography    Download topography data (SRTM)
       process_topography     Process topography data (SRTM)
       process_transmitters   Process transmitter data (CSV)
-      select_tile_ids        Compute SRTM tiles IDs needed
+      get_covering_tiles_ids        Compute SRTM tiles IDs needed
       srtm_nz                List the SRTM tiles that cover New Zealand
 
 .. automodule:: wavetrace.cli
