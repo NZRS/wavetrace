@@ -240,7 +240,6 @@ class TestMain(unittest.TestCase):
         p1 = DATA_DIR
         p2 = DATA_DIR/'tmp_inputs'
         p3 = DATA_DIR/'tmp_outputs'
-
         rm_paths(p2, p3)
  
         # High definition tests take too long, so skip them
@@ -291,6 +290,36 @@ class TestMain(unittest.TestCase):
             self.assertAlmostEqual(get_az, az, places=decimals)
             self.assertAlmostEqual(get_el, el, places=decimals)
             
+    def test_partition(self):
+        n = 3
+        subtiles = partition(10, 10, n)
+        # Should be the correct length
+        self.assertEqual(len(subtiles), n**2)
+        # Each subtile item should have the correct length
+        self.assertSequenceEqual([len(s) for s in subtiles], 
+          [4 for i in range(n**2)])
+        # Should be correct on an example subtile
+        expect = (6, 0, 4, 3)
+        self.assertSequenceEqual(subtiles[2], expect)
+
+    def test_get_geoid_height(self):
+        get = get_geoid_height(-3.01, 16.78)
+        expect = 28.7069
+        self.assertEqual(get, expect)
+
+    def test_compute_satellite_los(self):
+        p1 = DATA_DIR/'srtm3'/'S37E175.hgt'
+        p2 = DATA_DIR/'tmp_outputs'/'shadow.tif'
+        rm_paths(p2.parent)
+
+        compute_satellite_los(p1, 152, p2)
+        # Output should exist
+        self.assertTrue(p2.exists())
+        # Output should have same size and center as input
+        self.assertEqual(gdalinfo(p1), gdalinfo(p2))
+
+        rm_paths(p2.parent)
+
 
 if __name__ == '__main__':
     unittest.main()

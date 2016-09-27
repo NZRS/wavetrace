@@ -50,7 +50,7 @@ So use the command line to access the documentation for Wavey, the command line 
 
     Commands:
       compute_coverage      Compute radio signal coverage reports
-      compute_tile_ids      Compute SRTM tiles IDs needed
+      select_tile_ids       Select SRTM tiles IDs needed
       download_topography   Download topography data (SRTM)
       process_topography    Process topography data (SRTM)
       process_transmitters  Process transmitter data (CSV)

@@ -69,16 +69,16 @@ def srtm_nz():
 @click.argument('path', type=click.Path())
 @click.option('-b', '--transmitter_buffer', type=float, default=0.5,
   help="distance in decimal degrees with which to buffer each transmitter when computing a tile cover")
-def compute_tile_ids(path, transmitter_buffer):
+def select_tile_ids(path, transmitter_buffer):
     """
     Read the CSV of transmitter data located at PATH, get the location of each transmitter, buffer each location by ``transmitter_buffer`` decimal degrees, and return an ordered list of unique New Zealand SRTM tile IDs whose corresponding tiles intersect the buffers.
     
-    As long as ``transmitter_buffer`` is big enough, which the default setting is, the result will be a list of tile IDs to use when computing coverage for the given transmitters.
+    As long as TRANSMITTER_BUFFER is big enough, which the default setting is, the result will be a list of tile IDs to use when computing coverage for the given transmitters.
     
     By the way, one degree of latitude represents about 111 km on the ground and one degree of longitude at -45 degrees latitude represents about 78 km on the ground; see https://en.wikipedia.org/wiki/Decimal_degrees
     """
     tms = m.read_transmitters(path)
-    tids = m.compute_tile_ids(tms, transmitter_buffer=transmitter_buffer)
+    tids = m.select_tile_ids(tms, transmitter_buffer=transmitter_buffer)
     click.echo(' '.join(tids))
 
 @wavey.command(short_help="Download topography data (SRTM)")
@@ -141,3 +141,26 @@ def compute_coverage(in_path, out_path, receiver_sensitivity, high_definition):
     m.compute_coverage(in_path, out_path, 
       receiver_sensitivity=receiver_sensitivity, 
       high_definition=high_definition, keep_ppm=False)
+
+@wavey.command(short_help="Compute satellite line-of-sight")
+@click.argument('in_path', type=click.Path())
+@click.argument('satellite_lon', type=click.FLOAT)
+@click.argument('out_path', type=click.Path())
+@click.option('-n', type=click.INT, default=3)
+def compute_satellite_los(in_path, satellite_lon, out_path, n):
+    """
+    Given the path to an SRTM1 or SRTM3 file and the longitude of a geostationary satellite, color with 8-bits of grayscale the raster cells according to whether they are in (whitish) or out (blackish) of the line-of-site of the satellite, and save the result as a GeoTIFF file located at OUT_PATH.
+
+    \b
+    ALGORITHM: 
+        1. Partition the SRTM tile into ``n**2`` square subtiles or roughly the same size
+        2. For each subtile, compute the longitude, latitude, and (WGS84) height of its center 
+        3. Compute the the look angles of the satellite from the center 
+        4. Use the look angles to shade the subtile via GDAL's ``gdaldem hillshade`` command
+        5. Merge the subtiles and save the result as a GeoTIFF file
+
+    \b
+    NOTES:
+        - This function depends on a webservice for computing geoid heights, so requires internet access 
+    """
+    m.compute_satellite_los(in_path, satellite_lon, out_path, n)

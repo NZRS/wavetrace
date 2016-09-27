@@ -303,7 +303,7 @@ def get_lonlats(transmitters):
     """
     return [(t['longitude'], t['latitude']) for t in transmitters]
 
-def compute_tile_ids(transmitters, transmitter_buffer=0.5, 
+def select_tile_ids(transmitters, transmitter_buffer=0.5, 
   tile_ids=cs.SRTM_NZ_TILE_IDS):
     """
     Given a list of transmitters (of the form output by :func:`read_transmitters`), get their locations, buffer them by ``transmitter_buffer`` decimal degrees, and return an ordered list of the unique SRTM tile IDs in ``tile_ids`` whose corresponding tiles intersect the buffers.
@@ -570,6 +570,110 @@ def get_bounds_from_kml(kml_string):
     result = [west, south, east, north]
     return list(map(float, result))
 
+def compute_satellite_los(in_path, satellite_lon, out_path, n=3):
+    """
+    Given the path ``in_path`` to an SRTM1 or SRTM3 file and the longitude of a geostationary satellite, color with 8-bits of grayscale the raster cells according to whether they are in (whitish) or out (blackish) of the line-of-site of the satellite, and save the result as a GeoTIFF file located at ``out_path``.
+
+    ALGORITHM: 
+        #. Partition the SRTM tile into ``n**2`` square subtiles or roughly the same size
+        #. For each subtile, compute the longitude, latitude, and (WGS84) height of its center 
+        #. Compute the the look angles of the satellite from the center 
+        #. Use the look angles to shade the subtile via GDAL's ``gdaldem hillshade`` command
+        #. Merge the subtiles and save the result as a GeoTIFF file
+
+    NOTES:
+        - Calls :func:`get_geoid_height` ``n**2`` times. Because that function is currently implemented as an HTTP GET request, that slows things down and also introduces ``n**2`` opportunities for failure (raising a ``ValueError``). 
+    """
+    in_path = Path(in_path)
+    tile_id = ut.get_tile_id(in_path)
+    out_path = Path(out_path)
+    if not out_path.parent.exists():
+        out_path.parent.mkdir(parents=True)
+
+    # Unzip tile file if necessary
+    if in_path.name.endswith('.zip'):
+        is_zip = True
+        shutil.unpack_archive(str(in_path), str(in_path.parent))
+        f = in_path.parent/'{!s}.hgt'.format(tile_id)
+    else:
+        is_zip = False
+        f = in_path
+
+    # Create temporary directory to hold the subtiles
+    tmp_path = Path(tempfile.mkdtemp())
+
+    # Iterate through subtiles and compute the satellite shadows
+    f_info = ut.gdalinfo(f)
+    width, height = f_info['width'], f_info['height']
+    subtile_paths = []
+    for i, window in enumerate(partition(width, height, n)):
+        # Extract subtile i
+        g = tmp_path/'{!s}.tif'.format(i)
+        subtile_paths.append(g)
+        args = ['gdal_translate', '-of', 'Gtiff', '-srcwin', 
+          str(window[0]), str(window[1]), str(window[2]), str(window[3]),
+          str(f), str(g)]       
+        subprocess.run(args, cwd=str(f.parent),
+          stdout=subprocess.PIPE, universal_newlines=True, check=True)
+
+        # Compute orthometric height H and geoid height N at center of subtile
+        lon, lat = ut.gdalinfo(g)['center']
+        args = ['gdallocationinfo', str(g), '-wgs84', '-valonly', 
+          str(lon), str(lat)]
+        sp = subprocess.run(args, cwd=str(g.parent),
+          stdout=subprocess.PIPE, universal_newlines=True, check=True)
+        H = float(sp.stdout) 
+        N = get_geoid_height(lon, lat)
+        
+        # Compute look angles at center and then shade with GDAL
+        az, el = compute_look_angles(lon, lat, H + N, satellite_lon)
+        args = ['gdaldem', 'hillshade', '-compute_edges', 
+          '-az', str(az), '-alt', str(el), str(g), str(g)]
+        subprocess.run(args, cwd=str(g.parent),
+          stdout=subprocess.PIPE, universal_newlines=True, check=True)
+
+    # Merge subtiles. 
+    # Use gdalbuildvert and gdal_translate, because gdal_merge.py produces the wrong size image for some reason.
+    args = ['gdalbuildvrt', 'merged.vrt'] + [
+      str(g) for g in subtile_paths]
+    subprocess.run(args, cwd=str(g.parent),
+      stdout=subprocess.PIPE, universal_newlines=True, check=True)
+
+    args = ['gdal_translate', 'merged.vrt', 'merged.tif', '-of', 'GTiff']
+    subprocess.run(args, cwd=str(g.parent),
+      stdout=subprocess.PIPE, universal_newlines=True, check=True)
+
+    # Move file
+    (g.parent/'merged.tif').replace(out_path)
+
+    # Clean up
+    ut.rm_paths(tmp_path)
+    if is_zip:
+        f.unlink()
+
+def partition(width, height, n=3):
+    """
+    Given the pixel width and pixel height of a rectangular image and an integer ``n``, partition the rectangle into ``n**2`` subrectangles, each of roughly the same sizes.
+    Return a list of the subrectangle offsets and sizes for easy use with  GDAL's ``gdal_translate -srcwin`` option.
+    Each list item has the form (x-offset, y-offset, x-size, y-size) and the items/subrectangles are ordered from left to right and then from top to bottom, e.g. for ``n=3`` the layout of the subrectangles looks like this::
+
+        -------------
+        | 0 | 1 | 2 |
+        -------------
+        | 3 | 4 | 5 |
+        -------------
+        | 6 | 7 | 8 |
+        -------------
+
+    The subrectangles in the right-most column and those in the bottom-most row will be slightly wider and taller, respectively, than the other subrectangles in case ``width`` or ``height`` are not divisible by ``n``, respectively.
+    """
+    q, r = divmod(width, n)
+    xs = [(i*q, q) for i in range(n - 1)] + [((n - 1)*q, q + r)]
+    q, r = divmod(height, n)
+    ys = [(i*q, q) for i in range(n - 1)] + [((n - 1)*q, q + r)]
+    return [(xoff, yoff, xsize, ysize) for yoff, ysize in ys
+      for xoff, xsize in xs]
+
 def compute_look_angles(lon, lat, height, satellite_lon):
     """
     Given the longitude, latitude, and height in meters of a point P on Earth and given the longitude of a geostationary satellite S, return the azimuth and elevation in degrees of S relative to P, respectively.
@@ -629,71 +733,28 @@ def compute_look_angles(lon, lat, height, satellite_lon):
     # Return in degrees
     return degrees(alp), degrees(nu)
 
-def compute_satellite_shadow(in_path, satellite_lon, out_path, n=3,
-  high_definition=False):
+def get_geoid_height(lon, lat, num_tries=3):
     """
-    Given the path ``in_path`` to an SRTM1 or SRTM3 file and the longitude of a geostationary satellite, color the raster cells according to whether they are in (white) or out (black) of the line-of-site of the satellite, and return the result as a GeoTIFF file.
+    Query http://geographiclib.sourceforge.net/cgi-bin/GeoidEval for the height in meters of the EGM96 geoid above the WGS84 ellipsoid for the given longitude and latitude. 
+    If the result is negative, then the geoid lies below the ellipsoid.
+    Raise a ``ValueError`` if the query fails after ``num_tries`` tries.
 
-    ALGORITHM: 
-        #. Partition the SRTM tile into ``n**2`` square subtiles, each of side length ``1/n`` degrees
-        #. For each subtile, compute the longitude, latitude, and (WGS84) height of the center 
-        #. Compute the the look angles of the satellite from the center 
-        #. Use the look angles to shade the subtile via GDAL's ``hillshade`` command
-        #. Reassemble the tile from the subtiles and save the result as a GeoTIFF file 
+    NOTES:
+        - It would be good to rewrite this function so that it does not depend on internet access. For a starters, see `https://github.com/vandry/geoidheight <https://github.com/vandry/geoidheight>`_, which uses the EGM2008 ellipsoid.
     """
-    in_path = Path(in_path)
-    out_path = Path(out_path)
-    tile_id = ut.extract_tile_id(in_path)
-
-    # Unzip tile if necessary
-    if in_path.name.endswith('.zip'):
-        is_zip = True
-        shutil.unpack_archive(str(in_path), str(in_path.parent))
-        f = in_path.parent/'{!s}.hgt'.format(tile_id)
-    else:
-        is_zip = False
-        f = in_path
-
-    # Create temporary directory to hold the subtiles
-    tmp_path = Path(tempfile.mkdtemp())
-
-    # Iterate through subtiles
-    subtile_paths = []
-    bounds = ut.get_bounds(tile_id, high_definition)
-    for i, subbounds in enumerate(ut.partition(bounds, n)):
-        # Extract subtile
-        g = tmp_path/'{!s}.tif'.format(i)
-        subtile_paths.append(g)
-        ulx, uly, lrx, lry = str(subbounds[0]), str(subbounds[3]), \
-          str(subbounds[2]), str(subbounds[1])
-        args = ['gdal_translate', '-of', 'Gtiff', '-projwin', 
-          ulx, uly, lrx, lry, str(f), str(g)]       
-        subprocess.run(args, cwd=str(f.parent),
-          stdout=subprocess.PIPE, universal_newlines=True, check=True)
-        lon, lat = ut.get_center(subbounds)
-
-        # Compute orthometric height H and geoid height N at center of subtile
-        args = ['gdallocationinfo', str(g), '-wgs84', '-valonly', 
-          str(lon), str(lat)]
-        sp = subprocess.run(args, cwd=str(f.parent),
-          stdout=subprocess.PIPE, universal_newlines=True, check=True)
-        H = float(sp.stdout) 
-        N = ut.get_geoid_height(lon, lat)
-        
-        # Compute look angles and then shade with GDAL
-        az, el = compute_look_angles(lon, lat, H + N, satellite_lon)
-        args = ['gdaldem', 'hillshade', '-az', str(az), '-alt', str(el), 
-          str(g), str(g)]
-        subprocess.run(args, cwd=str(f.parent),
-          stdout=subprocess.PIPE, universal_newlines=True, check=True)
-
-    # Merge subtiles
-    args = ['gdal_merge.py', '-o', str(out_path)] +\
-      [str(g) for g in subtile_paths]
-    subprocess.run(args, cwd=str(f.parent),
-      stdout=subprocess.PIPE, universal_newlines=True, check=True)
+    url = 'http://geographiclib.sourceforge.net/cgi-bin/GeoidEval'
+    data = {'input': '{!s}+{!s}'.format(lat, lon)}
+    pattern = r'EGM96</a>\s*=\s*<font color="blue">([\d\.\-]+)</font>'
     
-    # Clean up
-    ut.rm_paths(tmp_path)
-    if is_zip:
-        f.unlink()
+    for i in range(num_tries):
+        r = requests.get(url, data)
+        if r.status_code != requests.codes.ok:
+            continue
+            
+        m = re.search(pattern, r.text)
+        if m is None:
+            raise ValueError('Failed to parse data from', url)
+        else:
+            return float(m.group(1)) 
+        
+    raise ValueError('Failed to download data from', url)

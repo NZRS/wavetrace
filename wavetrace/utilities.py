@@ -11,6 +11,8 @@ from itertools import product
 from pathlib import Path 
 import shutil
 import re
+import subprocess
+import math
 
 import requests
 from shapely.geometry import box, mapping
@@ -85,21 +87,26 @@ def check_tile_id(tile_id):
       0 <= lat <= 90 and 0 <= lon <= 180):
         raise ValueError(msg)
 
-def get_bounds(tile_id, high_definition=False):
+def get_bounds(tile_id, be_precise=None):
     """
     Return the bounding box for the given SRTM tile ID.
 
     INPUT:
         - ``tile_id``: string; ID of an SRTM tile
+        - ``be_precise`` (optional): string; 'SRTM1' or 'SRTM3' 
 
     OUTPUT:
         List of integers of the form  ``[min_lon, min_lat, max_lon, max_lat]``
-        representing the longitude-latitude bounding box of the tile 
+        representing the longitude-latitude bounding box of the tile.
+        This assumes that the tile is exactly 1 degree by 1 degree in dimension, which is not actually the case. 
+        If ``be_precise`` equals 'SRTM1' or 'SRTM3', then return the precise bounds corresponding to the tile type; SRTM1 tiles are 1 degree and 1 arcsecond in side length; SRTM3 tiles are 1 degree and 3 arcseconds in side length.   
 
     EXAMPLES:
 
     >>> get_bounds('N04W027')
     [-27, 4, -26, 5]
+    >>> get_bounds('N04W027', be_precise='SRTM1')
+    [-27.000138888888888, 3.999861111111111, -25.999861111111112, 5.0001388888888885]
     """
     t = tile_id
     check_tile_id(t)
@@ -113,33 +120,37 @@ def get_bounds(tile_id, high_definition=False):
     else:
         min_lon = -int(min_lon[1:])
 
-    if high_definition:
+    if be_precise == 'SRTM1':
         # Add 0.5 arcseconds to all four sides
         delta = 0.5/3600
-    else:
+    elif be_precise == 'SRTM3':
         # Add 1.5 arcseconds to all four sides
         delta = 1.5/3600
+    else:
+        delta = 0
 
     return [min_lon - delta, min_lat - delta, 
       min_lon + 1 + delta, min_lat + 1 + delta]
 
-def build_polygon(tile_id):
+def build_polygon(tile_id, be_precise=None):
     """
     Given an SRTM tile ID, return a Shapely Polygon object corresponding to the longitude-latitude boundary of the tiles.
+    Use the same ``be_precise`` keyword as in :func:`get_bounds`.
     """
-    return box(*get_bounds(tile_id))
+    return box(*get_bounds(tile_id, be_precise))
 
-def build_feature(tile_id):
+def build_feature(tile_id, be_precise=None):
     """
     Given an SRTM tile ID, a list of (decoded) GeoJSON Feature object corresponding to the WGS84 longitude-latitude boundary of the tile.
+    Use the same ``be_precise`` keyword as in :func:`get_bounds`.
     """
     return {
         'type': 'Feature',
         'properties': {'tile_id': tile_id},
-        'geometry': mapping(build_polygon(tile_id))
+        'geometry': mapping(build_polygon(tile_id, be_precise))
         }
 
-def extract_tile_id(tile_path):
+def get_tile_id(tile_path):
     """
     Given the path to an SRTM1 or SRTM3 tile, return the ID of the tile (a string), e.g. "S36E174" for the path "bingo/S36E174.SRTMGL1.hgt.zip"
     Assume that the tile ID is the first part of the file name, as is the SRTM convention.
@@ -147,7 +158,7 @@ def extract_tile_id(tile_path):
     path = Path(tile_path)
     return path.stem.split('.')[0]
 
-def get_tile_id(lon, lat):
+def get_covering_tile_id(lon, lat):
     """
     Return the ID of the SRTM tile that covers the given longitude and latitude. 
 
@@ -160,7 +171,7 @@ def get_tile_id(lon, lat):
     
     EXAMPLES:
 
-    >>> get_tile_id(27.5, 3.64)
+    >>> get_covering_tile_id(27.5, 3.64)
     'N03E027'
 
     NOTES:
@@ -200,81 +211,25 @@ def compute_intersecting_tiles(geometries, tile_ids=cs.SRTM_NZ_TILE_IDS):
                 break
     return sorted(result)
 
-def get_center(bounds):
+def gdalinfo(path):
     """
-    Given a longitude-latitude bounding square, return the longitude-latitude center of the square.
+    Given the path to an raster file, run ``gdalinfo`` on the file and extract and return from the result a dictionary with the following keys and values:
+
+    - ``'width'``: pixel width of raster
+    - ``'height'``: pixel height of raster
+    - ``'center'``: center coordinates.
     """
-    return (bounds[0] + bounds[2])/2, (bounds[1] + bounds[3])/2
-
-def partition(bounds, n=3):
-    """
-    Given the bounds of a square with side length ``s``, partition the square into ``n**2`` congruent subsquares, each of side length ``s/n``, and return as a generator of lists the bounds of each of those subsquares, enumerating the squares from left to right and then top to bottom.
-    For example, for ``n = 3``, the subsquare order would be::
-
-    -------------
-    | 0 | 1 | 2 |
-    -------------
-    | 3 | 4 | 5 |
-    -------------
-    | 6 | 7 | 8 |
-    -------------
-    """
-    delta = (bounds[2] - bounds[0])/n
-    x0 = bounds[0]
-    y0 = bounds[1]
-    return ([
-      x0 + j*delta, 
-      y0 + (n - i - 1)*delta,
-      x0 + (j + 1)*delta,
-      y0 + (n - i)*delta,
-      ] for i in range(n) for j in range(n))
-
-# def get_subtile_bounds(tile_id, n=3):
-#     """
-#     Given the ID of an SRTM tile, partition the tile into ``n**2`` longitude-latitude squares, each of side length ``1/n`` degrees, and return as a generator of lists the bounds of each of those tiles, enumerating the tiles from west to east and then north to south.
-#     For example, for ``n = 3``, the tile order would be::
-
-#     -------------
-#     | 0 | 1 | 2 |
-#     -------------
-#     | 3 | 4 | 5 |
-#     -------------
-#     | 6 | 7 | 8 |
-#     -------------
-#     """
-#     bounds = get_bounds(tile_id)
-#     delta = bounds[2] - bounds[0]
-#     x0 = bounds[0]
-#     y0 = bounds[1]
-#     return ([
-#       x0 + j*delta, 
-#       y0 + (n - i - 1)*delta,
-#       x0 + (j + 1)*delta,
-#       y0 + (n - i)*delta,
-#       ] for i in range(n) for j in range(n))
-
-def get_geoid_height(lon, lat, num_tries=3):
-    """
-    Query http://geographiclib.sourceforge.net/cgi-bin/GeoidEval for the height in meters of the EGM96 geoid above the WGS84 ellipsoid for the given longitude and latitude. 
-    If the result is negative, then the geoid lies below the ellipsoid.
-    Raise a ``ValueError`` if the query fails after ``num_tries`` tries.
-
-    NOTES:
-        - It would be good to rewrite this function so that it does not depend on internet access. For a starters, see `https://github.com/vandry/geoidheight <https://github.com/vandry/geoidheight>`_, which uses the EGM2008 ellipsoid.
-    """
-    url = 'http://geographiclib.sourceforge.net/cgi-bin/GeoidEval'
-    data = {'input': '{!s}+{!s}'.format(lat, lon)}
-    pattern = r'EGM96</a>\s*=\s*<font color="blue">([\d\.\-]+)</font>'
-    
-    for i in range(num_tries):
-        r = requests.get(url, data)
-        if r.status_code != requests.codes.ok:
-            continue
-            
-        m = re.search(pattern, r.text)
-        if m is None:
-            raise ValueError('Failed to parse data from', url)
-        else:
-            return float(m.group(1)) 
-        
-    raise ValueError('Failed to download data from', url)
+    path = Path(path)
+    args = ['gdalinfo', str(path)]
+    sp = subprocess.run(args, cwd=str(path.parent),
+      stdout=subprocess.PIPE, universal_newlines=True, check=True)
+    text = sp.stdout
+    m = re.search(r'Size is (\d+), (\d+)', text)
+    width, height = map(int, m.group(1, 2))
+    m = re.search(r'Center\s*\(\s*([\d\.\-]+),\s*([\d\.\-]+)\s*\)', text)
+    center0, center1 = map(float, m.group(1, 2))
+    return {
+        'width': width, 
+        'height': height,
+        'center': (center0, center1),
+        }    

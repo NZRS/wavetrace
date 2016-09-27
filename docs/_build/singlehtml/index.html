@@ -243,8 +243,8 @@ A report comprises the files</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="wavetrace.main.compute_tile_ids">
-<code class="descclassname">wavetrace.main.</code><code class="descname">compute_tile_ids</code><span class="sig-paren">(</span><em>transmitters, transmitter_buffer=0.5, tile_ids=['S35E172', 'S35E173', 'S36E173', 'S36E174', 'S36E175', 'S37E173', 'S37E174', 'S37E175', 'S37E176', 'S38E174', 'S38E175', 'S38E176', 'S38E177', 'S38E178', 'S39E174', 'S39E175', 'S39E176', 'S39E177', 'S39E178', 'S40E173', 'S40E174', 'S40E175', 'S40E176', 'S40E177', 'S40E178', 'S41E172', 'S41E173', 'S41E174', 'S41E175', 'S41E176', 'S42E171', 'S42E172', 'S42E173', 'S42E174', 'S42E175', 'S42E176', 'S43E170', 'S43E171', 'S43E172', 'S43E173', 'S43E174', 'S44E168', 'S44E169', 'S44E170', 'S44E171', 'S44E172', 'S44E173', 'S45E167', 'S45E168', 'S45E169', 'S45E170', 'S45E171', 'S46E166', 'S46E167', 'S46E168', 'S46E169', 'S46E170', 'S46E171', 'S47E166', 'S47E167', 'S47E168', 'S47E169', 'S47E170', 'S48E167', 'S48E168']</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.main.compute_tile_ids" title="Permalink to this definition">¶</a></dt>
+<dt id="wavetrace.main.select_tile_ids">
+<code class="descclassname">wavetrace.main.</code><code class="descname">select_tile_ids</code><span class="sig-paren">(</span><em>transmitters, transmitter_buffer=0.5, tile_ids=['S35E172', 'S35E173', 'S36E173', 'S36E174', 'S36E175', 'S37E173', 'S37E174', 'S37E175', 'S37E176', 'S38E174', 'S38E175', 'S38E176', 'S38E177', 'S38E178', 'S39E174', 'S39E175', 'S39E176', 'S39E177', 'S39E178', 'S40E173', 'S40E174', 'S40E175', 'S40E176', 'S40E177', 'S40E178', 'S41E172', 'S41E173', 'S41E174', 'S41E175', 'S41E176', 'S42E171', 'S42E172', 'S42E173', 'S42E174', 'S42E175', 'S42E176', 'S43E170', 'S43E171', 'S43E172', 'S43E173', 'S43E174', 'S44E168', 'S44E169', 'S44E170', 'S44E171', 'S44E172', 'S44E173', 'S45E167', 'S45E168', 'S45E169', 'S45E170', 'S45E171', 'S46E166', 'S46E167', 'S46E168', 'S46E169', 'S46E170', 'S46E171', 'S47E166', 'S47E167', 'S47E168', 'S47E169', 'S47E170', 'S48E167', 'S48E168']</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.main.select_tile_ids" title="Permalink to this definition">¶</a></dt>
 <dd><p>Given a list of transmitters (of the form output by <a class="reference internal" href="#wavetrace.main.read_transmitters" title="wavetrace.main.read_transmitters"><code class="xref py py-func docutils literal"><span class="pre">read_transmitters()</span></code></a>), get their locations, buffer them by <code class="docutils literal"><span class="pre">transmitter_buffer</span></code> decimal degrees, and return an ordered list of the unique SRTM tile IDs in <code class="docutils literal"><span class="pre">tile_ids</span></code> whose corresponding tiles intersect the buffers.
 As long as <code class="docutils literal"><span class="pre">tile_ids</span></code> and <code class="docutils literal"><span class="pre">transmitter_buffer</span></code> are big enough, the result will be a list of tile IDs to use when computing coverage for the given transmitters.
 The defaults are appropriate for transmitters in New Zealand.</p>
@@ -488,8 +488,8 @@ representing the WGS84 bounding box of the tile</dd>
 </dd></dl>
 
 <dl class="function">
-<dt id="wavetrace.utilities.get_tile_id">
-<code class="descclassname">wavetrace.utilities.</code><code class="descname">get_tile_id</code><span class="sig-paren">(</span><em>lon</em>, <em>lat</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.utilities.get_tile_id" title="Permalink to this definition">¶</a></dt>
+<dt id="wavetrace.utilities.get_covering_tile_id">
+<code class="descclassname">wavetrace.utilities.</code><code class="descname">get_covering_tile_id</code><span class="sig-paren">(</span><em>lon</em>, <em>lat</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.utilities.get_covering_tile_id" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the ID of the SRTM tile that covers the given WGS84 longitude and latitude.</p>
 <dl class="docutils">
 <dt>INPUT:</dt>
@@ -502,7 +502,7 @@ representing the WGS84 bounding box of the tile</dd>
 <dd>SRTM tile ID (string)</dd>
 </dl>
 <p>EXAMPLES:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">get_tile_id</span><span class="p">(</span><span class="mf">27.5</span><span class="p">,</span> <span class="mf">3.64</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">get_covering_tile_id</span><span class="p">(</span><span class="mf">27.5</span><span class="p">,</span> <span class="mf">3.64</span><span class="p">)</span>
 <span class="go">&#39;N03E027&#39;</span>
 </pre></div>
 </div>
@@ -606,7 +606,7 @@ Options:
 
 Commands:
   compute_coverage      Compute radio signal coverage reports
-  compute_tile_ids      Compute SRTM tiles IDs needed
+  select_tile_ids      Compute SRTM tiles IDs needed
   download_topography   Download topography data <span class="o">(</span>SRTM<span class="o">)</span>
   process_topography    Process topography data <span class="o">(</span>SRTM<span class="o">)</span>
   process_transmitters  Process transmitter data <span class="o">(</span>CSV<span class="o">)</span>

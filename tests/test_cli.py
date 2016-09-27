@@ -34,10 +34,10 @@ class TestCli(unittest.TestCase):
         self.assertEqual(result.output.strip(), 
           ' '.join(SRTM_NZ_TILE_IDS).strip()) 
 
-    def test_compute_tile_ids(self):
+    def test_select_tile_ids(self):
         path = DATA_DIR/'transmitters.csv'
 
-        result = self.runner.invoke(wavey, ['compute_tile_ids', str(path)])
+        result = self.runner.invoke(wavey, ['select_tile_ids', str(path)])
         self.assertEqual(result.exit_code, 0)
 
     @unittest.skipIf(not GITLAB_KEY,
@@ -85,3 +85,15 @@ class TestCli(unittest.TestCase):
         self.assertEqual(result.exit_code, 0)
 
         rm_paths(p2, p3)        
+
+    def test_compute_satellite_los(self):
+        p1 = DATA_DIR/'srtm3'/'S37E175.hgt'
+        p2 = DATA_DIR/'tmp_outputs'/'shadow.tif'
+        rm_paths(p2.parent)
+
+        result = self.runner.invoke(wavey, ['compute_satellite_los', 
+          str(p1), '152', str(p2)])
+        print(result.exc_info)
+        self.assertEqual(result.exit_code, 0)
+
+        rm_paths(p2.parent)
