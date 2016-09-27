@@ -2,11 +2,11 @@ Wavetrace
 *************
 Wavetrace is a Python 3.5 package designed to produce radio signal coverage reports, such as GeoTIFF files of signal strength contours,
 
-.. image:: images/signal_strength_contours.png
+.. image:: docs/images/signal_strength_contours.png
     :width: 350px
     :align: left
 
-.. image:: images/legend.png
+.. image:: docs/images/legend.png
     :height: 350px
 
 given radio transmitter data and topography data around the transmitters.
@@ -14,12 +14,12 @@ It uses `SPLAT! <http://www.qsl.net/kd2bd/splat.html>`_ to predict the attenuati
 
 Wavetrace can also compute line-of-site maps for geostationary satellites:
 
-.. image:: images/S36E173_satellite_los.png
+.. image:: docs/images/S36E173_satellite_los.png
     :width: 300px
     :align: center
 
 Wavetrace is intended for use in New Zealand but can be configured to work elsewhere on Earth. 
- 
+
 
 Installation
 ============
