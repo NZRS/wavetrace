@@ -56,7 +56,7 @@ Authors
 Changelog
 ==========
 
-v3.0.0, 2016-08-22
+v3.0.0, 2016-09-28
 -------------------
 - Added functions to compute line-of-sight for geostationary satellites
 - Renamed some functions, hence the version bump
