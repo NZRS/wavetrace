@@ -49,12 +49,13 @@ So use the command line to access the documentation for Wavey, the command line 
       --help  Show this message and exit.
 
     Commands:
-      compute_coverage      Compute radio signal coverage reports
-      select_tile_ids       Select SRTM tiles IDs needed
-      download_topography   Download topography data (SRTM)
-      process_topography    Process topography data (SRTM)
-      process_transmitters  Process transmitter data (CSV)
-      srtm_nz               Print the SRTM tiles that cover New Zealand
+      compute_coverage       Compute radio signal coverage reports
+      compute_satellite_los  Compute satellite line-of-sight
+      download_topography    Download topography data (SRTM)
+      process_topography     Process topography data (SRTM)
+      process_transmitters   Process transmitter data (CSV)
+      select_tile_ids        Compute SRTM tiles IDs needed
+      srtm_nz                List the SRTM tiles that cover New Zealand
 
 .. automodule:: wavetrace.cli
     :members:

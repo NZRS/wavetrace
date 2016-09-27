@@ -146,14 +146,14 @@ def compute_coverage(in_path, out_path, receiver_sensitivity, high_definition):
 @click.argument('in_path', type=click.Path())
 @click.argument('satellite_lon', type=click.FLOAT)
 @click.argument('out_path', type=click.Path())
-@click.option('-n', type=click.INT, default=3)
+@click.option('-n', type=click.INT, default=3, help="The SRTM tile is partitioned into n**2 subtiles of roughly the same size and then satellite line-of-sights are computed for each subtile")
 def compute_satellite_los(in_path, satellite_lon, out_path, n):
     """
-    Given the path to an SRTM1 or SRTM3 file and the longitude of a geostationary satellite, color with 8-bits of grayscale the raster cells according to whether they are in (whitish) or out (blackish) of the line-of-site of the satellite, and save the result as a GeoTIFF file located at OUT_PATH.
+    Given the path to an SRTM1 or SRTM3 file and the longitude SATELLITE_LON of a geostationary satellite, color with 8-bits of grayscale the raster cells according to whether they are in (whitish) or out (blackish) of the line-of-site of the satellite, and save the result as a GeoTIFF file located at OUT_PATH.
 
     \b
     ALGORITHM: 
-        1. Partition the SRTM tile into ``n**2`` square subtiles or roughly the same size
+        1. Partition the SRTM tile into n**2 square subtiles or roughly the same size
         2. For each subtile, compute the longitude, latitude, and (WGS84) height of its center 
         3. Compute the the look angles of the satellite from the center 
         4. Use the look angles to shade the subtile via GDAL's ``gdaldem hillshade`` command
