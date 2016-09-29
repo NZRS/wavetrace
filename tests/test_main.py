@@ -240,7 +240,6 @@ class TestMain(unittest.TestCase):
         p1 = DATA_DIR
         p2 = DATA_DIR/'tmp_inputs'
         p3 = DATA_DIR/'tmp_outputs'
-
         rm_paths(p2, p3)
  
         # High definition tests take too long, so skip them
@@ -257,6 +256,69 @@ class TestMain(unittest.TestCase):
         self.assertCountEqual(names_get, names_expect)
 
         rm_paths(p2, p3)
+
+    def test_compute_look_angles(self):
+        # Values taken from `Determination of look angles to geostationary communication satellites <https://www.ngs.noaa.gov/CORS/Articles/SolerEisemannJSE.pdf>`_ by Tomas Soler David W. Eisemann.
+        expect = {
+            0: (180.0000, 38.2164),
+            10: (165.9883, 37.2629),
+            20: (152.7459, 34.5215),
+            30: (140.7453, 30.2941),
+            40: (130.0943, 24.9504),
+            50: (120.6540, 18.8367),
+            60: (112.1789, 12.2358),
+            70: (104.4038, 5.3646),
+            75: (100.6996, 1.8804),
+            77.6865: (98.7453, 0.0034),
+            77.6914: (98.7418, 0.0000),
+            -10: (194.0117, 37.2629),
+            -20: (207.2541, 34.5215),
+            -30: (219.2547, 30.2941),
+            -40: (229.9057, 24.9504),
+            -50: (239.3460, 18.8367),
+            -60: (247.8211, 12.2358),
+            -70: (255.5962, 5.3646),
+            -75: (259.3004, 1.8804),
+            -77.6865: (261.2547, 0.0034),
+            -77.6914: (261.2582, 0.0000),
+        }
+        # However, the values above are relative to the GRS80 ellipsoid and not the WGS84 ellipsoid that we are using, so compensate by comparing only a few digits
+        decimals = 1
+        for lon_s, (az, el) in expect.items():
+            print(lon_s, az, el)
+            get_az, get_el = compute_look_angles(0, 45, 0, lon_s)
+            self.assertAlmostEqual(get_az, az, places=decimals)
+            self.assertAlmostEqual(get_el, el, places=decimals)
+            
+    def test_partition(self):
+        n = 3
+        subtiles = partition(10, 10, n)
+        # Should be the correct length
+        self.assertEqual(len(subtiles), n**2)
+        # Each subtile item should have the correct length
+        self.assertSequenceEqual([len(s) for s in subtiles], 
+          [4 for i in range(n**2)])
+        # Should be correct on an example subtile
+        expect = (6, 0, 4, 3)
+        self.assertSequenceEqual(subtiles[2], expect)
+
+    def test_get_geoid_height(self):
+        get = get_geoid_height(-3.01, 16.78)
+        expect = 28.7069
+        self.assertEqual(get, expect)
+
+    def test_compute_satellite_los(self):
+        p1 = DATA_DIR/'srtm3'/'S37E175.hgt'
+        p2 = DATA_DIR/'tmp_outputs'/'shadow.tif'
+        rm_paths(p2.parent)
+
+        compute_satellite_los(p1, 152, p2)
+        # Output should exist
+        self.assertTrue(p2.exists())
+        # Output should have same size and center as input
+        self.assertEqual(gdalinfo(p1), gdalinfo(p2))
+
+        rm_paths(p2.parent)
 
 
 if __name__ == '__main__':

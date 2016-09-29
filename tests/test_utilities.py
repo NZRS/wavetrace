@@ -5,6 +5,9 @@ from shapely.geometry import Point
 from wavetrace import *
 
 
+DATA_DIR = PROJECT_ROOT/'tests'/'data'
+
+
 class TestUtilities(unittest.TestCase):
 
     def test_check_tile_id(self):
@@ -13,38 +16,46 @@ class TestUtilities(unittest.TestCase):
         self.assertRaises(ValueError, check_tile_id, 'N93E027')
 
     def test_get_tile_id(self):
-        get = get_tile_id(27.5, 3.64)
+        path = Path('bongo/S36E174.SRTMGL1.hgt.zip')
+        get = get_tile_id(path)
+        expect = 'S36E174'
+        self.assertEqual(get, expect)
+
+    def test_get_covering_tile_id(self):
+        get = get_covering_tile_id(27.5, 3.64)
         expect = 'N03E027'
         self.assertEqual(get, expect)
 
-        get = get_tile_id(27.5, -3.64)
+        get = get_covering_tile_id(27.5, -3.64)
         expect = 'S04E027'
         self.assertEqual(get, expect)
 
-        get = get_tile_id(-27.5, 3.64)
+        get = get_covering_tile_id(-27.5, 3.64)
         expect = 'N03W028'
         self.assertEqual(get, expect)
 
-        get = get_tile_id(-27.5, -3.64)
+        get = get_covering_tile_id(-27.5, -3.64)
         expect = 'S04W028'
         self.assertEqual(get, expect)
 
     def test_get_bounds(self):
-        get = get_bounds('N03E027')
-        expect = [27, 3, 28, 4]
-        self.assertSequenceEqual(get, expect)
+        for precision, delta in [(None, 0), ('SRTM1', 0.5/3600), 
+          ('SRTM3', 1.5/3600)]:
+            get = get_bounds('N03E027', precision)
+            expect = [27 - delta, 3 - delta, 28 + delta, 4 + delta]
+            self.assertSequenceEqual(get, expect)
 
-        get = get_bounds('S03E027')
-        expect = [27, -3, 28, -2]
-        self.assertSequenceEqual(get, expect)
+            get = get_bounds('S03E027', precision)
+            expect = [27 - delta, -3 - delta, 28 + delta, -2 + delta]
+            self.assertSequenceEqual(get, expect)
 
-        get = get_bounds('N03W027')
-        expect = [-27, 3, -26, 4]
-        self.assertSequenceEqual(get, expect)
+            get = get_bounds('N03W027', precision)
+            expect = [-27 - delta, 3 - delta, -26 + delta, 4 + delta]
+            self.assertSequenceEqual(get, expect)
 
-        get = get_bounds('S03W027')
-        expect = [-27, -3, -26, -2]
-        self.assertSequenceEqual(get, expect)
+            get = get_bounds('S03W027', precision)
+            expect = [-27 - delta, -3 - delta, -26 + delta, -2 + delta]
+            self.assertSequenceEqual(get, expect)
 
     def test_build_feature(self):
         f = build_feature('N03E027')
@@ -72,6 +83,13 @@ class TestUtilities(unittest.TestCase):
           'S47E168',
           ]
         self.assertCountEqual(get, expect)
+
+    def test_gdalinfo(self):
+        path = DATA_DIR/'srtm3'/'S37E175.hgt'
+        get = gdalinfo(path)
+        expect = {'width': 1201, 'height': 1201, 'center': (175.5, -36.5)}
+        self.assertEqual(get, expect)
+
 
 if __name__ == '__main__':
     unittest.main()

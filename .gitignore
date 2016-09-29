@@ -7,3 +7,4 @@ tmp
 tests/data/tmp*
 other_docs
 secrets.json
+dist

@@ -1,3 +1,7 @@
+"""
+CONVENTIONS:
+    - All longitudes and latitudes below are referenced to the WGS84 ellipsoid, unless stated otherwise
+"""
 import os
 from functools import wraps
 import datetime as dt
@@ -6,7 +10,11 @@ from math import ceil, floor
 from itertools import product
 from pathlib import Path 
 import shutil
+import re
+import subprocess
+import math
 
+import requests
 from shapely.geometry import box, mapping
 
 import wavetrace.constants as cs
@@ -54,7 +62,7 @@ def get_secret(secret, secrets_path=cs.SECRETS_PATH):
 def check_lonlat(lon, lat):
     """
     Raise a ``ValueError`` if ``lon`` and ``lat`` do not represent a valid 
-    WGS84 longitude-latitude pair.
+    longitude-latitude pair.
     Otherwise, return nothing.
     """
     if not (-180 <= lon <= 180):
@@ -79,21 +87,26 @@ def check_tile_id(tile_id):
       0 <= lat <= 90 and 0 <= lon <= 180):
         raise ValueError(msg)
 
-def get_bounds(tile_id):
+def get_bounds(tile_id, be_precise=None):
     """
     Return the bounding box for the given SRTM tile ID.
 
     INPUT:
         - ``tile_id``: string; ID of an SRTM tile
+        - ``be_precise`` (optional): string; 'SRTM1' or 'SRTM3' 
 
     OUTPUT:
         List of integers of the form  ``[min_lon, min_lat, max_lon, max_lat]``
-        representing the WGS84 bounding box of the tile 
+        representing the longitude-latitude bounding box of the tile.
+        This assumes that the tile is exactly 1 degree by 1 degree in dimension, which is not actually the case. 
+        If ``be_precise`` equals 'SRTM1' or 'SRTM3', then return the precise bounds corresponding to the tile type; SRTM1 tiles are 1 degree and 1 arcsecond in side length; SRTM3 tiles are 1 degree and 3 arcseconds in side length.   
 
     EXAMPLES:
 
     >>> get_bounds('N04W027')
     [-27, 4, -26, 5]
+    >>> get_bounds('N04W027', be_precise='SRTM1')
+    [-27.000138888888888, 3.999861111111111, -25.999861111111112, 5.0001388888888885]
     """
     t = tile_id
     check_tile_id(t)
@@ -107,38 +120,58 @@ def get_bounds(tile_id):
     else:
         min_lon = -int(min_lon[1:])
 
-    return [min_lon, min_lat, min_lon + 1, min_lat + 1]
+    if be_precise == 'SRTM1':
+        # Add 0.5 arcseconds to all four sides
+        delta = 0.5/3600
+    elif be_precise == 'SRTM3':
+        # Add 1.5 arcseconds to all four sides
+        delta = 1.5/3600
+    else:
+        delta = 0
 
-def build_polygon(tile_id):
-    """
-    Given an SRTM tile ID, return a Shapely Polygon object corresponding to the WGS84 longitude-latitude boundary of the tiles.
-    """
-    return box(*get_bounds(tile_id))
+    return [min_lon - delta, min_lat - delta, 
+      min_lon + 1 + delta, min_lat + 1 + delta]
 
-def build_feature(tile_id):
+def build_polygon(tile_id, be_precise=None):
+    """
+    Given an SRTM tile ID, return a Shapely Polygon object corresponding to the longitude-latitude boundary of the tiles.
+    Use the same ``be_precise`` keyword as in :func:`get_bounds`.
+    """
+    return box(*get_bounds(tile_id, be_precise))
+
+def build_feature(tile_id, be_precise=None):
     """
     Given an SRTM tile ID, a list of (decoded) GeoJSON Feature object corresponding to the WGS84 longitude-latitude boundary of the tile.
+    Use the same ``be_precise`` keyword as in :func:`get_bounds`.
     """
     return {
         'type': 'Feature',
         'properties': {'tile_id': tile_id},
-        'geometry': mapping(build_polygon(tile_id))
+        'geometry': mapping(build_polygon(tile_id, be_precise))
         }
 
-def get_tile_id(lon, lat):
+def get_tile_id(tile_path):
     """
-    Return the ID of the SRTM tile that covers the given WGS84 longitude and latitude. 
+    Given the path to an SRTM1 or SRTM3 tile, return the ID of the tile (a string), e.g. "S36E174" for the path "bingo/S36E174.SRTMGL1.hgt.zip"
+    Assume that the tile ID is the first part of the file name, as is the SRTM convention.
+    """
+    path = Path(tile_path)
+    return path.stem.split('.')[0]
+
+def get_covering_tile_id(lon, lat):
+    """
+    Return the ID of the SRTM tile that covers the given longitude and latitude. 
 
     INPUT:
-        - ``lon``: float; WGS84 longitude
-        - ``lat``: float; WGS84 latitude 
+        - ``lon``: float; longitude
+        - ``lat``: float; latitude 
 
     OUTPUT:
         SRTM tile ID (string)
     
     EXAMPLES:
 
-    >>> get_tile_id(27.5, 3.64)
+    >>> get_covering_tile_id(27.5, 3.64)
     'N03E027'
 
     NOTES:
@@ -177,3 +210,26 @@ def compute_intersecting_tiles(geometries, tile_ids=cs.SRTM_NZ_TILE_IDS):
                 result.append(tid)
                 break
     return sorted(result)
+
+def gdalinfo(path):
+    """
+    Given the path to an raster file, run ``gdalinfo`` on the file and extract and return from the result a dictionary with the following keys and values:
+
+    - ``'width'``: pixel width of raster
+    - ``'height'``: pixel height of raster
+    - ``'center'``: center coordinates.
+    """
+    path = Path(path)
+    args = ['gdalinfo', str(path)]
+    sp = subprocess.run(args, cwd=str(path.parent),
+      stdout=subprocess.PIPE, universal_newlines=True, check=True)
+    text = sp.stdout
+    m = re.search(r'Size is (\d+), (\d+)', text)
+    width, height = map(int, m.group(1, 2))
+    m = re.search(r'Center\s*\(\s*([\d\.\-]+),\s*([\d\.\-]+)\s*\)', text)
+    center0, center1 = map(float, m.group(1, 2))
+    return {
+        'width': width, 
+        'height': height,
+        'center': (center0, center1),
+        }    
