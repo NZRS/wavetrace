@@ -65,7 +65,7 @@ Changelog
 
 v3.0.1, 2016-12-15
 -------------------
-- Repackaged with setuptools, and ensured that the README was included in tar archive this time
+- Repackaged with setuptools and ensured that the README is included in tar archive this time
 
 
 v3.0.0, 2016-08-22
