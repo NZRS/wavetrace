@@ -2,6 +2,7 @@ import unittest
 from pathlib import Path 
 from shapely.geometry import Point
 
+from .context import wavetrace
 from wavetrace import *
 
 
