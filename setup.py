@@ -1,14 +1,21 @@
-from distutils.core import setup
+from setuptools import setup, find_packages
+
+
+with open('README.rst') as f:
+    readme = f.read()
+
+with open('LICENSE') as f:
+    license = f.read()
 
 setup(
     name='wavetrace',
-    version='3.0.0',
+    version='3.0.1',
     author='Alex Raichev',
-    packages=['wavetrace', 'tests'],
+    packages=find_packages(exclude=('tests', 'docs')),
     url='https://github.com/nzrs/wavetrace',
-    license='LICENSE',
+    license=license,
     description='Python 3.5 tools to produce radio signal coverage reports, mostly for New Zealand',
-    long_description=open('README.rst').read(),
+    long_description=readme,
     install_requires=[
         'requests>=2.10.0',
         'Shapely>=1.5.16',

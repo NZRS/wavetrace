@@ -3,6 +3,7 @@ import unittest
 import click.testing
 from click.testing import CliRunner
 
+from .context import wavetrace
 from wavetrace import *
 from wavetrace.cli import wavey
 

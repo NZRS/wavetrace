@@ -3,6 +3,7 @@ from pathlib import Path
 from copy import copy
 import shutil
 
+from .context import wavetrace
 from wavetrace import *
 
 
