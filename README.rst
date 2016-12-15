@@ -11,12 +11,19 @@ Wavetrace is a Python 3.5 package designed to produce radio signal coverage repo
 
 given radio transmitter data and topography data around the transmitters.
 It uses `SPLAT! <http://www.qsl.net/kd2bd/splat.html>`_ to predict the attenuation of radio signals, which implements a `Longley-Rice model <https://en.wikipedia.org/wiki/Longley%E2%80%93Rice_model>`_.
+
+Wavetrace can also compute line-of-site maps for geostationary satellites:
+
+.. image:: docs/images/S36E173_satellite_los.png
+    :width: 300px
+    :align: center
+
 Wavetrace is intended for use in New Zealand but can be configured to work elsewhere on Earth. 
  
 
 Installation
 ============
-1. Install SPLAT!, ImageMagick, and GDAL. For example, to install these on a Linux system do ``sudo apt-get update; sudo apt-get install splat imagemagick gdal-bin``
+1. Install SPLAT! >= 1.4.0, GDAL >= 1.11, and ImageMagick. For example, to install these on a Linux system do ``sudo apt-get update; sudo apt-get install splat gdal-bin imagemagick``
 2. Create a Python 3.5 virtual environment
 3. In your virtual environment, install Wavetrace via Pip via ``pip install wavetrace``
 
@@ -58,7 +65,7 @@ Changelog
 
 v3.0.1, 2016-12-15
 -------------------
-- Repackaged with setuptools, and ensured that the README was included in tar archive this time
+- Repackaged with setuptools and ensured that the README is included in tar archive this time
 
 
 v3.0.0, 2016-08-22
