@@ -10,7 +10,7 @@ from wavetrace import *
 DATA_DIR = PROJECT_ROOT/'tests'/'data'
 try:
     GITLAB_KEY = get_secret("GITLAB_API_KEY")
-except KeyError:
+except (FileNotFoundError, KeyError):
     GITLAB_KEY = ''
 TRANSMITTER_1 = {
  'antenna_downtilt': '1',
@@ -217,14 +217,14 @@ class TestMain(unittest.TestCase):
         process_transmitters(p1/'transmitters_single.csv', p2)
         process_topography(p1, p2)
         compute_coverage_0(p2, p3)
-        postprocess_coverage_0(p3, keep_ppm=True)
+        postprocess_coverage_0(p3, keep_ppm=True, make_shp=True)
 
         # Should contain the correct files
         names_get = [f.name for f in p3.iterdir()]
         names_expect = [t['name'] + suffix
           for t in transmitters
           for suffix in ['.ppm', '-ck.ppm', '.kml', '-site_report.txt', 
-            '.png', '-ck.png', '.tif']]
+            '.png', '-ck.png', '.tif', '.dbf', '.prj', '.shp', '.shx']]
         self.assertCountEqual(names_get, names_expect)
 
         # KML should have PNG references
@@ -246,14 +246,14 @@ class TestMain(unittest.TestCase):
         # High definition tests take too long, so skip them
         process_transmitters(p1/'transmitters_single.csv', p2)
         process_topography( p1/'srtm3', p2)
-        compute_coverage(p2, p3, keep_ppm=False)
+        compute_coverage(p2, p3, keep_ppm=False, make_shp=True)
 
         # Should contain the correct files
         names_get = [f.name for f in p3.iterdir()]
         names_expect = [t['name'] + suffix
           for t in read_transmitters(p1/'transmitters_single.csv')
           for suffix in ['.kml', '-site_report.txt', 
-            '.png', '-ck.png', '.tif']]
+            '.png', '-ck.png', '.tif', '.dbf', '.prj', '.shp', '.shx']]
         self.assertCountEqual(names_get, names_expect)
 
         rm_paths(p2, p3)
@@ -313,10 +313,13 @@ class TestMain(unittest.TestCase):
         p2 = DATA_DIR/'tmp_outputs'/'shadow.tif'
         rm_paths(p2.parent)
 
-        compute_satellite_los(p1, 152, p2)
-        # Output should exist
-        self.assertTrue(p2.exists())
-        # Output should have same size and center as input
+        compute_satellite_los(p1, 152, p2, make_shp=True)
+        # Expected outputs should exist
+        for suffix in ['.tif', '.dbf', '.prj', '.shp', '.shx']:
+            path = p2.parent/(p2.stem + suffix)
+            self.assertTrue(path.exists())
+
+        # GeoTIFF output should have same size and center as input
         self.assertEqual(gdalinfo(p1), gdalinfo(p2))
 
         rm_paths(p2.parent)

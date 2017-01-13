@@ -11,7 +11,7 @@ from wavetrace.cli import wavey
 DATA_DIR = PROJECT_ROOT/'tests'/'data'
 try:
     GITLAB_KEY = get_secret("GITLAB_API_KEY")
-except KeyError:
+except (FileNotFoundError, KeyError):
     GITLAB_KEY = ''
 
 class TestCli(unittest.TestCase):
@@ -81,7 +81,7 @@ class TestCli(unittest.TestCase):
         self.runner.invoke(wavey, ['process_topography',
           str(p1/'srtm3'), str(p2)])
         result = self.runner.invoke(wavey, ['compute_coverage', 
-          str(p2), str(p3)])
+          str(p2), str(p3), '--make-shp'])
         print(result.exc_info)
         self.assertEqual(result.exit_code, 0)
 
@@ -93,7 +93,7 @@ class TestCli(unittest.TestCase):
         rm_paths(p2.parent)
 
         result = self.runner.invoke(wavey, ['compute_satellite_los', 
-          str(p1), '152', str(p2)])
+          str(p1), '152', str(p2), '--make-shp'])
         print(result.exc_info)
         self.assertEqual(result.exit_code, 0)
 

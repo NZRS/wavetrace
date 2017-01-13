@@ -85,9 +85,8 @@ def get_covering_tiles_ids(path, transmitter_buffer):
 @click.argument('tile_ids', nargs=-1)
 @click.argument('path', type=click.Path())
 @click.argument('api_key')
-@click.option('-hd/-sd', '--high-definition/--standard-definition', 
-  default=False,
-  help="If True, then download SRTM1 tiles; otherwise download SRTM3 tiles")
+@click.option('-hd', '--high-definition', is_flag=True, default=False,
+  help="If this flag is set, then assume the source topography data is high definition (SRTM1); otherwise assume it is standard definition (SRTM3)")
 def download_topography(tile_ids, path, api_key, high_definition):
     """
     Download from the Gitlab repository https://gitlab.com/araichev/srtm_nz the SRTM1 (high definition) or SRTM3 (standard definition) topography data corresponding to the given SRTM tile IDs and save the files to the directory PATH, creating the directory if it does not exist.
@@ -100,9 +99,8 @@ def download_topography(tile_ids, path, api_key, high_definition):
 @wavey.command(short_help="Process topography data (SRTM)")
 @click.argument('in_path', type=click.Path())
 @click.argument('out_path', type=click.Path())
-@click.option('-hd/-sd', '--high-definition/--standard-definition', 
-  default=False,
-  help="If True, then assume topography data is high definition (SRTM1); otherwise assume it is standard definition (SRTM3)")
+@click.option('-hd', '--high-definition', is_flag=True, default=False,
+  help="If this flag is set, then assume the source topography data is high definition (SRTM1); otherwise assume it is standard definition (SRTM3)")
 def process_topography(in_path, out_path, high_definition):
     """
     Convert each SRTM HGT topography file in the directory IN_PATH to
@@ -118,10 +116,11 @@ def process_topography(in_path, out_path, high_definition):
 @click.argument('out_path', type=click.Path())
 @click.option('-rs', '--receiver_sensitivity', type=float, 
   default=cs.RECEIVER_SENSITIVITY)
-@click.option('-hd/-sd', '--high-definition/--standard-definition', 
-  default=False,
-  help="If True, then assume source topography data is high definition (SRTM1); otherwise assume it is standard definition (SRTM3)")
-def compute_coverage(in_path, out_path, receiver_sensitivity, high_definition):
+@click.option('-hd', '--high-definition', is_flag=True, default=False,
+  help="If this flag is set, then assume the source topography data is high definition (SRTM1); otherwise assume it is standard definition (SRTM3)")
+@click.option('--make-shp', is_flag=True, default=False,
+  help="If this flag is set, then create ESRI Shapefiles from and in addition to the GeoTIFF files")
+def compute_coverage(in_path, out_path, receiver_sensitivity, high_definition, make_shp):
     """
     Create and post-process a SPLAT! coverage report for every transmitter with data located at IN_PATH.
     Write each report to the directory OUT_PATH, creating the directory if necessary.
@@ -134,22 +133,26 @@ def compute_coverage(in_path, out_path, receiver_sensitivity, high_definition):
     - <transmitter name>.tif: GeoTIFF file depicting a contour plot of the transmitter signal strength
     - <transmitter name>-ck.png: PNG file depicting a legend for the signal strengths in ``'<transmitter name>.tif'``
 
-    This command calls SPLAT!'s ``splat`` or ``splat-hd`` (if ``high_definition``) command to do the work
+    Additionally if the --make-shp flag is given, then an ESRI Shapefile bundle (.dbf, .prj, .shp, and .shx files) will also be produced from each GeoTIFF file.
+    This command calls SPLAT!'s ``splat`` or ``splat-hd`` (if ``high_definition``) command to do the work.
 
     This is a time-intensive command. On a 3.6 GHz Intel Core i7 processor with 16 GB of RAM, this takes about 32 minutes for the 20 New Zealand test transmitters with their 13 standard definition topography files and takes about 687 minutes for the same 20 transmitters with their 13 high definition topography files.
     """
     m.compute_coverage(in_path, out_path, 
       receiver_sensitivity=receiver_sensitivity, 
-      high_definition=high_definition, keep_ppm=False)
+      high_definition=high_definition, keep_ppm=False, make_shp=make_shp)
 
 @wavey.command(short_help="Compute satellite line-of-sight")
 @click.argument('in_path', type=click.Path())
 @click.argument('satellite_lon', type=click.FLOAT)
 @click.argument('out_path', type=click.Path())
 @click.option('-n', type=click.INT, default=3, help="The given SRTM tile is partitioned into n**2 subtiles of roughly the same size and then satellite line-of-sights are computed for each subtile")
-def compute_satellite_los(in_path, satellite_lon, out_path, n):
+@click.option('--make-shp', is_flag=True, default=False,
+  help="If this flag is set, then create ESRI Shapefiles from and in addition to the GeoTIFF files")
+def compute_satellite_los(in_path, satellite_lon, out_path, n, make_shp):
     """
     Given the path to an SRTM1 or SRTM3 file and the longitude SATELLITE_LON of a geostationary satellite, color with 8-bits of grayscale the raster cells according to whether they are in (whitish) or out (blackish) of the line-of-site of the satellite, and save the result as a GeoTIFF file located at OUT_PATH.
+    Additionally if the --make-shp flag is given, then an ESRI Shapefile bundle (.dbf, .prj, .shp, and .shx files) will also be produced from each GeoTIFF file.
 
     \b
     ALGORITHM: 
@@ -163,4 +166,4 @@ def compute_satellite_los(in_path, satellite_lon, out_path, n):
     NOTES:
         - This function depends on a webservice for computing geoid heights, so requires internet access 
     """
-    m.compute_satellite_los(in_path, satellite_lon, out_path, n)
+    m.compute_satellite_los(in_path, satellite_lon, out_path, n, make_shp=make_shp)

@@ -4,12 +4,12 @@ from setuptools import setup, find_packages
 with open('README.rst') as f:
     readme = f.read()
 
-with open('LICENSE') as f:
+with open('LICENSE.txt') as f:
     license = f.read()
 
 setup(
     name='wavetrace',
-    version='3.0.1',
+    version='3.1.1',
     author='Alex Raichev',
     packages=find_packages(exclude=('tests', 'docs')),
     url='https://github.com/nzrs/wavetrace',
@@ -24,4 +24,5 @@ setup(
     entry_points={
         'console_scripts': ['wavey=wavetrace.cli:wavey'],
     },
+    data_files = [('', ['LICENSE.txt'])],
 )
