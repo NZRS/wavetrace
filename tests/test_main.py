@@ -8,10 +8,6 @@ from wavetrace import *
 
 
 DATA_DIR = PROJECT_ROOT/'tests'/'data'
-try:
-    GITLAB_KEY = get_secret("GITLAB_API_KEY")
-except (FileNotFoundError, KeyError):
-    GITLAB_KEY = ''
 TRANSMITTER_1 = {
  'antenna_downtilt': '1',
  'antenna_height': 20.0,
@@ -30,8 +26,6 @@ TRANSMITTER_1 = {
 
 class TestMain(unittest.TestCase):
 
-    @unittest.skipIf(not GITLAB_KEY,
-      'Requires a Gitlab API access token stored in ``secrets.json`` under the key ``"GITLAB_API_KEY"``')
     def test_download_topography(self):
         # Test tiles. Last one is not in dataset.
         tmp = DATA_DIR/'tmp'
@@ -41,8 +35,7 @@ class TestMain(unittest.TestCase):
         for hd, suffix in [(True, '.SRTMGL1.hgt.zip'), 
           (False, '.SRTMGL3.hgt.zip')]:
             rm_paths(tmp)
-            download_topography(tiles, path=tmp, high_definition=hd, 
-              api_key=GITLAB_KEY)
+            download_topography(tiles, path=tmp, high_definition=hd)
             get_names = [f.name for f in tmp.iterdir()]
             expect_names = [t + suffix for t in tiles]
             self.assertCountEqual(get_names, expect_names)
@@ -51,7 +44,7 @@ class TestMain(unittest.TestCase):
         tiles = ['S36E174', 'N00E000']
         for hd in [True, False]:
             self.assertRaises(ValueError, download_topography, tile_ids=tiles, 
-              path=tmp, high_definition=hd, api_key=GITLAB_KEY)
+              path=tmp, high_definition=hd)
 
         rm_paths(tmp)
 

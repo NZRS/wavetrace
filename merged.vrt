@@ -1,0 +1,80 @@
+<VRTDataset rasterXSize="1201" rasterYSize="1201">
+  <SRS>GEOGCS["WGS 84",DATUM["WGS_1984",SPHEROID["WGS 84",6378137,298.257223563,AUTHORITY["EPSG","7030"]],AUTHORITY["EPSG","6326"]],PRIMEM["Greenwich",0],UNIT["degree",0.0174532925199433],AUTHORITY["EPSG","4326"]]</SRS>
+  <GeoTransform>  1.7499958333333333e+02,  8.3333333333333339e-04,  0.0000000000000000e+00, -3.5999583333333334e+01,  0.0000000000000000e+00, -8.3333333333333339e-04</GeoTransform>
+  <VRTRasterBand dataType="Byte" band="1">
+    <NoDataValue>0</NoDataValue>
+    <ColorInterp>Gray</ColorInterp>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="0">/tmp/tmpsooo0nuz/0.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="400" RasterYSize="400" DataType="Byte" BlockXSize="400" BlockYSize="20" />
+      <SrcRect xOff="0" yOff="0" xSize="400" ySize="400" />
+      <DstRect xOff="0" yOff="0" xSize="400" ySize="400" />
+      <NODATA>0</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="0">/tmp/tmpsooo0nuz/1.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="400" RasterYSize="400" DataType="Byte" BlockXSize="400" BlockYSize="20" />
+      <SrcRect xOff="0" yOff="0" xSize="400" ySize="400" />
+      <DstRect xOff="400.000000000011" yOff="0" xSize="400" ySize="400" />
+      <NODATA>0</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="0">/tmp/tmpsooo0nuz/2.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="401" RasterYSize="400" DataType="Byte" BlockXSize="401" BlockYSize="20" />
+      <SrcRect xOff="0" yOff="0" xSize="401" ySize="400" />
+      <DstRect xOff="799.999999999989" yOff="0" xSize="401" ySize="400" />
+      <NODATA>0</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="0">/tmp/tmpsooo0nuz/3.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="400" RasterYSize="400" DataType="Byte" BlockXSize="400" BlockYSize="20" />
+      <SrcRect xOff="0" yOff="0" xSize="400" ySize="400" />
+      <DstRect xOff="0" yOff="400.000000000003" xSize="400" ySize="400" />
+      <NODATA>0</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="0">/tmp/tmpsooo0nuz/4.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="400" RasterYSize="400" DataType="Byte" BlockXSize="400" BlockYSize="20" />
+      <SrcRect xOff="0" yOff="0" xSize="400" ySize="400" />
+      <DstRect xOff="400.000000000011" yOff="400.000000000003" xSize="400" ySize="400" />
+      <NODATA>0</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="0">/tmp/tmpsooo0nuz/5.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="401" RasterYSize="400" DataType="Byte" BlockXSize="401" BlockYSize="20" />
+      <SrcRect xOff="0" yOff="0" xSize="401" ySize="400" />
+      <DstRect xOff="799.999999999989" yOff="400.000000000003" xSize="401" ySize="400" />
+      <NODATA>0</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="0">/tmp/tmpsooo0nuz/6.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="400" RasterYSize="401" DataType="Byte" BlockXSize="400" BlockYSize="20" />
+      <SrcRect xOff="0" yOff="0" xSize="400" ySize="401" />
+      <DstRect xOff="0" yOff="799.999999999997" xSize="400" ySize="401" />
+      <NODATA>0</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="0">/tmp/tmpsooo0nuz/7.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="400" RasterYSize="401" DataType="Byte" BlockXSize="400" BlockYSize="20" />
+      <SrcRect xOff="0" yOff="0" xSize="400" ySize="401" />
+      <DstRect xOff="400.000000000011" yOff="799.999999999997" xSize="400" ySize="401" />
+      <NODATA>0</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="0">/tmp/tmpsooo0nuz/8.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="401" RasterYSize="401" DataType="Byte" BlockXSize="401" BlockYSize="20" />
+      <SrcRect xOff="0" yOff="0" xSize="401" ySize="401" />
+      <DstRect xOff="799.999999999989" yOff="799.999999999997" xSize="401" ySize="401" />
+      <NODATA>0</NODATA>
+    </ComplexSource>
+  </VRTRasterBand>
+</VRTDataset>

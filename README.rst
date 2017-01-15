@@ -63,8 +63,9 @@ Authors
 Changelog
 ==========
 
-v3.1.0, 
+v4.0.0, 
 -------------------
+- Removed Gitlab API key option, because it is unnecessary for accessing a public repository
 - Added the option to create ESRI Shapefiles in the functions ``main.compute_coverage`` and ``main.compute_satellite_los``.
 
 

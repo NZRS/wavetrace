@@ -84,17 +84,15 @@ def get_covering_tiles_ids(path, transmitter_buffer):
 @wavey.command(short_help="Download topography data (SRTM)")
 @click.argument('tile_ids', nargs=-1)
 @click.argument('path', type=click.Path())
-@click.argument('api_key')
 @click.option('-hd', '--high-definition', is_flag=True, default=False,
   help="If this flag is set, then assume the source topography data is high definition (SRTM1); otherwise assume it is standard definition (SRTM3)")
-def download_topography(tile_ids, path, api_key, high_definition):
+def download_topography(path, tile_ids, high_definition):
     """
     Download from the Gitlab repository https://gitlab.com/araichev/srtm_nz the SRTM1 (high definition) or SRTM3 (standard definition) topography data corresponding to the given SRTM tile IDs and save the files to the directory PATH, creating the directory if it does not exist.
-    This requires a Gitlab API key (access token).
 
     This command only works for SRTM tiles covering New Zealand ---use :func:`srtm_nz` to list these--- and raises a ``ValueError`` if other tiles are given.
     """
-    m.download_topography(tile_ids, path, api_key, high_definition)
+    m.download_topography(tile_ids, path, high_definition)
 
 @wavey.command(short_help="Process topography data (SRTM)")
 @click.argument('in_path', type=click.Path())

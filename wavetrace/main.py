@@ -18,6 +18,10 @@ import requests
 import wavetrace.constants as cs
 import wavetrace.utilities as ut
 
+# In the calls to the subprocess function below, 
+# sometimes instead of using absolute paths, 
+# i use relative paths in combination with the ``cwd`` option.
+# Mind the difference!
 
 def process_transmitters(in_path, out_path,
   earth_dielectric_constant=cs.EARTH_DIELECTRIC_CONSTANT, 
@@ -317,15 +321,14 @@ def get_covering_tiles_ids(transmitters, transmitter_buffer=0.5,
       for p in get_lonlats(transmitters)]
     return ut.compute_intersecting_tiles(blobs)
 
-def download_topography(tile_ids, path, api_key, high_definition=False):
+def download_topography(tile_ids, path, high_definition=False):
     """
-    Download from the Gitlab repository https://gitlab.com/araichev/srtm_nz the SRTM1 or SRTM3 topography data corresponding to the given SRTM tile IDs and save the files to the directory ``path``, creating the directory if it does not exist.
+    Download from the public Gitlab repository https://gitlab.com/araichev/srtm_nz the SRTM1 or SRTM3 topography data corresponding to the given SRTM tile IDs and save the files to the directory ``path``, creating the directory if it does not exist.
 
     INPUT:
         - ``tile_ids``: list of strings; SRTM tile IDs
         - ``path``: string or Path object specifying a directory
         - ``high_definition``: boolean; if ``True`` then download SRTM1 tiles; otherwise download SRTM3 tiles
-        - ``api_key``: string; a valid Gitlab API key (access token)
 
     OUTPUT:
         None
@@ -354,7 +357,6 @@ def download_topography(tile_ids, path, api_key, high_definition=False):
     # Download
     for file_name in file_names:
         params={
-            'private_token':  api_key,
             'file_path': file_name,
             'ref': 'master',
             }
@@ -726,22 +728,22 @@ def compute_satellite_los(in_path, satellite_lon, out_path, n=3, make_shp=False)
     # Iterate through subtiles and compute the satellite shadows
     f_info = ut.gdalinfo(f)
     width, height = f_info['width'], f_info['height']
-    subtile_paths = []
+    subtile_names = []
     for i, window in enumerate(partition(width, height, n)):
         # Extract subtile i
         g = tmp_path/'{!s}.tif'.format(i)
-        subtile_paths.append(g)
+        subtile_names.append(g.name)
         args = ['gdal_translate', '-of', 'Gtiff', '-srcwin', 
           str(window[0]), str(window[1]), str(window[2]), str(window[3]),
           str(f), str(g)]       
-        subprocess.run(args, cwd=str(f.parent),
-          stdout=subprocess.PIPE, universal_newlines=True, check=True)
+        subprocess.run(args, stdout=subprocess.PIPE, universal_newlines=True,
+          check=True)
 
         # Compute orthometric height H and geoid height N at center of subtile
         lon, lat = ut.gdalinfo(g)['center']
         args = ['gdallocationinfo', str(g), '-wgs84', '-valonly', 
           str(lon), str(lat)]
-        sp = subprocess.run(args, cwd=str(g.parent),
+        sp = subprocess.run(args, 
           stdout=subprocess.PIPE, universal_newlines=True, check=True)
         H = float(sp.stdout) 
         N = get_geoid_height(lon, lat)
@@ -750,14 +752,13 @@ def compute_satellite_los(in_path, satellite_lon, out_path, n=3, make_shp=False)
         az, el = compute_look_angles(lon, lat, H + N, satellite_lon)
         args = ['gdaldem', 'hillshade', '-compute_edges', 
           '-az', str(az), '-alt', str(el), str(g), str(g)]
-        subprocess.run(args, cwd=str(g.parent),
+        subprocess.run(args,
           stdout=subprocess.PIPE, universal_newlines=True, check=True)
 
     # Merge subtiles. 
     # Use gdalbuildvert and gdal_translate, because gdal_merge.py produces the wrong size image for some reason.
-    args = ['gdalbuildvrt', 'merged.vrt'] + [
-      str(g) for g in subtile_paths]
-    subprocess.run(args, cwd=str(g.parent),
+    args = ['gdalbuildvrt', 'merged.vrt'] + [name for name in subtile_names]
+    subprocess.run(args, cwd=str(g.parent), 
       stdout=subprocess.PIPE, universal_newlines=True, check=True)
 
     args = ['gdal_translate', 'merged.vrt', 'merged.tif', '-of', 'GTiff']
@@ -775,6 +776,7 @@ def compute_satellite_los(in_path, satellite_lon, out_path, n=3, make_shp=False)
     if make_shp:
         tif = out_path.name
         shp = out_path.stem + '.shp'
-        args = ['gdal_polygonize.py', tif, '-f', 'ESRI Shapefile', shp]
+        args = ['gdal_polygonize.py', str(tif), '-f', 'ESRI Shapefile', 
+          str(shp)]
         subprocess.run(args, cwd=str(out_path.parent),
           stdout=subprocess.PIPE, universal_newlines=True, check=True)
