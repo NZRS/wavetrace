@@ -61,7 +61,7 @@ author = 'Alex Raichev'
 # built documents.
 #
 # The short X.Y version.
-version = '3.1'
+version = '4.0'
 # The full version, including alpha/beta/rc tags.
 #release = '3.0'
 

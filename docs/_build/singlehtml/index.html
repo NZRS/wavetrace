@@ -40,7 +40,7 @@
           <div class="body" role="main">
             
   <div class="section" id="wavetrace-version-documentation">
-<h1>Wavetrace 3.1 documentation<a class="headerlink" href="#wavetrace-version-documentation" title="Permalink to this headline">¶</a></h1>
+<h1>Wavetrace 4.0 documentation<a class="headerlink" href="#wavetrace-version-documentation" title="Permalink to this headline">¶</a></h1>
 <div class="toctree-wrapper compound">
 <span id="document-introduction"></span><div class="section" id="introduction">
 <h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
@@ -281,7 +281,7 @@ A report comprises the files</p>
 <dl class="function">
 <dt id="wavetrace.main.compute_satellite_los">
 <code class="descclassname">wavetrace.main.</code><code class="descname">compute_satellite_los</code><span class="sig-paren">(</span><em>in_path</em>, <em>satellite_lon</em>, <em>out_path</em>, <em>n=3</em>, <em>make_shp=False</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.main.compute_satellite_los" title="Permalink to this definition">¶</a></dt>
-<dd><p>Given the path <code class="docutils literal"><span class="pre">in_path</span></code> to an SRTM1 or SRTM3 file and the longitude of a geostationary satellite, color with 8-bits of grayscale the raster cells according to whether they are in (whitish) or out (blackish) of the line-of-site of the satellite, and save the result as a GeoTIFF file located at <code class="docutils literal"><span class="pre">out_path</span></code>.
+<dd><p>Given the path <code class="docutils literal"><span class="pre">in_path</span></code> to an SRTM1 or SRTM3 file and the longitude of a geostationary satellite, color with 8-bits of grayscale (pixel values from 0 to 255) the raster cells according to whether they are out (blackish, close to 0) or in (whitish, close to 255) of the line-of-site of the satellite, and save the result as a GeoTIFF file located at <code class="docutils literal"><span class="pre">out_path</span></code>.
 If <code class="docutils literal"><span class="pre">make_shp</span></code>, then also create an ESRI Shapefile bundle (.dbf, .prj, .shp, and .shx files) out of the GeoTIFF and save it to a similar path (same path stem but with Shapefile path suffixes).</p>
 <dl class="docutils">
 <dt>ALGORITHM: </dt>
@@ -296,6 +296,7 @@ If <code class="docutils literal"><span class="pre">make_shp</span></code>, then
 <dt>NOTES:</dt>
 <dd><ul class="first last simple">
 <li>Calls <a class="reference internal" href="#wavetrace.main.get_geoid_height" title="wavetrace.main.get_geoid_height"><code class="xref py py-func docutils literal"><span class="pre">get_geoid_height()</span></code></a> <code class="docutils literal"><span class="pre">n**2</span></code> times. Because that function is currently implemented as an HTTP GET request, that slows things down and also introduces <code class="docutils literal"><span class="pre">n**2</span></code> opportunities for failure (raising a <code class="docutils literal"><span class="pre">ValueError</span></code>).</li>
+<li>To roughly interpret the output raster values as actual satellite signal strengths, one would need to obtain some actual on-the-ground satellite readings.</li>
 </ul>
 </dd>
 </dl>
@@ -303,15 +304,14 @@ If <code class="docutils literal"><span class="pre">make_shp</span></code>, then
 
 <dl class="function">
 <dt id="wavetrace.main.download_topography">
-<code class="descclassname">wavetrace.main.</code><code class="descname">download_topography</code><span class="sig-paren">(</span><em>tile_ids</em>, <em>path</em>, <em>api_key</em>, <em>high_definition=False</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.main.download_topography" title="Permalink to this definition">¶</a></dt>
-<dd><p>Download from the Gitlab repository <a class="reference external" href="https://gitlab.com/araichev/srtm_nz">https://gitlab.com/araichev/srtm_nz</a> the SRTM1 or SRTM3 topography data corresponding to the given SRTM tile IDs and save the files to the directory <code class="docutils literal"><span class="pre">path</span></code>, creating the directory if it does not exist.</p>
+<code class="descclassname">wavetrace.main.</code><code class="descname">download_topography</code><span class="sig-paren">(</span><em>tile_ids</em>, <em>path</em>, <em>high_definition=False</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.main.download_topography" title="Permalink to this definition">¶</a></dt>
+<dd><p>Download from the public Gitlab repository <a class="reference external" href="https://gitlab.com/araichev/srtm_nz">https://gitlab.com/araichev/srtm_nz</a> the SRTM1 or SRTM3 topography data corresponding to the given SRTM tile IDs and save the files to the directory <code class="docutils literal"><span class="pre">path</span></code>, creating the directory if it does not exist.</p>
 <dl class="docutils">
 <dt>INPUT:</dt>
 <dd><ul class="first last simple">
 <li><code class="docutils literal"><span class="pre">tile_ids</span></code>: list of strings; SRTM tile IDs</li>
 <li><code class="docutils literal"><span class="pre">path</span></code>: string or Path object specifying a directory</li>
 <li><code class="docutils literal"><span class="pre">high_definition</span></code>: boolean; if <code class="docutils literal"><span class="pre">True</span></code> then download SRTM1 tiles; otherwise download SRTM3 tiles</li>
-<li><code class="docutils literal"><span class="pre">api_key</span></code>: string; a valid Gitlab API key (access token)</li>
 </ul>
 </dd>
 <dt>OUTPUT:</dt>

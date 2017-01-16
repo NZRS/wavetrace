@@ -692,9 +692,10 @@ def get_geoid_height(lon, lat, num_tries=3):
         
     raise ValueError('Failed to download data from', url)
 
-def compute_satellite_los(in_path, satellite_lon, out_path, n=3, make_shp=False):
+def compute_satellite_los(in_path, satellite_lon, out_path, n=3, 
+  make_shp=False):
     """
-    Given the path ``in_path`` to an SRTM1 or SRTM3 file and the longitude of a geostationary satellite, color with 8-bits of grayscale the raster cells according to whether they are in (whitish) or out (blackish) of the line-of-site of the satellite, and save the result as a GeoTIFF file located at ``out_path``.
+    Given the path ``in_path`` to an SRTM1 or SRTM3 file and the longitude of a geostationary satellite, color with 8-bits of grayscale (pixel values from 0 to 255) the raster cells according to whether they are out (blackish, close to 0) or in (whitish, close to 255) of the line-of-site of the satellite, and save the result as a GeoTIFF file located at ``out_path``.
     If ``make_shp``, then also create an ESRI Shapefile bundle (.dbf, .prj, .shp, and .shx files) out of the GeoTIFF and save it to a similar path (same path stem but with Shapefile path suffixes).
 
     ALGORITHM: 
@@ -706,6 +707,7 @@ def compute_satellite_los(in_path, satellite_lon, out_path, n=3, make_shp=False)
 
     NOTES:
         - Calls :func:`get_geoid_height` ``n**2`` times. Because that function is currently implemented as an HTTP GET request, that slows things down and also introduces ``n**2`` opportunities for failure (raising a ``ValueError``). 
+        - To roughly interpret the output raster values as actual satellite signal strengths, one would need to obtain some actual on-the-ground satellite readings.
     """
     in_path = Path(in_path)
     tile_id = ut.get_tile_id(in_path)

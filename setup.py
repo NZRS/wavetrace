@@ -9,7 +9,7 @@ with open('LICENSE.txt') as f:
 
 setup(
     name='wavetrace',
-    version='3.1.1',
+    version='4.0.0',
     author='Alex Raichev',
     packages=find_packages(exclude=('tests', 'docs')),
     url='https://github.com/nzrs/wavetrace',
