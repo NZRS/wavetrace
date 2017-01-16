@@ -40,7 +40,7 @@
           <div class="body" role="main">
             
   <div class="section" id="wavetrace-version-documentation">
-<h1>Wavetrace 3.0 documentation<a class="headerlink" href="#wavetrace-version-documentation" title="Permalink to this headline">¶</a></h1>
+<h1>Wavetrace 4.0 documentation<a class="headerlink" href="#wavetrace-version-documentation" title="Permalink to this headline">¶</a></h1>
 <div class="toctree-wrapper compound">
 <span id="document-introduction"></span><div class="section" id="introduction">
 <h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
@@ -55,7 +55,7 @@ It uses <a class="reference external" href="http://www.qsl.net/kd2bd/splat.html"
 <div class="section" id="installation">
 <h3>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h3>
 <ol class="arabic simple">
-<li>Install SPLAT! &gt;= 1.4.0, GDAL &gt;= 1.11, and ImageMagick. For example, to install these on a Linux system do <code class="docutils literal"><span class="pre">sudo</span> <span class="pre">apt-get</span> <span class="pre">update;</span> <span class="pre">sudo</span> <span class="pre">apt-get</span> <span class="pre">install</span> <span class="pre">splat</span> <span class="pre">gdal-bin</span> <span class="pre">imagemagick</span></code></li>
+<li>Install SPLAT! &gt;= 1.4.0, GDAL &gt;= 1.11, and ImageMagick. For example, to install these on a Linux system do <code class="docutils literal"><span class="pre">sudo</span> <span class="pre">apt-get</span> <span class="pre">update;</span> <span class="pre">sudo</span> <span class="pre">apt-get</span> <span class="pre">install</span> <span class="pre">splat</span> <span class="pre">gdal-bin</span> <span class="pre">python-gdal</span> <span class="pre">imagemagick</span></code></li>
 <li>Create a Python 3.5 virtual environment</li>
 <li>In your virtual environment, install Wavetrace via Pip via <code class="docutils literal"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">wavetrace</span></code></li>
 </ol>
@@ -212,8 +212,8 @@ For each dictionary,</p>
 
 <dl class="function">
 <dt id="wavetrace.main.compute_coverage">
-<code class="descclassname">wavetrace.main.</code><code class="descname">compute_coverage</code><span class="sig-paren">(</span><em>in_path</em>, <em>out_path</em>, <em>transmitters=None</em>, <em>receiver_sensitivity=-110</em>, <em>keep_ppm=False</em>, <em>high_definition=False</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.main.compute_coverage" title="Permalink to this definition">¶</a></dt>
-<dd><p>Run <a class="reference internal" href="#wavetrace.main.compute_coverage_0" title="wavetrace.main.compute_coverage_0"><code class="xref py py-func docutils literal"><span class="pre">compute_coverage_0()</span></code></a> and then run <code class="xref py py-func docutils literal"><span class="pre">post_process_coverage_0()</span></code>.</p>
+<code class="descclassname">wavetrace.main.</code><code class="descname">compute_coverage</code><span class="sig-paren">(</span><em>in_path</em>, <em>out_path</em>, <em>transmitters=None</em>, <em>receiver_sensitivity=-110</em>, <em>keep_ppm=False</em>, <em>high_definition=False</em>, <em>make_shp=False</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.main.compute_coverage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Produce coverage reports by running <a class="reference internal" href="#wavetrace.main.compute_coverage_0" title="wavetrace.main.compute_coverage_0"><code class="xref py py-func docutils literal"><span class="pre">compute_coverage_0()</span></code></a> and then run <code class="xref py py-func docutils literal"><span class="pre">post_process_coverage_0()</span></code>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -280,8 +280,9 @@ A report comprises the files</p>
 
 <dl class="function">
 <dt id="wavetrace.main.compute_satellite_los">
-<code class="descclassname">wavetrace.main.</code><code class="descname">compute_satellite_los</code><span class="sig-paren">(</span><em>in_path</em>, <em>satellite_lon</em>, <em>out_path</em>, <em>n=3</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.main.compute_satellite_los" title="Permalink to this definition">¶</a></dt>
-<dd><p>Given the path <code class="docutils literal"><span class="pre">in_path</span></code> to an SRTM1 or SRTM3 file and the longitude of a geostationary satellite, color with 8-bits of grayscale the raster cells according to whether they are in (whitish) or out (blackish) of the line-of-site of the satellite, and save the result as a GeoTIFF file located at <code class="docutils literal"><span class="pre">out_path</span></code>.</p>
+<code class="descclassname">wavetrace.main.</code><code class="descname">compute_satellite_los</code><span class="sig-paren">(</span><em>in_path</em>, <em>satellite_lon</em>, <em>out_path</em>, <em>n=3</em>, <em>make_shp=False</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.main.compute_satellite_los" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given the path <code class="docutils literal"><span class="pre">in_path</span></code> to an SRTM1 or SRTM3 file and the longitude of a geostationary satellite, color with 8-bits of grayscale (pixel values from 0 to 255) the raster cells according to whether they are out (blackish, close to 0) or in (whitish, close to 255) of the line-of-site of the satellite, and save the result as a GeoTIFF file located at <code class="docutils literal"><span class="pre">out_path</span></code>.
+If <code class="docutils literal"><span class="pre">make_shp</span></code>, then also create an ESRI Shapefile bundle (.dbf, .prj, .shp, and .shx files) out of the GeoTIFF and save it to a similar path (same path stem but with Shapefile path suffixes).</p>
 <dl class="docutils">
 <dt>ALGORITHM: </dt>
 <dd><ol class="first last arabic simple">
@@ -295,6 +296,7 @@ A report comprises the files</p>
 <dt>NOTES:</dt>
 <dd><ul class="first last simple">
 <li>Calls <a class="reference internal" href="#wavetrace.main.get_geoid_height" title="wavetrace.main.get_geoid_height"><code class="xref py py-func docutils literal"><span class="pre">get_geoid_height()</span></code></a> <code class="docutils literal"><span class="pre">n**2</span></code> times. Because that function is currently implemented as an HTTP GET request, that slows things down and also introduces <code class="docutils literal"><span class="pre">n**2</span></code> opportunities for failure (raising a <code class="docutils literal"><span class="pre">ValueError</span></code>).</li>
+<li>To roughly interpret the output raster values as actual satellite signal strengths, one would need to obtain some actual on-the-ground satellite readings.</li>
 </ul>
 </dd>
 </dl>
@@ -302,15 +304,14 @@ A report comprises the files</p>
 
 <dl class="function">
 <dt id="wavetrace.main.download_topography">
-<code class="descclassname">wavetrace.main.</code><code class="descname">download_topography</code><span class="sig-paren">(</span><em>tile_ids</em>, <em>path</em>, <em>api_key</em>, <em>high_definition=False</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.main.download_topography" title="Permalink to this definition">¶</a></dt>
-<dd><p>Download from the Gitlab repository <a class="reference external" href="https://gitlab.com/araichev/srtm_nz">https://gitlab.com/araichev/srtm_nz</a> the SRTM1 or SRTM3 topography data corresponding to the given SRTM tile IDs and save the files to the directory <code class="docutils literal"><span class="pre">path</span></code>, creating the directory if it does not exist.</p>
+<code class="descclassname">wavetrace.main.</code><code class="descname">download_topography</code><span class="sig-paren">(</span><em>tile_ids</em>, <em>path</em>, <em>high_definition=False</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.main.download_topography" title="Permalink to this definition">¶</a></dt>
+<dd><p>Download from the public Gitlab repository <a class="reference external" href="https://gitlab.com/araichev/srtm_nz">https://gitlab.com/araichev/srtm_nz</a> the SRTM1 or SRTM3 topography data corresponding to the given SRTM tile IDs and save the files to the directory <code class="docutils literal"><span class="pre">path</span></code>, creating the directory if it does not exist.</p>
 <dl class="docutils">
 <dt>INPUT:</dt>
 <dd><ul class="first last simple">
 <li><code class="docutils literal"><span class="pre">tile_ids</span></code>: list of strings; SRTM tile IDs</li>
 <li><code class="docutils literal"><span class="pre">path</span></code>: string or Path object specifying a directory</li>
 <li><code class="docutils literal"><span class="pre">high_definition</span></code>: boolean; if <code class="docutils literal"><span class="pre">True</span></code> then download SRTM1 tiles; otherwise download SRTM3 tiles</li>
-<li><code class="docutils literal"><span class="pre">api_key</span></code>: string; a valid Gitlab API key (access token)</li>
 </ul>
 </dd>
 <dt>OUTPUT:</dt>
@@ -393,18 +394,20 @@ Each list item has the form (x-offset, y-offset, x-size, y-size) and the items/s
 
 <dl class="function">
 <dt id="wavetrace.main.postprocess_coverage_0">
-<code class="descclassname">wavetrace.main.</code><code class="descname">postprocess_coverage_0</code><span class="sig-paren">(</span><em>path</em>, <em>keep_ppm</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.main.postprocess_coverage_0" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">wavetrace.main.</code><code class="descname">postprocess_coverage_0</code><span class="sig-paren">(</span><em>path</em>, <em>keep_ppm</em>, <em>make_shp</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.main.postprocess_coverage_0" title="Permalink to this definition">¶</a></dt>
 <dd><p>Using the PPM files in the directory <code class="docutils literal"><span class="pre">path</span></code> do the following:</p>
 <ul class="simple">
-<li>Convert each PPM files into a PNG file, replacing white with transparency using ImageMagick</li>
+<li>Convert each PPM file into a PNG file, replacing white with transparency using ImageMagick</li>
 <li>Change the PPM reference in each KML file to the corresponding PNG file</li>
 <li>Convert the PNG coverage file (not the legend file) into GeoTIFF using GDAL</li>
+<li>Optionally create ESRI Shapefile bundles (.dbf, .prj, .shp, and .shx files) from the GeoTIFF files</li>
 </ul>
 <dl class="docutils">
 <dt>INPUT:</dt>
 <dd><ul class="first last simple">
 <li><code class="docutils literal"><span class="pre">path</span></code>: string or Path object; directory where coverage reports (outputs of <a class="reference internal" href="#wavetrace.main.compute_coverage" title="wavetrace.main.compute_coverage"><code class="xref py py-func docutils literal"><span class="pre">compute_coverage()</span></code></a>) lie</li>
 <li><code class="docutils literal"><span class="pre">keep_ppm</span></code>: boolean; keep the original, large PPM files in the coverage reports if and only if this flag is <code class="docutils literal"><span class="pre">True</span></code></li>
+<li><code class="docutils literal"><span class="pre">make_shp</span></code>: boolean; create ESRI Shapefiles from the GeoTIFF files if and only if this flag is <code class="docutils literal"><span class="pre">True</span></code></li>
 </ul>
 </dd>
 <dt>OUTPUT:</dt>

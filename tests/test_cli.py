@@ -9,10 +9,6 @@ from wavetrace.cli import wavey
 
 
 DATA_DIR = PROJECT_ROOT/'tests'/'data'
-try:
-    GITLAB_KEY = get_secret("GITLAB_API_KEY")
-except KeyError:
-    GITLAB_KEY = ''
 
 class TestCli(unittest.TestCase):
     def setUp(self):
@@ -38,22 +34,21 @@ class TestCli(unittest.TestCase):
     def test_get_covering_tiles_ids(self):
         path = DATA_DIR/'transmitters.csv'
 
-        result = self.runner.invoke(wavey, ['get_covering_tiles_ids', str(path)])
+        result = self.runner.invoke(wavey, 
+          ['get_covering_tiles_ids', str(path)])
         self.assertEqual(result.exit_code, 0)
 
-    @unittest.skipIf(not GITLAB_KEY,
-      'Requires a Gitlab API access token stored in ``secrets.json`` under the key ``"GITLAB_API_KEY"``')
     def test_download_topography(self):
         tile_ids = SRTM_NZ_TILE_IDS[:2]
         path = DATA_DIR/'tmp'
         rm_paths(path)
 
         result = self.runner.invoke(wavey, ['download_topography', 
-          *tile_ids, str(path), GITLAB_KEY])
+          *tile_ids, str(path)])
         self.assertEqual(result.exit_code, 0)
 
         result = self.runner.invoke(wavey, ['download_topography', 
-          *tile_ids, str(path), 'wrong'])
+          'bingo', str(path)])
         self.assertEqual(result.exit_code, -1)
 
         rm_paths(path)
@@ -81,7 +76,7 @@ class TestCli(unittest.TestCase):
         self.runner.invoke(wavey, ['process_topography',
           str(p1/'srtm3'), str(p2)])
         result = self.runner.invoke(wavey, ['compute_coverage', 
-          str(p2), str(p3)])
+          str(p2), str(p3), '--make-shp'])
         print(result.exc_info)
         self.assertEqual(result.exit_code, 0)
 
@@ -93,7 +88,7 @@ class TestCli(unittest.TestCase):
         rm_paths(p2.parent)
 
         result = self.runner.invoke(wavey, ['compute_satellite_los', 
-          str(p1), '152', str(p2)])
+          str(p1), '152', str(p2), '--make-shp'])
         print(result.exc_info)
         self.assertEqual(result.exit_code, 0)
 

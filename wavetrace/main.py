@@ -18,6 +18,10 @@ import requests
 import wavetrace.constants as cs
 import wavetrace.utilities as ut
 
+# In the calls to the subprocess function below, 
+# sometimes instead of using absolute paths, 
+# i use relative paths in combination with the ``cwd`` option.
+# Mind the difference!
 
 def process_transmitters(in_path, out_path,
   earth_dielectric_constant=cs.EARTH_DIELECTRIC_CONSTANT, 
@@ -317,15 +321,14 @@ def get_covering_tiles_ids(transmitters, transmitter_buffer=0.5,
       for p in get_lonlats(transmitters)]
     return ut.compute_intersecting_tiles(blobs)
 
-def download_topography(tile_ids, path, api_key, high_definition=False):
+def download_topography(tile_ids, path, high_definition=False):
     """
-    Download from the Gitlab repository https://gitlab.com/araichev/srtm_nz the SRTM1 or SRTM3 topography data corresponding to the given SRTM tile IDs and save the files to the directory ``path``, creating the directory if it does not exist.
+    Download from the public Gitlab repository https://gitlab.com/araichev/srtm_nz the SRTM1 or SRTM3 topography data corresponding to the given SRTM tile IDs and save the files to the directory ``path``, creating the directory if it does not exist.
 
     INPUT:
         - ``tile_ids``: list of strings; SRTM tile IDs
         - ``path``: string or Path object specifying a directory
         - ``high_definition``: boolean; if ``True`` then download SRTM1 tiles; otherwise download SRTM3 tiles
-        - ``api_key``: string; a valid Gitlab API key (access token)
 
     OUTPUT:
         None
@@ -354,7 +357,6 @@ def download_topography(tile_ids, path, api_key, high_definition=False):
     # Download
     for file_name in file_names:
         params={
-            'private_token':  api_key,
             'file_path': file_name,
             'ref': 'master',
             }
@@ -428,16 +430,6 @@ def process_topography(in_path, out_path, high_definition=False):
         if is_zip:
             f.unlink()
 
-def compute_coverage(in_path, out_path, transmitters=None,
-  receiver_sensitivity=cs.RECEIVER_SENSITIVITY, keep_ppm=False,
-  high_definition=False):
-    """
-    Run :func:`compute_coverage_0` and then run :func:`post_process_coverage_0`.
-    """
-    compute_coverage_0(in_path, out_path, transmitters, receiver_sensitivity,
-      high_definition)
-    postprocess_coverage_0(out_path, keep_ppm)
-
 #@ut.time_it
 def compute_coverage_0(in_path, out_path, transmitters=None,
   receiver_sensitivity=cs.RECEIVER_SENSITIVITY, high_definition=False):
@@ -499,21 +491,23 @@ def compute_coverage_0(in_path, out_path, transmitters=None,
             tgt = out_path/(t + ext) 
             shutil.move(str(src), str(tgt))
 
-def postprocess_coverage_0(path, keep_ppm):
+def postprocess_coverage_0(path, keep_ppm, make_shp):
     """
     Using the PPM files in the directory ``path`` do the following:
 
-    - Convert each PPM files into a PNG file, replacing white with transparency using ImageMagick
+    - Convert each PPM file into a PNG file, replacing white with transparency using ImageMagick
     - Change the PPM reference in each KML file to the corresponding PNG file
     - Convert the PNG coverage file (not the legend file) into GeoTIFF using GDAL
+    - Optionally create ESRI Shapefile bundles (.dbf, .prj, .shp, and .shx files) from the GeoTIFF files
 
     INPUT:
         - ``path``: string or Path object; directory where coverage reports (outputs of :func:`compute_coverage`) lie
         - ``keep_ppm``: boolean; keep the original, large PPM files in the coverage reports if and only if this flag is ``True``
+        - ``make_shp``: boolean; create ESRI Shapefiles from the GeoTIFF files if and only if this flag is ``True``
 
     OUTPUT:
         None.
-    """
+    """       
     path = Path(path)
 
     # First pass: create PNG from PPM 
@@ -557,6 +551,16 @@ def postprocess_coverage_0(path, keep_ppm):
             subprocess.run(args, cwd=str(path),
               stdout=subprocess.PIPE, universal_newlines=True, check=True)
 
+    # Optional third pass: create vector files from GeoTIFFs
+    if make_shp:
+        for f in path.iterdir():
+            if f.suffix == '.tif':
+                tif = f.name
+                shp = f.stem + '.shp'
+                args = ['gdal_polygonize.py', tif, '-f', 'ESRI Shapefile', shp]
+                subprocess.run(args, cwd=str(path),
+                  stdout=subprocess.PIPE, universal_newlines=True, check=True)
+
 def get_bounds_from_kml(kml_string):
     """
     Given the text content of a SPLAT! KML coverage file, return a list of floats of the form ``[min_lon, min_lat, max_lon, max_lat]`` which describes the longitude-latitude bounding box of the coverage file.
@@ -570,86 +574,15 @@ def get_bounds_from_kml(kml_string):
     result = [west, south, east, north]
     return list(map(float, result))
 
-def compute_satellite_los(in_path, satellite_lon, out_path, n=3):
+def compute_coverage(in_path, out_path, transmitters=None,
+  receiver_sensitivity=cs.RECEIVER_SENSITIVITY, keep_ppm=False,
+  high_definition=False, make_shp=False):
     """
-    Given the path ``in_path`` to an SRTM1 or SRTM3 file and the longitude of a geostationary satellite, color with 8-bits of grayscale the raster cells according to whether they are in (whitish) or out (blackish) of the line-of-site of the satellite, and save the result as a GeoTIFF file located at ``out_path``.
-
-    ALGORITHM: 
-        #. Partition the SRTM tile into ``n**2`` square subtiles or roughly the same size
-        #. For each subtile, compute the longitude, latitude, and (WGS84) height of its center 
-        #. Compute the the look angles of the satellite from the center 
-        #. Use the look angles to shade the subtile via GDAL's ``gdaldem hillshade`` command
-        #. Merge the subtiles and save the result as a GeoTIFF file
-
-    NOTES:
-        - Calls :func:`get_geoid_height` ``n**2`` times. Because that function is currently implemented as an HTTP GET request, that slows things down and also introduces ``n**2`` opportunities for failure (raising a ``ValueError``). 
+    Produce coverage reports by running :func:`compute_coverage_0` and then run :func:`post_process_coverage_0`.
     """
-    in_path = Path(in_path)
-    tile_id = ut.get_tile_id(in_path)
-    out_path = Path(out_path)
-    if not out_path.parent.exists():
-        out_path.parent.mkdir(parents=True)
-
-    # Unzip tile file if necessary
-    if in_path.name.endswith('.zip'):
-        is_zip = True
-        shutil.unpack_archive(str(in_path), str(in_path.parent))
-        f = in_path.parent/'{!s}.hgt'.format(tile_id)
-    else:
-        is_zip = False
-        f = in_path
-
-    # Create temporary directory to hold the subtiles
-    tmp_path = Path(tempfile.mkdtemp())
-
-    # Iterate through subtiles and compute the satellite shadows
-    f_info = ut.gdalinfo(f)
-    width, height = f_info['width'], f_info['height']
-    subtile_paths = []
-    for i, window in enumerate(partition(width, height, n)):
-        # Extract subtile i
-        g = tmp_path/'{!s}.tif'.format(i)
-        subtile_paths.append(g)
-        args = ['gdal_translate', '-of', 'Gtiff', '-srcwin', 
-          str(window[0]), str(window[1]), str(window[2]), str(window[3]),
-          str(f), str(g)]       
-        subprocess.run(args, cwd=str(f.parent),
-          stdout=subprocess.PIPE, universal_newlines=True, check=True)
-
-        # Compute orthometric height H and geoid height N at center of subtile
-        lon, lat = ut.gdalinfo(g)['center']
-        args = ['gdallocationinfo', str(g), '-wgs84', '-valonly', 
-          str(lon), str(lat)]
-        sp = subprocess.run(args, cwd=str(g.parent),
-          stdout=subprocess.PIPE, universal_newlines=True, check=True)
-        H = float(sp.stdout) 
-        N = get_geoid_height(lon, lat)
-        
-        # Compute look angles at center and then shade with GDAL
-        az, el = compute_look_angles(lon, lat, H + N, satellite_lon)
-        args = ['gdaldem', 'hillshade', '-compute_edges', 
-          '-az', str(az), '-alt', str(el), str(g), str(g)]
-        subprocess.run(args, cwd=str(g.parent),
-          stdout=subprocess.PIPE, universal_newlines=True, check=True)
-
-    # Merge subtiles. 
-    # Use gdalbuildvert and gdal_translate, because gdal_merge.py produces the wrong size image for some reason.
-    args = ['gdalbuildvrt', 'merged.vrt'] + [
-      str(g) for g in subtile_paths]
-    subprocess.run(args, cwd=str(g.parent),
-      stdout=subprocess.PIPE, universal_newlines=True, check=True)
-
-    args = ['gdal_translate', 'merged.vrt', 'merged.tif', '-of', 'GTiff']
-    subprocess.run(args, cwd=str(g.parent),
-      stdout=subprocess.PIPE, universal_newlines=True, check=True)
-
-    # Move file
-    (g.parent/'merged.tif').replace(out_path)
-
-    # Clean up
-    ut.rm_paths(tmp_path)
-    if is_zip:
-        f.unlink()
+    compute_coverage_0(in_path, out_path, transmitters, receiver_sensitivity,
+      high_definition)
+    postprocess_coverage_0(out_path, keep_ppm, make_shp)
 
 def partition(width, height, n=3):
     """
@@ -758,3 +691,94 @@ def get_geoid_height(lon, lat, num_tries=3):
             return float(m.group(1)) 
         
     raise ValueError('Failed to download data from', url)
+
+def compute_satellite_los(in_path, satellite_lon, out_path, n=3, 
+  make_shp=False):
+    """
+    Given the path ``in_path`` to an SRTM1 or SRTM3 file and the longitude of a geostationary satellite, color with 8-bits of grayscale (pixel values from 0 to 255) the raster cells according to whether they are out (blackish, close to 0) or in (whitish, close to 255) of the line-of-site of the satellite, and save the result as a GeoTIFF file located at ``out_path``.
+    If ``make_shp``, then also create an ESRI Shapefile bundle (.dbf, .prj, .shp, and .shx files) out of the GeoTIFF and save it to a similar path (same path stem but with Shapefile path suffixes).
+
+    ALGORITHM: 
+        #. Partition the SRTM tile into ``n**2`` square subtiles or roughly the same size
+        #. For each subtile, compute the longitude, latitude, and (WGS84) height of its center 
+        #. Compute the the look angles of the satellite from the center 
+        #. Use the look angles to shade the subtile via GDAL's ``gdaldem hillshade`` command
+        #. Merge the subtiles and save the result as a GeoTIFF file
+
+    NOTES:
+        - Calls :func:`get_geoid_height` ``n**2`` times. Because that function is currently implemented as an HTTP GET request, that slows things down and also introduces ``n**2`` opportunities for failure (raising a ``ValueError``). 
+        - To roughly interpret the output raster values as actual satellite signal strengths, one would need to obtain some actual on-the-ground satellite readings.
+    """
+    in_path = Path(in_path)
+    tile_id = ut.get_tile_id(in_path)
+    out_path = Path(out_path)
+    if not out_path.parent.exists():
+        out_path.parent.mkdir(parents=True)
+
+    # Unzip tile file if necessary
+    if in_path.name.endswith('.zip'):
+        is_zip = True
+        shutil.unpack_archive(str(in_path), str(in_path.parent))
+        f = in_path.parent/'{!s}.hgt'.format(tile_id)
+    else:
+        is_zip = False
+        f = in_path
+
+    # Create temporary directory to hold the subtiles
+    tmp_path = Path(tempfile.mkdtemp())
+
+    # Iterate through subtiles and compute the satellite shadows
+    f_info = ut.gdalinfo(f)
+    width, height = f_info['width'], f_info['height']
+    subtile_names = []
+    for i, window in enumerate(partition(width, height, n)):
+        # Extract subtile i
+        g = tmp_path/'{!s}.tif'.format(i)
+        subtile_names.append(g.name)
+        args = ['gdal_translate', '-of', 'Gtiff', '-srcwin', 
+          str(window[0]), str(window[1]), str(window[2]), str(window[3]),
+          str(f), str(g)]       
+        subprocess.run(args, stdout=subprocess.PIPE, universal_newlines=True,
+          check=True)
+
+        # Compute orthometric height H and geoid height N at center of subtile
+        lon, lat = ut.gdalinfo(g)['center']
+        args = ['gdallocationinfo', str(g), '-wgs84', '-valonly', 
+          str(lon), str(lat)]
+        sp = subprocess.run(args, 
+          stdout=subprocess.PIPE, universal_newlines=True, check=True)
+        H = float(sp.stdout) 
+        N = get_geoid_height(lon, lat)
+        
+        # Compute look angles at center and then shade with GDAL
+        az, el = compute_look_angles(lon, lat, H + N, satellite_lon)
+        args = ['gdaldem', 'hillshade', '-compute_edges', 
+          '-az', str(az), '-alt', str(el), str(g), str(g)]
+        subprocess.run(args,
+          stdout=subprocess.PIPE, universal_newlines=True, check=True)
+
+    # Merge subtiles. 
+    # Use gdalbuildvert and gdal_translate, because gdal_merge.py produces the wrong size image for some reason.
+    args = ['gdalbuildvrt', 'merged.vrt'] + [name for name in subtile_names]
+    subprocess.run(args, cwd=str(g.parent), 
+      stdout=subprocess.PIPE, universal_newlines=True, check=True)
+
+    args = ['gdal_translate', 'merged.vrt', 'merged.tif', '-of', 'GTiff']
+    subprocess.run(args, cwd=str(g.parent),
+      stdout=subprocess.PIPE, universal_newlines=True, check=True)
+
+    # Move file
+    (g.parent/'merged.tif').replace(out_path)
+
+    # Clean up
+    ut.rm_paths(tmp_path)
+    if is_zip:
+        f.unlink()
+
+    if make_shp:
+        tif = out_path.name
+        shp = out_path.stem + '.shp'
+        args = ['gdal_polygonize.py', str(tif), '-f', 'ESRI Shapefile', 
+          str(shp)]
+        subprocess.run(args, cwd=str(out_path.parent),
+          stdout=subprocess.PIPE, universal_newlines=True, check=True)

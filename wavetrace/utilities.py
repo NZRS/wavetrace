@@ -221,7 +221,7 @@ def gdalinfo(path):
     """
     path = Path(path)
     args = ['gdalinfo', str(path)]
-    sp = subprocess.run(args, cwd=str(path.parent),
+    sp = subprocess.run(args, 
       stdout=subprocess.PIPE, universal_newlines=True, check=True)
     text = sp.stdout
     m = re.search(r'Size is (\d+), (\d+)', text)
