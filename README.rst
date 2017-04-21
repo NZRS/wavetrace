@@ -19,11 +19,11 @@ Wavetrace can also compute line-of-site maps for geostationary satellites:
     :align: center
 
 Wavetrace is intended for use in New Zealand but can be configured to work elsewhere on Earth. 
-
+ 
 
 Installation
 ============
-1. Install SPLAT! >= 1.4.0, GDAL >= 1.11, and ImageMagick. For example, to install these on a Linux system do ``sudo apt-get update; sudo apt-get install splat gdal-bin imagemagick``
+1. Install SPLAT! >= 1.4.0, GDAL >= 1.11, and ImageMagick. For example, to install these on a Linux system do ``sudo apt-get update; sudo apt-get install splat gdal-bin python-gdal imagemagick``
 2. Create a Python 3.5 virtual environment
 3. In your virtual environment, install Wavetrace via Pip via ``pip install wavetrace``
 
@@ -63,7 +63,18 @@ Authors
 Changelog
 ==========
 
-v3.0.0, 2016-09-28
+v4.0.0, 2017-01-17
+-------------------
+- Removed Gitlab API key option, because it is unnecessary for accessing the required public repository
+- Added the option to create ESRI Shapefiles in the functions ``main.compute_coverage`` and ``main.compute_satellite_los``.
+
+
+v3.0.1, 2016-12-15
+-------------------
+- Repackaged with setuptools and ensured that the README is included in tar archive this time
+
+
+v3.0.0, 2016-08-22
 -------------------
 - Added functions to compute line-of-sight for geostationary satellites
 - Renamed some functions, hence the version bump
