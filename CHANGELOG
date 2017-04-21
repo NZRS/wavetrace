@@ -1,0 +1,32 @@
+Changelog
+==========
+
+v4.0.1, 2017-04-21
+-------------------
+- Minor changes.
+
+v4.0.0, 2017-01-17
+-------------------
+- Removed Gitlab API key option, because it is unnecessary for accessing the required public repository
+- Added the option to create ESRI Shapefiles in the functions ``main.compute_coverage`` and ``main.compute_satellite_los``.
+
+
+v3.0.1, 2016-12-15
+-------------------
+- Repackaged with setuptools and ensured that the README is included in tar archive this time
+
+
+v3.0.0, 2016-08-22
+-------------------
+- Added functions to compute line-of-sight for geostationary satellites
+- Renamed some functions, hence the version bump
+
+
+v2.0.0, 2016-08-22
+-------------------
+- Complete refactor and conversion into a Python package
+
+
+v1.0.0, 2013
+--------------
+- Initial version 
