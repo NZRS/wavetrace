@@ -668,14 +668,14 @@ def compute_look_angles(lon, lat, height, satellite_lon):
 
 def get_geoid_height(lon, lat, num_tries=3):
     """
-    Query http://geographiclib.sourceforge.net/cgi-bin/GeoidEval for the height in meters of the EGM96 geoid above the WGS84 ellipsoid for the given longitude and latitude. 
+    Query https://geographiclib.sourceforge.io/cgi-bin/GeoidEval for the height in meters of the EGM96 geoid above the WGS84 ellipsoid for the given longitude and latitude. 
     If the result is negative, then the geoid lies below the ellipsoid.
     Raise a ``ValueError`` if the query fails after ``num_tries`` tries.
 
     NOTES:
-        - It would be good to rewrite this function so that it does not depend on internet access. For a starters, see `https://github.com/vandry/geoidheight <https://github.com/vandry/geoidheight>`_, which uses the EGM2008 ellipsoid.
+        - It would be good to rewrite this function so that it does not depend on internet access. For starters, see `https://github.com/vandry/geoidheight <https://github.com/vandry/geoidheight>`_, which uses the EGM2008 ellipsoid.
     """
-    url = 'http://geographiclib.sourceforge.net/cgi-bin/GeoidEval'
+    url = 'https://geographiclib.sourceforge.io/cgi-bin/GeoidEval'
     data = {'input': '{!s}+{!s}'.format(lat, lon)}
     pattern = r'EGM96</a>\s*=\s*<font color="blue">([\d\.\-]+)</font>'
     

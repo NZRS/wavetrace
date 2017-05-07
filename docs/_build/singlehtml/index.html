@@ -346,13 +346,13 @@ The defaults are appropriate for transmitters in New Zealand.</p>
 <dl class="function">
 <dt id="wavetrace.main.get_geoid_height">
 <code class="descclassname">wavetrace.main.</code><code class="descname">get_geoid_height</code><span class="sig-paren">(</span><em>lon</em>, <em>lat</em>, <em>num_tries=3</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.main.get_geoid_height" title="Permalink to this definition">¶</a></dt>
-<dd><p>Query <a class="reference external" href="http://geographiclib.sourceforge.net/cgi-bin/GeoidEval">http://geographiclib.sourceforge.net/cgi-bin/GeoidEval</a> for the height in meters of the EGM96 geoid above the WGS84 ellipsoid for the given longitude and latitude. 
+<dd><p>Query <a class="reference external" href="https://geographiclib.sourceforge.io/cgi-bin/GeoidEval">https://geographiclib.sourceforge.io/cgi-bin/GeoidEval</a> for the height in meters of the EGM96 geoid above the WGS84 ellipsoid for the given longitude and latitude. 
 If the result is negative, then the geoid lies below the ellipsoid.
 Raise a <code class="docutils literal"><span class="pre">ValueError</span></code> if the query fails after <code class="docutils literal"><span class="pre">num_tries</span></code> tries.</p>
 <dl class="docutils">
 <dt>NOTES:</dt>
 <dd><ul class="first last simple">
-<li>It would be good to rewrite this function so that it does not depend on internet access. For a starters, see <a class="reference external" href="https://github.com/vandry/geoidheight">https://github.com/vandry/geoidheight</a>, which uses the EGM2008 ellipsoid.</li>
+<li>It would be good to rewrite this function so that it does not depend on internet access. For starters, see <a class="reference external" href="https://github.com/vandry/geoidheight">https://github.com/vandry/geoidheight</a>, which uses the EGM2008 ellipsoid.</li>
 </ul>
 </dd>
 </dl>
@@ -620,12 +620,6 @@ If <code class="docutils literal"><span class="pre">be_precise</span></code> equ
 <dt>NOTES:</dt>
 <dd>SRTM data for an output tile might not actually exist, e.g. data for the tile N90E000 does not exist in NASA&#8217;s database.</dd>
 </dl>
-</dd></dl>
-
-<dl class="function">
-<dt id="wavetrace.utilities.get_secret">
-<code class="descclassname">wavetrace.utilities.</code><code class="descname">get_secret</code><span class="sig-paren">(</span><em>secret</em>, <em>secrets_path=PosixPath('/home/araichev/wavetrace/secrets.json')</em><span class="sig-paren">)</span><a class="headerlink" href="#wavetrace.utilities.get_secret" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the given setting variable or return explicit exception.</p>
 </dd></dl>
 
 <dl class="function">
