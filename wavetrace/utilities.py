@@ -48,17 +48,6 @@ def rm_paths(*paths):
             else:
                 shutil.rmtree(str(p))
 
-def get_secret(secret, secrets_path=cs.SECRETS_PATH):
-    """
-    Get the given setting variable or return explicit exception.
-    """
-    with secrets_path.open() as src:
-        d = json.loads(src.read())
-    try:
-        return d[secret]
-    except KeyError:
-        raise ValueError("Set the {0} secrets variable".format(secret))
-
 def check_lonlat(lon, lat):
     """
     Raise a ``ValueError`` if ``lon`` and ``lat`` do not represent a valid 
