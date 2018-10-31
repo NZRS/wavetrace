@@ -11,6 +11,7 @@ import subprocess
 import base64
 from math import sin, cos, atan, atan2, sqrt, pi, radians, degrees
 import tempfile
+import urllib
 
 from shapely.geometry import Point
 import requests
@@ -342,7 +343,7 @@ def download_topography(tile_ids, path, high_definition=False):
 
     # Set download parameters
     project_id = '1526685'
-    url = 'https://gitlab.com/api/v3/projects/{!s}/repository/files/'.\
+    url = 'https://gitlab.com/api/v4/projects/{!s}/repository/files/'.\
       format(project_id)
     if high_definition:
         file_names = ['srtm1/{!s}.SRTMGL1.hgt.zip'.format(t) for t in tile_ids]
@@ -355,12 +356,12 @@ def download_topography(tile_ids, path, high_definition=False):
         path.mkdir(parents=True)
 
     # Download
+    params = {'ref': 'master',}
     for file_name in file_names:
-        params={
-            'file_path': file_name,
-            'ref': 'master',
-            }
-        r = requests.get(url, params=params, stream=True)
+        file_url = '{url}{file_id}'.format(
+            url=url,
+            file_id=urllib.parse.quote_plus(file_name))
+        r = requests.get(file_url, params=params, stream=True)
 
         if r.status_code != requests.codes.ok:
             raise ValueError('Downloading file {!s} failed with status '\
