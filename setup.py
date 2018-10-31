@@ -18,9 +18,9 @@ setup(
     description='Python 3.5 tools to produce radio signal coverage reports, mostly for New Zealand',
     long_description=readme,
     install_requires=[
-        'requests>=2.10.0',
-        'Shapely>=1.5.16',
-        'click>=6.6',
+        'requests>=2.20.0',
+        'Shapely>=1.6.4.post2',
+        'click>=7.0',
     ],
     entry_points={
         'console_scripts': ['wavey=wavetrace.cli:wavey'],
