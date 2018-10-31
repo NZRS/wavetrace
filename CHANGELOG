@@ -1,6 +1,12 @@
 Changelog
 ==========
 
+v4.0.3, 2018-10-31
+-------------------
+- Updated support for GitLab API v4.
+- Updated Python libraries.
+
+
 v4.0.2, 2017-05-08
 -------------------
 - Updated URL for ``main.get_geoid_height()`
